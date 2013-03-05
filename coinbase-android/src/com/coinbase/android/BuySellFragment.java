@@ -153,7 +153,7 @@ public class BuySellFragment extends Fragment {
 
         String amount = params[0], type = params[1];
 
-        if(amount.isEmpty()) {
+        if(amount.isEmpty() || ".".equals(amount) || new BigDecimal(amount).doubleValue() == 0) {
           return new String[] { null };
         }
 
