@@ -72,10 +72,10 @@ public class MainActivity extends CoinbaseActivity {
     FAKE_GINGERBREAD_COMPAT;
   }
 
-  private static final int FRAGMENT_INDEX_TRANSACTIONS = 0;
-  private static final int FRAGMENT_INDEX_TRANSFER = 1;
-  private static final int FRAGMENT_INDEX_BUYSELL = 2;
-  private static final int FRAGMENT_INDEX_ACCOUNT = 3;
+  public static final int FRAGMENT_INDEX_TRANSACTIONS = 0;
+  public static final int FRAGMENT_INDEX_TRANSFER = 1;
+  public static final int FRAGMENT_INDEX_BUYSELL = 2;
+  public static final int FRAGMENT_INDEX_ACCOUNT = 3;
 
   private int[] mFragmentTitles = new int[] {
       R.string.title_transactions,
@@ -224,7 +224,11 @@ public class MainActivity extends CoinbaseActivity {
     updateTitle();
   }
 
-  private void switchTo(int index) {
+  /**
+   * Switch visible fragment.
+   * @param index See the FRAGMENT_INDEX constants.
+   */
+  public void switchTo(int index) {
 
 
     mViewPager.setCurrentItem(index, false);
