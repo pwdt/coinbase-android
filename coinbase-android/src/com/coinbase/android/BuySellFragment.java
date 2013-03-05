@@ -129,6 +129,7 @@ public class BuySellFragment extends Fragment {
 
         // Sync transactions
         mParent.refresh();
+        mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
       } else {
 
         Utils.showMessageDialog(getFragmentManager(), (String) result[1]);
