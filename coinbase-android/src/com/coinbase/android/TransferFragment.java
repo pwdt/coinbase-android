@@ -607,7 +607,7 @@ public class TransferFragment extends Fragment {
     String key = String.format(format, mTransferCurrency.toLowerCase(Locale.CANADA));
 
     BigDecimal amount = new BigDecimal(mAmount);
-    BigDecimal result = amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
+    BigDecimal result = fromBitcoin ? amount : amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
     return result;
   }
 
