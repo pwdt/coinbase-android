@@ -171,6 +171,13 @@ public class LoginActivity extends CoinbaseActivity {
     super.onNewIntent(intent);
 
     setIntent(intent);
+
+    if(getIntent().getData() != null) {
+      // Load this URL in the web view
+      mLoginWebView.loadUrl(getIntent().getDataString());
+    } else {
+      loadLoginUrl();
+    }
   }
 
   public void setProgressBarVisible(boolean animated) {
@@ -189,24 +196,6 @@ public class LoginActivity extends CoinbaseActivity {
       mRefreshItem.setActionView(null);
     }
   }
-
-  @Override
-  public void onResume() {
-    super.onResume();
-
-    /*
-     * Load the page on onResume so that if the app glitches out, and the user leaves and comes back
-     * in an attempt to restart it, there is a chance it will be fixed.
-     */
-
-    if(getIntent().getData() != null) {
-      // Load this URL in the web view
-      mLoginWebView.loadUrl(getIntent().getDataString());
-    } else {
-      loadLoginUrl();
-    }
-  }
-
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
