@@ -12,7 +12,11 @@ The official Android application for [Coinbase](https://coinbase.com/).
 * 100% open source - contributions welcome
 * Revoke [access](https://coinbase.com/account/integrations) remotely if you lose your phone.
 
-<a href="https://dl.dropbox.com/u/1779882/Screenshot_2013-02-27-18-42-39.png"><img src="https://dl.dropbox.com/u/1779882/Screenshot_2013-02-27-18-42-39.png" width="250" /></a>
+<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen1.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen1.png" width="250" /></a>
+<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen2.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen2.png" width="250" /></a>
+<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen3.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen3.png" width="250" /></a>
+<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen4.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen4.png" width="250" /></a>
+<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen5.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen5.png" width="250" /></a>
 
 ## Building
 
