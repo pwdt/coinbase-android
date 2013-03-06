@@ -84,11 +84,13 @@
     
             </AutoCompleteTextView>
 
+            <!-- Clear button disabled for now -->
             <Button
                 android:id="@+id/transfer_money_button_clear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/transfer_button_clear" />
+                android:text="@string/transfer_button_clear"
+                android:visibility="gone" />
     
             <Button
                 android:id="@+id/transfer_money_button_send"
