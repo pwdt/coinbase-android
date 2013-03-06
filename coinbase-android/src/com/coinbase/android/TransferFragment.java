@@ -728,7 +728,7 @@ public class TransferFragment extends Fragment {
 
   protected void startTransferTask(TransferType type, String amount, String notes, String toFrom) {
 
-    new DoTransferTask().execute(type, amount, notes, toFrom);
+    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, notes, toFrom);
   }
 
   private Object[] doTransfer(TransferType type, String amount, String notes, String toFrom) {

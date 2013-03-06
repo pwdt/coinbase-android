@@ -515,7 +515,7 @@ public class AccountSettingsFragment extends ListFragment {
     } else if("native_currency".equals(data[2])) {
 
       // Show list of currencies
-      new ShowNetworkListTask().execute("currencies",
+      Utils.runAsyncTaskConcurrently(new ShowNetworkListTask(), "currencies",
           String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
           "native_currency");
     } else if("refresh_token".equals(data[2])) {

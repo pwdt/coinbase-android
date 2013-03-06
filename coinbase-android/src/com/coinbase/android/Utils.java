@@ -9,11 +9,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
@@ -40,15 +43,15 @@ public class Utils {
     fragment.setArguments(args);
     fragment.show(m, "Utils.showMessageDialog");
   }
-  
+
   public static enum CurrencyType {
     BTC(4, 1),
     TRADITIONAL(2, 2);
-    
-    
+
+
     int maximumFractionDigits;
     int minimumFractionDigits;
-    
+
     CurrencyType(int max, int min) {
       maximumFractionDigits = max;
       minimumFractionDigits = min;
@@ -73,7 +76,7 @@ public class Utils {
     NumberFormat nf = NumberFormat.getInstance(locale);
     nf.setMaximumFractionDigits(type.maximumFractionDigits);
     nf.setMinimumFractionDigits(type.minimumFractionDigits);
-    
+
     if(ignoreSign && balanceNumber.compareTo(BigDecimal.ZERO) == -1) {
       balanceNumber = balanceNumber.multiply(new BigDecimal(-1));
     }
@@ -107,9 +110,9 @@ public class Utils {
     bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
     return bitmap;
   }
-  
+
   private static class EmailAutocompleteAdapter extends SimpleCursorAdapter {
-    
+
     public EmailAutocompleteAdapter(Context context, int layout, Cursor c,
         String[] from, int[] to, int flags) {
       super(context, layout, c, from, to, flags);
@@ -140,32 +143,32 @@ public class Utils {
     adapter.setFilterQueryProvider(new FilterQueryProvider() {
       @Override
       public Cursor runQuery(CharSequence description) {
-        
+
         if(description == null) {
           description = "";
         }
-        
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
         Cursor c = adapter.mDb.query(EmailEntry.TABLE_NAME,
             null, EmailEntry.COLUMN_NAME_ACCOUNT + " = ? AND " + EmailEntry.COLUMN_NAME_EMAIL + " LIKE ?",
             new String[] { Integer.toString(activeAccount), "%" + description + "%" }, null, null, null);
-        
+
         return c;
       }
     });
 
     return adapter;
   }
-  
+
   public static void disposeOfEmailAutocompleteAdapter(SimpleCursorAdapter autocompleteAdapter) {
-    
+
     if(autocompleteAdapter instanceof EmailAutocompleteAdapter) {
       ((EmailAutocompleteAdapter) autocompleteAdapter).mDb.close();
     }
   }
-  
+
   public static String generateTransactionSummary(Context c, JSONObject t) throws JSONException {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
@@ -223,7 +226,7 @@ public class Utils {
       }
     }
   }
-  
+
   public static String getErrorStringFromJson(JSONObject response) throws JSONException {
 
 
@@ -234,5 +237,15 @@ public class Utils {
       errorMessage += (errorMessage.equals("") ? "" : "\n") + errors.getString(i);
     }
     return errorMessage;
+  }
+
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+  public static <T> void runAsyncTaskConcurrently(AsyncTask<T, ?, ?> task, T... params) {
+
+    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+      task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, params);
+    } else {
+      task.execute(params);
+    }
   }
 }

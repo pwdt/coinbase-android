@@ -327,7 +327,7 @@ public class BuySellFragment extends Fragment {
     }
 
     mUpdatePriceTask = new UpdatePriceTask();
-    mUpdatePriceTask.execute(mAmount.getText().toString(), type.getRequestType());
+    Utils.runAsyncTaskConcurrently(mUpdatePriceTask, mAmount.getText().toString(), type.getRequestType());
   }
 
   private void initializeTypeSpinner() {
@@ -357,7 +357,7 @@ public class BuySellFragment extends Fragment {
 
   protected void startBuySellTask(BuySellType type, String amount) {
 
-    new DoBuySellTask().execute(type, amount);
+    Utils.runAsyncTaskConcurrently(new DoBuySellTask(), type, amount);
   }
 
   private Object[] doBuySell(BuySellType type, String amount) {
