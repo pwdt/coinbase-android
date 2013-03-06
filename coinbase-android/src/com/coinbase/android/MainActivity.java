@@ -477,7 +477,9 @@ public class MainActivity extends CoinbaseActivity {
 
   public void addAccount() {
 
-    startActivity(new Intent(this, LoginActivity.class));
+    Intent intent = new Intent(this, LoginActivity.class);
+    intent.putExtra(LoginActivity.EXTRA_SHOW_INTRO, false);
+    startActivity(intent);
     finish();
   }
 

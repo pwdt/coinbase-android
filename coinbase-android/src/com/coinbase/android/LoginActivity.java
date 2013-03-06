@@ -26,6 +26,7 @@ import com.coinbase.api.LoginManager;
 public class LoginActivity extends CoinbaseActivity {
 
   private static final String REDIRECT_URL = "http://example.com/coinbase-redirect";
+  public static final String EXTRA_SHOW_INTRO = "show_intro";
 
   WebView mLoginWebView;
   View mLoginIntro;
@@ -161,7 +162,7 @@ public class LoginActivity extends CoinbaseActivity {
 
     });
 
-    changeMode(true);
+    changeMode(getIntent().getBooleanExtra(EXTRA_SHOW_INTRO, true) ? true : false);
     onNewIntent(getIntent());
   }
 
