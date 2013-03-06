@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/buysell_type_text"
-        android:layout_toLeftOf="@+id/buysell_currency"
+        android:layout_toLeftOf="@+id/buysell_text2"
         android:layout_alignBaseline="@+id/buysell_type_text"
         android:hint="@string/buysell_amount_hint"
         android:layout_marginLeft="5dp"
@@ -33,12 +33,12 @@
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
-        android:id="@+id/buysell_currency"
+        android:id="@+id/buysell_text2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignBaseline="@+id/buysell_type_text"
-        android:text="@string/btc"
+        android:text="@string/buysell_text2_blank"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView

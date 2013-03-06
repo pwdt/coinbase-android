@@ -147,11 +147,21 @@ public class BuySellFragment extends Fragment {
       mSubmitButton.setEnabled(false);
     }
 
+    boolean mIsSingleUpdate;
+
     protected String[] doInBackground(String... params) {
 
       try {
 
         String amount = params[0], type = params[1];
+
+        mIsSingleUpdate = false;
+
+        if(amount == null) {
+          // Get single
+          mIsSingleUpdate = true;
+          amount = "1";
+        }
 
         if(amount.isEmpty() || ".".equals(amount) || new BigDecimal(amount).doubleValue() == 0) {
           return new String[] { null };
@@ -176,38 +186,52 @@ public class BuySellFragment extends Fragment {
 
     protected void onPostExecute(String[] result) {
 
-      if(mTotal != null) {
+      TextView target = mIsSingleUpdate ? mText2 : mTotal;
+      int format = mIsSingleUpdate ? R.string.buysell_text2 : R.string.buysell_total;
+      int error = mIsSingleUpdate ? R.string.buysell_text2_blank : R.string.buysell_total_error;
+
+      if(target != null) {
 
         if(result == null) {
 
-          mTotal.setText(R.string.buysell_total_error);
+          target.setText(error);
         } else {
 
           if(result[0] == null) {
-            mTotal.setText(null);
+            target.setText(null);
           } else {
 
-            mCurrentPrice = Utils.formatCurrencyAmount(new BigDecimal(result[0]), false, CurrencyType.TRADITIONAL);
-            mCurrentPriceCurrency = result[1];
-            mSubmitButton.setEnabled(true);
-            mTotal.setText(String.format(mParent.getString(R.string.buysell_total), mCurrentPrice, result[1]));
+            String currentPrice = Utils.formatCurrencyAmount(new BigDecimal(result[0]), false, CurrencyType.TRADITIONAL);
+
+            if(mIsSingleUpdate) {
+            } else {
+
+              mSubmitButton.setEnabled(true);
+              mCurrentPrice = currentPrice;
+              mCurrentPriceCurrency = result[1];
+            }
+
+            target.setText(String.format(mParent.getString(format), currentPrice, result[1]));
+
             return;
           }
         }
       }
 
-      mCurrentPrice = null;
-      mSubmitButton.setEnabled(false);
+      if(!mIsSingleUpdate) {
+        mCurrentPrice = null;
+        mSubmitButton.setEnabled(false);
+      }
     }
   }
 
   private MainActivity mParent;
 
-  private UpdatePriceTask mUpdatePriceTask;
+  private UpdatePriceTask mUpdatePriceTask, mUpdateSinglePriceTask;
   private String mCurrentPrice, mCurrentPriceCurrency;
 
   private Spinner mBuySellSpinner;
-  private TextView mTypeText, mTotal;
+  private TextView mTypeText, mTotal, mText2;
   private Button mSubmitButton;
   private EditText mAmount;
 
@@ -256,6 +280,7 @@ public class BuySellFragment extends Fragment {
 
     mTypeText = (TextView) view.findViewById(R.id.buysell_type_text);
     mTotal = (TextView) view.findViewById(R.id.buysell_total);
+    mText2 = (TextView) view.findViewById(R.id.buysell_text2);
 
     mSubmitButton = (Button) view.findViewById(R.id.buysell_submit);
     mSubmitButton.setOnClickListener(new View.OnClickListener() {
@@ -313,6 +338,14 @@ public class BuySellFragment extends Fragment {
 
     int submitLabel = type == BuySellType.BUY ? R.string.buysell_submit_buy : R.string.buysell_submit_sell;
     mSubmitButton.setText(submitLabel);
+
+    if(mUpdateSinglePriceTask != null) {
+      mUpdateSinglePriceTask.cancel(true);
+    }
+
+    mText2.setText(R.string.buysell_text2_blank);
+    mUpdateSinglePriceTask = new UpdatePriceTask();
+    Utils.runAsyncTaskConcurrently(mUpdateSinglePriceTask, null, type.getRequestType());
 
     updatePrice();
   }
