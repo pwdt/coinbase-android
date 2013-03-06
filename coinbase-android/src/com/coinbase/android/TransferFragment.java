@@ -523,6 +523,8 @@ public class TransferFragment extends Fragment {
       }
     });
 
+    onTypeChanged();
+
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     mPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
