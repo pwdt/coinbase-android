@@ -219,5 +219,10 @@ public class LoginActivity extends CoinbaseActivity {
 
     mLoginIntro.setVisibility(intro ? View.VISIBLE : View.GONE);
     mLoginWebView.setVisibility(intro ? View.GONE : View.VISIBLE);
+    
+    if(!intro) {
+      // Fixes focus bug on Android 2.3
+      mLoginWebView.requestFocus();
+    }
   }
 }
