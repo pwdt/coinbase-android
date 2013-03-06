@@ -17,6 +17,7 @@ The official Android application for [Coinbase](https://coinbase.com/).
 <a href="https://dl.dropbox.com/u/324237/coinbase-android/screen3.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen3.png" width="250" /></a>
 <a href="https://dl.dropbox.com/u/324237/coinbase-android/screen4.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen4.png" width="250" /></a>
 <a href="https://dl.dropbox.com/u/324237/coinbase-android/screen5.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen5.png" width="250" /></a>
+<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen6.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen6.png" width="250" /></a>
 
 ## Building
 
