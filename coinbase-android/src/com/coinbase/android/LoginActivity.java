@@ -221,6 +221,12 @@ public class LoginActivity extends CoinbaseActivity {
 
   private void changeMode(boolean intro) {
 
+    if(intro) {
+      getSupportActionBar().hide();
+    } else {
+      getSupportActionBar().show();
+    }
+
     mLoginIntro.setVisibility(intro ? View.VISIBLE : View.GONE);
     mLoginWebView.setVisibility(intro ? View.GONE : View.VISIBLE);
   }
