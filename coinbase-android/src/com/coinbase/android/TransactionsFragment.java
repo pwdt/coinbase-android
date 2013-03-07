@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -136,10 +138,16 @@ public class TransactionsFragment extends ListFragment {
     public static final int MAX_PAGES = 3;
     public static final int MAX_ENDLESS_PAGES = 10;
 
+    /**
+     * Number of pages of transactions to sync extra transfer-related data.
+     */
+    public static final int MAX_TRANSFER_SYNC_PAGES = 3;
+
     @Override
     protected Boolean doInBackground(Integer... params) {
 
       List<JSONObject> transactions = new ArrayList<JSONObject>();
+      Map<String, JSONObject> transfers = null;
       String currentUserId = null;
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
@@ -177,6 +185,10 @@ public class TransactionsFragment extends ListFragment {
           }
 
           loadedPage++;
+        }
+
+        if(startPage == 0) {
+          transfers = fetchTransferData();
         }
 
         mMaxPage = numPages;
@@ -229,10 +241,20 @@ public class TransactionsFragment extends ListFragment {
             createdAt = -1;
           }
 
+          JSONObject transferData = null;
+
+          if(transfers != null) {
+
+            String id = transaction.optString("id");
+            transferData = transfers.get(id);
+          }
+
           values.put(TransactionEntry._ID, transaction.getString("id"));
           values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
           values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
           values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
+          values.put(TransactionEntry.COLUMN_NAME_TRANSFER_JSON, transferData == null ? null : transferData.toString());
+          values.put(TransactionEntry.COLUMN_NAME_IS_TRANSFER, transferData == null ? 0 : 1);
 
           db.insert(TransactionEntry.TABLE_NAME, null, values);
         }
@@ -259,6 +281,45 @@ public class TransactionsFragment extends ListFragment {
         db.endTransaction();
         db.close();
       }
+    }
+
+    private Map<String, JSONObject> fetchTransferData() {
+
+      try {
+
+        Map<String, JSONObject> transfers = new HashMap<String, JSONObject>();
+
+        int numTransferPages = 1;
+        for(int i = 1; i <= Math.min(numTransferPages, MAX_TRANSFER_SYNC_PAGES); i++) {
+
+          List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
+          getParams.add(new BasicNameValuePair("page", Integer.toString(i)));
+          JSONObject response = RpcManager.getInstance().callGet(mParent, "transfers", getParams);
+          JSONArray transfersArray = response.optJSONArray("transfers");
+
+          if(transfersArray == null || transfersArray.length() == 0) {
+            return null; // No transfers
+          }
+
+          numTransferPages = response.getInt("num_pages");
+
+          for(int j = 0; j < transfersArray.length(); j++) {
+
+            JSONObject transfer = transfersArray.getJSONObject(j).getJSONObject("transfer");
+            transfers.put(transfer.optString("transaction_id"), transfer);
+          }
+        }
+
+        return transfers;
+
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+
+      Log.e("Coinbase", "Could not fetch transfer data");
+      return null;
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
