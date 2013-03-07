@@ -281,11 +281,6 @@ public class TransferFragment extends Fragment {
     mParent = (MainActivity) activity;
   }
 
-  public void setParent(MainActivity activity) {
-
-    mParent = activity;
-  }
-
   @Override
   public void onDestroyView() {
     super.onDestroyView();

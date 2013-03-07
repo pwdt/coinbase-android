@@ -386,11 +386,6 @@ public class BuySellFragment extends ListFragment {
     mParent = (MainActivity) activity;
   }
 
-  public void setParent(MainActivity activity) {
-
-    mParent = activity;
-  }
-
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {

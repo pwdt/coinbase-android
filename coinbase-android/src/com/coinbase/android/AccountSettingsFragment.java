@@ -485,11 +485,6 @@ public class AccountSettingsFragment extends ListFragment {
     mParent = (MainActivity) activity;
   }
 
-  public void setParent(MainActivity parent) {
-
-    mParent = parent;
-  }
-
   public void updateUser(String key, String value, String prefsKey) {
     new UpdateUserTask().execute(key, value, prefsKey);
   }

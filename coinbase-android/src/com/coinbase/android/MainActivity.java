@@ -10,12 +10,12 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -26,7 +26,6 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.coinbase.android.R;
 import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
@@ -115,15 +114,15 @@ public class MainActivity extends CoinbaseActivity {
           getResources().getBoolean(R.bool.pin_sliding_menu) ? SlidingMenuMode.PINNED : SlidingMenuMode.NORMAL;
     }
 
-    mTransactionsFragment = new TransactionsFragment();
-    mBuySellFragment = new BuySellFragment();
-    mTransferFragment = new TransferFragment();
-    mSettingsFragment = new AccountSettingsFragment();
+    if(savedInstanceState == null) {
+      mTransactionsFragment = new TransactionsFragment();
+      mBuySellFragment = new BuySellFragment();
+      mTransferFragment = new TransferFragment();
+      mSettingsFragment = new AccountSettingsFragment();
+    } else {
 
-    mTransactionsFragment.setParent(this);
-    mBuySellFragment.setParent(this);
-    mTransferFragment.setParent(this);
-    mSettingsFragment.setParent(this);
+      Log.w("Coinbase", "Not recreating fragments - framework should recreate them");
+    }
 
     mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -204,7 +203,7 @@ public class MainActivity extends CoinbaseActivity {
       public void run() {
         runOnUiThread(new Runnable() {
           public void run() {
-            refresh();
+            // refresh();
           }
         });
       }
@@ -214,6 +213,21 @@ public class MainActivity extends CoinbaseActivity {
     switchTo(0);
 
     onNewIntent(getIntent());
+  }
+
+  @Override
+  public void onAttachFragment(Fragment fragment) {
+    super.onAttachFragment(fragment);
+
+    if(fragment instanceof TransactionsFragment) {
+      mTransactionsFragment = (TransactionsFragment) fragment;
+    } else if(fragment instanceof BuySellFragment) {
+      mBuySellFragment = (BuySellFragment) fragment;
+    } else if(fragment instanceof TransferFragment) {
+      mTransferFragment = (TransferFragment) fragment;
+    } else if(fragment instanceof AccountSettingsFragment) {
+      mSettingsFragment = (AccountSettingsFragment) fragment;
+    }
   }
 
   @Override
@@ -408,18 +422,6 @@ public class MainActivity extends CoinbaseActivity {
     @Override
     public CharSequence getPageTitle(int position) {
       return getString(mFragmentTitles[position]).toUpperCase(Locale.CANADA);
-    }
-
-    @Override
-    /**
-     * If the PagerAdapter saves state, and the activity is recreated, the new activity will
-     * not call the PagerAdapter for the fragments and will just create new fragments itself.
-     * This will result in 2 of each fragment being instantiated, and the MainActivity having
-     * references to the fragments that are not used in the layout. By not saving state we force
-     * the framework to call the PagerAdapter for the fragment instances.
-     */
-    public Parcelable saveState() {
-      return null;
     }
   }
 
