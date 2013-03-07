@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -36,6 +35,8 @@ public class MainActivity extends CoinbaseActivity {
   public static final String ACTION_TRANSACTIONS = "com.siriusapplications.coinbase.MainActivity.ACTION_TRANSACTIONS";
 
   private static final String KEY_VISIBLE_FRAGMENT = "KEY_VISIBLE_FRAGMENT";
+
+  private static final long RESUME_REFRESH_INTERVAL = 1 * 60 * 1000;
 
   public static class SignOutFragment extends DialogFragment {
 
@@ -98,6 +99,7 @@ public class MainActivity extends CoinbaseActivity {
   boolean mRefreshItemState = false;
   SlidingMenuMode mSlidingMenuMode = SlidingMenuMode.NORMAL;
   boolean mSlidingMenuCompatShowing = false;
+  long mLastRefreshTime = -1;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -337,6 +339,11 @@ public class MainActivity extends CoinbaseActivity {
         // mPusher.connect();
       }
     }).start();
+
+    // Refresh
+    if((System.currentTimeMillis() - mLastRefreshTime) > RESUME_REFRESH_INTERVAL) {
+      refresh();
+    }
   }
 
   @Override
@@ -511,6 +518,9 @@ public class MainActivity extends CoinbaseActivity {
   }
 
   public void refresh() {
+
+    mLastRefreshTime = System.currentTimeMillis();
+
     mTransactionsFragment.refresh();
     mBuySellFragment.refresh();
     mTransferFragment.refresh();
