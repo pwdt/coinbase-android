@@ -1,86 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="@dimen/layout_padding" >
+    android:layout_height="match_parent" >
 
-    <Spinner
-        android:id="@+id/buysell_type"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/buysell_type_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/buysell_type"
-        android:text="@string/buysell_type_buy_text"
-        android:layout_marginTop="15dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <EditText
-        android:id="@+id/buysell_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/buysell_type_text"
-        android:layout_toLeftOf="@+id/buysell_text2"
-        android:layout_alignBaseline="@+id/buysell_type_text"
-        android:hint="@string/buysell_amount_hint"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:inputType="numberDecimal"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/buysell_text2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignBaseline="@+id/buysell_type_text"
-        android:text="@string/buysell_text2_blank"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/buysell_total_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_alignLeft="@+id/buysell_type_text"
-        android:layout_below="@+id/buysell_type_text"
-        android:text="@string/buysell_total_label"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/buysell_total"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_alignBaseline="@+id/buysell_total_label"
-        android:layout_toRightOf="@+id/buysell_total_label"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <Button
-        android:id="@+id/buysell_submit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_alignLeft="@+id/buysell_total_label"
-        android:layout_below="@+id/buysell_total_label"
-        android:text="@string/buysell_submit_buy"
-        android:enabled="false" />
-
-    <TextView
-        android:id="@+id/buysell_help"
-        android:textColor="#666666"
+    <RelativeLayout
+        android:id="@+id/buysell_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="10dp"
-        android:layout_below="@+id/buysell_submit"
-        android:layout_centerHorizontal="true"
-        android:text="@string/buysell_help"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:padding="@dimen/layout_padding" >
+
+        <Spinner
+            android:id="@+id/buysell_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/buysell_type_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/buysell_type"
+            android:layout_marginTop="15dp"
+            android:text="@string/buysell_type_buy_text"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/buysell_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/buysell_type_text"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_toLeftOf="@+id/buysell_text2"
+            android:layout_toRightOf="@+id/buysell_type_text"
+            android:hint="@string/buysell_amount_hint"
+            android:inputType="numberDecimal"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/buysell_text2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/buysell_type_text"
+            android:layout_alignParentRight="true"
+            android:text="@string/buysell_text2_blank"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/buysell_total_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/buysell_type_text"
+            android:layout_below="@+id/buysell_type_text"
+            android:layout_marginTop="20dp"
+            android:text="@string/buysell_total_label"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/buysell_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/buysell_total_label"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/buysell_total_label"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Button
+            android:id="@+id/buysell_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/buysell_total_label"
+            android:layout_below="@+id/buysell_total_label"
+            android:layout_marginTop="15dp"
+            android:enabled="false"
+            android:text="@string/buysell_submit_buy" />
+
+        <TextView
+            android:id="@+id/buysell_help"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/buysell_submit"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/buysell_help"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#666666" />
+    </RelativeLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@android:id/list"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true">
+    </ListView>
 
 </RelativeLayout>

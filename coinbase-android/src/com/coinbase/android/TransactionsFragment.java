@@ -268,6 +268,9 @@ public class TransactionsFragment extends ListFragment {
         // Update transaction widgets
         updateWidgets();
 
+        // Update the buy / sell history list
+        mParent.getBuySellFragment().onTransactionsSynced();
+
         return true;
 
       } catch (JSONException e) {

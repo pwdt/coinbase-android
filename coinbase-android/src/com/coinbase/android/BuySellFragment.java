@@ -10,18 +10,26 @@ import java.util.List;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,14 +37,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.Utils.CurrencyType;
+import com.coinbase.android.db.TransactionsDatabase;
+import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.api.RpcManager;
 
-public class BuySellFragment extends Fragment {
+public class BuySellFragment extends ListFragment {
 
   private enum BuySellType {
     BUY(R.string.buysell_type_buy, "buy"),
@@ -59,6 +72,16 @@ public class BuySellFragment extends Fragment {
     public int getName() {
 
       return mFriendlyName;
+    }
+
+    public static BuySellType fromApiType(String apiType) {
+      if("AchCredit".equals(apiType)) {
+        return SELL;
+      } else if("AchDebit".equals(apiType)) {
+        return BUY;
+      } else {
+        return null;
+      }
     }
   }
 
@@ -129,7 +152,6 @@ public class BuySellFragment extends Fragment {
 
         // Sync transactions
         mParent.refresh();
-        mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
       } else {
 
         Utils.showMessageDialog(getFragmentManager(), (String) result[1]);
@@ -225,6 +247,116 @@ public class BuySellFragment extends Fragment {
     }
   }
 
+  private class LoadTransferHistoryTask extends AsyncTask<Void, Void, Cursor> {
+
+    @Override
+    protected Cursor doInBackground(Void... params) {
+
+      TransactionsDatabase database = new TransactionsDatabase(mParent);
+      SQLiteDatabase readableDb = database.getReadableDatabase();
+
+      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+      int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+
+      Cursor c = readableDb.query(TransactionsDatabase.TransactionEntry.TABLE_NAME,
+          null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ? " +
+              "AND " + TransactionEntry.COLUMN_NAME_IS_TRANSFER + " = 1",
+              new String[] { Integer.toString(activeAccount) }, null, null, null);
+      return c;
+    }
+
+    @Override
+    protected void onPostExecute(Cursor result) {
+
+      if(getListView() != null) {
+
+        setHeaderPinned(!result.moveToFirst());
+
+        if(getListView().getAdapter() != null) {
+
+          // Just update existing adapter
+          ((CursorAdapter) getListAdapter()).changeCursor(result);
+          return;
+        }
+
+        String[] from = { TransactionEntry.COLUMN_NAME_TRANSFER_JSON, TransactionEntry.COLUMN_NAME_TRANSFER_JSON,
+            TransactionEntry.COLUMN_NAME_TRANSFER_JSON, TransactionEntry.COLUMN_NAME_TRANSFER_JSON };
+        int[] to = { R.id.buysell_history_title, R.id.buysell_history_amount,
+            R.id.buysell_history_status, R.id.buysell_history_currency };
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(mParent, R.layout.fragment_buysell_history_item, result,
+            from, to, 0);
+        adapter.setViewBinder(new TransferViewBinder());
+        setListAdapter(adapter);
+      }
+    }
+  }
+
+  private class TransferViewBinder implements SimpleCursorAdapter.ViewBinder {
+
+    @Override
+    public boolean setViewValue(View arg0, Cursor arg1, int arg2) {
+
+      try {
+        JSONObject item = new JSONObject(new JSONTokener(arg1.getString(arg2)));
+        BuySellType type = BuySellType.fromApiType(item.optString("_type"));
+
+        switch(arg0.getId()) {
+
+        case R.id.buysell_history_title:
+
+          String btcAmount = item.getJSONObject("btc").optString("amount");
+          int format = type == BuySellType.SELL ? R.string.buysell_history_sell : R.string.buysell_history_buy;
+          String text = String.format(mParent.getString(format), Utils.formatCurrencyAmount(btcAmount));
+
+          ((TextView) arg0).setText(text);
+          return true;
+
+        case R.id.buysell_history_amount:
+
+          String total = item.getJSONObject("total").getString("amount");
+          String totalString = Utils.formatCurrencyAmount(new BigDecimal(total), true, CurrencyType.TRADITIONAL);
+
+          int color = type == BuySellType.BUY ? R.color.transaction_negative : R.color.transaction_positive;
+
+          ((TextView) arg0).setText(totalString);
+          ((TextView) arg0).setTextColor(getResources().getColor(color));
+          return true;
+
+        case R.id.buysell_history_currency:
+
+          ((TextView) arg0).setText(item.getJSONObject("total").getString("currency"));
+          return true;
+
+        case R.id.buysell_history_status:
+
+          String status = item.optString("status", getString(R.string.transaction_status_error));
+
+          String readable = status;
+          int background = R.drawable.transaction_unknown;
+          if("complete".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
+            readable = getString(R.string.transaction_status_complete);
+            background = R.drawable.transaction_complete;
+          } else if("pending".equalsIgnoreCase(status)) {
+            readable = getString(R.string.transaction_status_pending);
+            background = R.drawable.transaction_pending;
+          }
+
+          ((TextView) arg0).setText(readable);
+          ((TextView) arg0).setBackgroundResource(background);
+          return true;
+        }
+
+        return false;
+      } catch (JSONException e) {
+        // Malformed transaction JSON.
+        Log.e("Coinbase", "Corrupted database entry! " + arg1.getInt(arg1.getColumnIndex(TransactionEntry._ID)));
+        e.printStackTrace();
+
+        return true;
+      }
+    }
+  }
+
   private MainActivity mParent;
 
   private UpdatePriceTask mUpdatePriceTask, mUpdateSinglePriceTask;
@@ -235,11 +367,16 @@ public class BuySellFragment extends Fragment {
   private Button mSubmitButton;
   private EditText mAmount;
 
+  private ViewGroup mRootView;
+  private RelativeLayout mHeader;
+  private FrameLayout mListHeaderContainer;
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
 
     super.onCreate(savedInstanceState);
   }
+
 
   @Override
   public void onAttach(Activity activity) {
@@ -259,6 +396,8 @@ public class BuySellFragment extends Fragment {
 
     // Inflate the layout for this fragment
     View view = inflater.inflate(R.layout.fragment_buysell, container, false);
+    mRootView = (ViewGroup) view;
+    mHeader = (RelativeLayout) view.findViewById(R.id.buysell_header);
 
     mBuySellSpinner = (Spinner) view.findViewById(R.id.buysell_type);
     mBuySellSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -324,7 +463,11 @@ public class BuySellFragment extends Fragment {
       }
     });
 
+    mListHeaderContainer = new FrameLayout(mParent);
+    ((ListView) view.findViewById(android.R.id.list)).addHeaderView(mListHeaderContainer);
 
+    // Load list adapter
+    Utils.runAsyncTaskConcurrently(new LoadTransferHistoryTask());
 
     return view;
   }
@@ -419,6 +562,31 @@ public class BuySellFragment extends Fragment {
 
     // There was an exception
     return new Object[] { false, getString(R.string.buysell_error_exception) };
+  }
+
+  private void setHeaderPinned(boolean pinned) {
+
+    boolean isPinned = mListHeaderContainer.getChildCount() == 0;
+
+    if(isPinned == pinned) {
+      return;
+    }
+
+    if(pinned) {
+
+      mListHeaderContainer.removeAllViews();
+      mRootView.addView(mHeader);
+    } else {
+
+      mRootView.removeView(mHeader);
+      mListHeaderContainer.addView(mHeader);
+    }
+  }
+
+  public void onTransactionsSynced() {
+
+    // Refresh the history view
+    Utils.runAsyncTaskConcurrently(new LoadTransferHistoryTask());
   }
 
   public void refresh() {
