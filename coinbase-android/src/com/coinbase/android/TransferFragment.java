@@ -832,6 +832,7 @@ public class TransferFragment extends Fragment {
 
     if(mTransferTypeView != null) {
       mTransferTypeView.setSelection(mTransferType);
+      onTypeChanged();
     }
   }
 
