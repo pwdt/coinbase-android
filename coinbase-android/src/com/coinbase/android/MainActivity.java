@@ -35,6 +35,8 @@ public class MainActivity extends CoinbaseActivity {
   public static final String ACTION_TRANSFER = "com.siriusapplications.coinbase.MainActivity.ACTION_TRANSFER";
   public static final String ACTION_TRANSACTIONS = "com.siriusapplications.coinbase.MainActivity.ACTION_TRANSACTIONS";
 
+  private static final String KEY_VISIBLE_FRAGMENT = "KEY_VISIBLE_FRAGMENT";
+
   public static class SignOutFragment extends DialogFragment {
 
 
@@ -211,11 +213,18 @@ public class MainActivity extends CoinbaseActivity {
   }
 
   @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+
+    outState.putInt(KEY_VISIBLE_FRAGMENT, mViewFlipper.getDisplayedChild());
+  }
+
+  @Override
   protected void onRestoreInstanceState(Bundle savedInstanceState) {
     super.onRestoreInstanceState(savedInstanceState);
 
     // Update title, in case restoring the instance state has changed the current fragment
-    updateTitle();
+    switchTo(savedInstanceState.getInt(KEY_VISIBLE_FRAGMENT));
   }
 
   /**
