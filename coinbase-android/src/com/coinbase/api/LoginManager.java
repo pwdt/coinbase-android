@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -81,12 +83,12 @@ public class LoginManager {
   public boolean switchActiveAccount(Context context, int index) {
     return switchActiveAccount(context, index, null);
   }
-  
+
   public int getAccountId(Context context, int index) {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     int numAccounts = prefs.getInt(Constants.KEY_MAX_ACCOUNT, -1) + 1;
-    
+
     int currentIndex = 0;
     for(int i = 0; i < numAccounts; i++) {
 
@@ -109,11 +111,11 @@ public class LoginManager {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     int numAccounts = prefs.getInt(Constants.KEY_MAX_ACCOUNT, -1) + 1;
-    
+
     if(e == null) {
       e = prefs.edit();
     }
-    
+
     int currentIndex = 0;
     for(int i = 0; i < numAccounts; i++) {
 
@@ -131,7 +133,7 @@ public class LoginManager {
         currentIndex++;
       }
     }
-    
+
     e.commit();
 
     return false;
@@ -216,15 +218,15 @@ public class LoginManager {
 
   // start three legged oauth handshake
   public String generateOAuthUrl(String redirectUrl){
-    
+
     String baseUrl = CLIENT_BASEURL + "/oauth/authorize";
-    
+
     try{
       redirectUrl = URLEncoder.encode(redirectUrl, "utf-8");
     } catch(Exception e) {
       throw new RuntimeException(e);
     }
-    
+
     String authorizeUrl = baseUrl + "?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + redirectUrl;
     return authorizeUrl;
   }
@@ -232,7 +234,7 @@ public class LoginManager {
   // end three legged oauth handshake. (code to tokens)
   // Returns error as human-readable string, or null on success.
   public String addAccountOAuth(Context context, String code, String originalRedirectUrl) {
-    
+
     List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
     parametersBody.add(new BasicNameValuePair("grant_type", "authorization_code"));
     parametersBody.add(new BasicNameValuePair("redirect_uri", originalRedirectUrl));
@@ -328,9 +330,17 @@ public class LoginManager {
     Editor e = prefs.edit();
 
     int accountId = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    e.remove(String.format(Constants.KEY_ACCOUNT_ACCESS_TOKEN, accountId));
-    e.remove(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, accountId));
-    e.remove(String.format(Constants.KEY_ACCOUNT_NAME, accountId));
+
+    Set<String> toRemove = new HashSet<String>();
+    for(String key : prefs.getAll().keySet()) {
+      if(key.startsWith("account_" + accountId)) {
+        toRemove.add(key);
+      }
+    }
+
+    for(String key : toRemove) {
+      e.remove(key);
+    }
 
     e.commit();
 
