@@ -269,7 +269,7 @@ public class BuySellFragment extends ListFragment {
     @Override
     protected void onPostExecute(Cursor result) {
 
-      if(getListView() != null) {
+      if(getView() != null && getListView() != null) {
 
         setHeaderPinned(!result.moveToFirst());
 
