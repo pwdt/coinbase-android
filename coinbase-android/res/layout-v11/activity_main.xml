@@ -9,10 +9,35 @@
       android:layout_height="match_parent"
       android:background="@color/main_menu_background"
       android:cacheColorHint="@color/main_menu_background" />
-	<com.coinbase.android.CustomViewPager
-	    android:id="@+id/pager"
-	    android:layout_width="0dp"
-	    android:layout_weight="1"
-	    android:layout_height="match_parent" />
+
+    <ViewFlipper
+        android:id="@+id/flipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/fragment_transactions"
+            class="com.coinbase.android.TransactionsFragment" />
+
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/fragment_transfer"
+            class="com.coinbase.android.TransferFragment" />
+
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/fragment_buysell"
+            class="com.coinbase.android.BuySellFragment" />
+
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/fragment_accountsettings"
+            class="com.coinbase.android.AccountSettingsFragment" />
+    </ViewFlipper>
     
 </LinearLayout>

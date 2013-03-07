@@ -1,7 +1,5 @@
 package com.coinbase.android;
 
-import java.util.Locale;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -12,9 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -89,8 +85,7 @@ public class MainActivity extends CoinbaseActivity {
       R.drawable.ic_action_account
   };
 
-  SectionsPagerAdapter mSectionsPagerAdapter;
-  CustomViewPager mViewPager;
+  ViewFlipper mViewFlipper;
   TransactionsFragment mTransactionsFragment;
   BuySellFragment mBuySellFragment;
   TransferFragment mTransferFragment;
@@ -114,23 +109,8 @@ public class MainActivity extends CoinbaseActivity {
           getResources().getBoolean(R.bool.pin_sliding_menu) ? SlidingMenuMode.PINNED : SlidingMenuMode.NORMAL;
     }
 
-    if(savedInstanceState == null) {
-      mTransactionsFragment = new TransactionsFragment();
-      mBuySellFragment = new BuySellFragment();
-      mTransferFragment = new TransferFragment();
-      mSettingsFragment = new AccountSettingsFragment();
-    } else {
-
-      Log.w("Coinbase", "Not recreating fragments - framework should recreate them");
-    }
-
-    mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-    // Set up the ViewPager
-    mViewPager = (CustomViewPager) findViewById(R.id.pager);
-    mViewPager.setAdapter(mSectionsPagerAdapter);
-    mViewPager.setPagingEnabled(false);
-    mViewPager.setOffscreenPageLimit(mFragmentTitles.length); // Keep all fragment views initialized, for smooth scrolling
+    // Set up the ViewFlipper
+    mViewFlipper = (ViewFlipper) findViewById(R.id.flipper);
 
     // configure the SlidingMenu
     mSlidingMenu = new SlidingMenu(this);
@@ -245,7 +225,7 @@ public class MainActivity extends CoinbaseActivity {
   public void switchTo(int index) {
 
 
-    mViewPager.setCurrentItem(index, false);
+    mViewFlipper.setDisplayedChild(index);
     updateTitle();
 
     hideSlidingMenu();
@@ -293,7 +273,7 @@ public class MainActivity extends CoinbaseActivity {
     if((mSlidingMenu != null && isSlidingMenuShowing()) || mSlidingMenuMode == SlidingMenuMode.PINNED) {
       getSupportActionBar().setTitle(R.string.app_name);
     } else {
-      getSupportActionBar().setTitle(mFragmentTitles[mViewPager.getCurrentItem()]);
+      getSupportActionBar().setTitle(mFragmentTitles[mViewFlipper.getDisplayedChild()]);
     }
   }
 
@@ -393,38 +373,6 @@ public class MainActivity extends CoinbaseActivity {
     return super.onOptionsItemSelected(item);
   }
 
-  /**
-   * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
-   * sections of the app.
-   */
-  public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
-
-    public SectionsPagerAdapter(FragmentManager fm) {
-      super(fm);
-    }
-
-    @Override
-    public Fragment getItem(int i) {
-      switch (i) {
-      case FRAGMENT_INDEX_TRANSACTIONS: return mTransactionsFragment;
-      case FRAGMENT_INDEX_TRANSFER: return mTransferFragment;
-      case FRAGMENT_INDEX_BUYSELL: return mBuySellFragment;
-      case FRAGMENT_INDEX_ACCOUNT: return mSettingsFragment;
-      }
-      return null;
-    }
-
-    @Override
-    public int getCount() {
-      return 4;
-    }
-
-    @Override
-    public CharSequence getPageTitle(int position) {
-      return getString(mFragmentTitles[position]).toUpperCase(Locale.CANADA);
-    }
-  }
-
   public class SectionsListAdapter extends BaseAdapter {
 
     @Override
@@ -506,7 +454,7 @@ public class MainActivity extends CoinbaseActivity {
         Uri uri = Uri.parse(contents);
         if(uri != null && "bitcoin".equals(uri.getScheme())) {
           // Is bitcoin URI
-          mViewPager.setCurrentItem(FRAGMENT_INDEX_TRANSFER); // Switch to transfer fragment
+          mViewFlipper.setDisplayedChild(FRAGMENT_INDEX_TRANSFER); // Switch to transfer fragment
           mTransferFragment.fillFormForBitcoinUri(uri);
         }
 
