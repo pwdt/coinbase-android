@@ -17,6 +17,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -581,6 +582,25 @@ public class BuySellFragment extends ListFragment {
       mRootView.removeView(mHeader);
       mListHeaderContainer.addView(mHeader);
     }
+  }
+
+  @Override
+  public void onListItemClick(ListView l, View v, int position, long id) {
+
+    if(position == 0) {
+      return; // Header view
+    }
+
+    // Compensate for header
+    position--;
+
+    Cursor c = ((CursorAdapter) getListAdapter()).getCursor();
+    c.moveToPosition(position);
+
+    String transactionId = c.getString(c.getColumnIndex(TransactionEntry._ID));
+    Intent intent = new Intent(mParent, TransactionDetailsActivity.class);
+    intent.putExtra(TransactionDetailsFragment.EXTRA_ID, transactionId);
+    mParent.startActivityForResult(intent, 1);
   }
 
   public void onTransactionsSynced() {
