@@ -146,7 +146,7 @@ public class TransactionDetailsFragment extends Fragment {
         try {
           if(result != null) {
             mView.setVisibility(View.VISIBLE);
-            fillViewsForJson(mView, result, currentUserId, mId);
+            fillViewsForJson(mView, result, currentUserId, mId, null);
           }
           return;
         } catch (JSONException e) {
@@ -197,17 +197,26 @@ public class TransactionDetailsFragment extends Fragment {
       final String transactionId = getArguments().getString(EXTRA_ID);
       TransactionsDatabase dbHelper = new TransactionsDatabase(getActivity());
       SQLiteDatabase db = dbHelper.getReadableDatabase();
-      Cursor c = db.query(TransactionEntry.TABLE_NAME, new String[] { TransactionEntry.COLUMN_NAME_JSON },
+      Cursor c = db.query(TransactionEntry.TABLE_NAME, new String[] {
+          TransactionEntry.COLUMN_NAME_JSON,
+          TransactionEntry.COLUMN_NAME_IS_TRANSFER,
+          TransactionEntry.COLUMN_NAME_TRANSFER_JSON, },
           TransactionEntry._ID + " = ?", new String[] { transactionId }, null, null, null);
       c.moveToFirst();
 
-      JSONObject data;
+      JSONObject data, transferData;
       try {
         data = new JSONObject(new JSONTokener(c.getString(c.getColumnIndex(TransactionEntry.COLUMN_NAME_JSON))));
 
+        if(c.getInt(c.getColumnIndex(TransactionEntry.COLUMN_NAME_IS_TRANSFER)) == 1) {
+          transferData = new JSONObject(new JSONTokener(c.getString(c.getColumnIndex(TransactionEntry.COLUMN_NAME_TRANSFER_JSON))));
+        } else {
+          transferData = null;
+        }
+
         c.close();
 
-        fillViewsForJson(view, data, currentUserId, transactionId);
+        fillViewsForJson(view, data, currentUserId, transactionId, transferData);
 
       } catch (JSONException e) {
         Toast.makeText(getActivity(), R.string.transactiondetails_error, Toast.LENGTH_LONG).show();
@@ -225,7 +234,7 @@ public class TransactionDetailsFragment extends Fragment {
 
   @SuppressLint("SimpleDateFormat")
   private void fillViewsForJson(ViewGroup view, JSONObject data, String currentUserId,
-      final String transactionId) throws JSONException {
+      final String transactionId, JSONObject transferData) throws JSONException {
 
     // Fill views
     TextView amount = (TextView) view.findViewById(R.id.transactiondetails_amount),
@@ -256,7 +265,8 @@ public class TransactionDetailsFragment extends Fragment {
     // Date
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy, 'at' hh:mma zzz");
     try {
-      date.setText(dateFormat.format(ISO8601.toCalendar(data.optString("created_at")).getTime()));
+      String createdAt = (transferData != null ? transferData : data).optString("created_at");
+      date.setText(dateFormat.format(ISO8601.toCalendar(createdAt).getTime()));
     } catch (ParseException e) {
       date.setText(null);
     }
@@ -277,6 +287,18 @@ public class TransactionDetailsFragment extends Fragment {
 
     // Notes
     String notesText = data.optString("notes");
+
+    try {
+      if(transferData != null && "AchDebit".equals(transferData.optString("_type"))) {
+
+        String payoutDate = dateFormat.format(ISO8601.toCalendar(transferData.optString("payout_date")).getTime());
+        notesText += " ";
+        notesText += String.format(getString(R.string.transactiondetails_transfer_buy_notes), payoutDate);
+      }
+    } catch (ParseException e) {
+      date.setText(null);
+    }
+
     boolean noNotes = "null".equals(notesText) || notesText == null || "".equals(notesText);
     notes.setText(noNotes ? null : notesText);
     view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.GONE : View.VISIBLE);

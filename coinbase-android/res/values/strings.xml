@@ -153,5 +153,6 @@
     <string name="buysell_text2_blank">BTC.</string>
     <string name="buysell_history_sell">You sold %1$s BTC</string>
     <string name="buysell_history_buy">You purchased %1$s BTC</string>
+    <string name="transactiondetails_transfer_buy_notes">Your bitcoins will arrive on %1$s.</string>
     
 </resources>
