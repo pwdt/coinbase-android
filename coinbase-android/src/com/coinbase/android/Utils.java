@@ -226,14 +226,14 @@ public class Utils {
     }
   }
 
-  public static String getErrorStringFromJson(JSONObject response) throws JSONException {
+  public static String getErrorStringFromJson(JSONObject response, String delimiter) throws JSONException {
 
 
     JSONArray errors = response.getJSONArray("errors");
     String errorMessage = "";
 
     for(int i = 0; i < errors.length(); i++) {
-      errorMessage += (errorMessage.equals("") ? "" : "\n") + errors.getString(i);
+      errorMessage += (errorMessage.equals("") ? "" : delimiter) + errors.getString(i);
     }
     return errorMessage;
   }

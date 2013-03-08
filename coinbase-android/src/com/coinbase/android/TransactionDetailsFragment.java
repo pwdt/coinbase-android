@@ -81,7 +81,12 @@ public class TransactionDetailsFragment extends Fragment {
         if(success) {
           return null;
         } else {
-          return result.optString("error");
+          String error = result.optString("error", null);
+          if(error == null && result.has("errors")) {
+            // Array
+            error = Utils.getErrorStringFromJson(result, ", ");
+          }
+          return error;
         }
       } catch(Exception e) {
         // An error
@@ -103,7 +108,7 @@ public class TransactionDetailsFragment extends Fragment {
 
         Log.i("Coinbase", "Transacation action not successful.");
         Toast.makeText(getActivity(),
-            String.format(getActivity().getString(R.string.transactiondetails_action_error), result), Toast.LENGTH_SHORT).show();
+            String.format(getActivity().getString(R.string.transactiondetails_action_error), result), Toast.LENGTH_LONG).show();
       } else {
 
         // Return to main activity and refresh
