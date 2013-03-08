@@ -89,7 +89,6 @@ public class Utils {
       int desiredWidth, int desiredHeight) throws WriterException {
 
     Hashtable<EncodeHintType,Object> hints = new Hashtable<EncodeHintType,Object>(2);
-    hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
     MultiFormatWriter writer = new MultiFormatWriter();    
     BitMatrix result = writer.encode(contents, format, desiredWidth, desiredHeight, hints);
 
