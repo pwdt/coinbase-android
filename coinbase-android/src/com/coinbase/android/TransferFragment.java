@@ -56,7 +56,7 @@ import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
 import com.coinbase.api.RpcManager;
 
-public class TransferFragment extends Fragment {
+public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   protected enum TransferType {
     SEND(R.string.transfer_send_money, "send"),
@@ -840,5 +840,12 @@ public class TransferFragment extends Fragment {
 
     // Reload contacts
     new ReloadContactsDatabaseTask().execute();
+  }
+
+  @Override
+  public void onSwitchedTo() {
+
+    // Focus text field
+    mAmountView.requestFocus();
   }
 }

@@ -50,7 +50,7 @@ import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.api.RpcManager;
 
-public class BuySellFragment extends ListFragment {
+public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
   private enum BuySellType {
     BUY(R.string.buysell_type_buy, "buy"),
@@ -606,5 +606,12 @@ public class BuySellFragment extends ListFragment {
 
   public void refresh() {
     // Nothing to refresh in this fragment
+  }
+
+  @Override
+  public void onSwitchedTo() {
+
+    // Focus text field
+    mAmount.requestFocus();
   }
 }

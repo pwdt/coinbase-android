@@ -47,7 +47,7 @@ import android.widget.Toast;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 
-public class AccountSettingsFragment extends ListFragment {
+public class AccountSettingsFragment extends ListFragment implements CoinbaseFragment {
 
   private class RefreshSettingsTask extends AsyncTask<Void, Void, Boolean> {
 
@@ -586,5 +586,10 @@ public class AccountSettingsFragment extends ListFragment {
 
     new RefreshSettingsTask().execute();
     new LoadReceiveAddressTask().execute(false);
+  }
+
+  @Override
+  public void onSwitchedTo() {
+    // Not used
   }
 }

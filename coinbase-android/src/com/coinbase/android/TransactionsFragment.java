@@ -49,7 +49,7 @@ import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 
-public class TransactionsFragment extends ListFragment {
+public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
   private class LoadBalanceTask extends AsyncTask<Void, Void, String[]> {
 
@@ -655,4 +655,8 @@ public class TransactionsFragment extends ListFragment {
     mParent.startActivityForResult(intent, 1);
   }
 
+  @Override
+  public void onSwitchedTo() {
+    // Not used
+  }
 }

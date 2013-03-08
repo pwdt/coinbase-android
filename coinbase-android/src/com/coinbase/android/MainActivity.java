@@ -2,6 +2,7 @@ package com.coinbase.android;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -12,6 +13,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -87,6 +89,13 @@ public class MainActivity extends CoinbaseActivity {
       R.drawable.ic_action_buysell,
       R.drawable.ic_action_account
   };
+  private boolean[] mFragmentKeyboardPreferredStatus = new boolean[] {
+      false,
+      true,
+      true,
+      false,
+  };
+  private CoinbaseFragment[] mFragments = new CoinbaseFragment[4];
 
   ViewFlipper mViewFlipper;
   TransactionsFragment mTransactionsFragment;
@@ -154,6 +163,14 @@ public class MainActivity extends CoinbaseActivity {
       }
     }
 
+    mSlidingMenu.setOnClosedListener(new SlidingMenu.OnClosedListener() {
+
+      @Override
+      public void onClosed() {
+        onSlidingMenuClosed();
+      }
+    });
+
     mSlidingMenu.setOnCloseListener(new SlidingMenu.OnCloseListener() {
 
       @Override
@@ -204,12 +221,16 @@ public class MainActivity extends CoinbaseActivity {
     super.onAttachFragment(fragment);
 
     if(fragment instanceof TransactionsFragment) {
+      mFragments[FRAGMENT_INDEX_TRANSACTIONS] = (CoinbaseFragment) fragment;
       mTransactionsFragment = (TransactionsFragment) fragment;
     } else if(fragment instanceof BuySellFragment) {
+      mFragments[FRAGMENT_INDEX_BUYSELL] = (CoinbaseFragment) fragment;
       mBuySellFragment = (BuySellFragment) fragment;
     } else if(fragment instanceof TransferFragment) {
+      mFragments[FRAGMENT_INDEX_TRANSFER] = (CoinbaseFragment) fragment;
       mTransferFragment = (TransferFragment) fragment;
     } else if(fragment instanceof AccountSettingsFragment) {
+      mFragments[FRAGMENT_INDEX_ACCOUNT] = (CoinbaseFragment) fragment;
       mSettingsFragment = (AccountSettingsFragment) fragment;
     }
   }
@@ -238,8 +259,22 @@ public class MainActivity extends CoinbaseActivity {
 
     mViewFlipper.setDisplayedChild(index);
     updateTitle();
+    mFragments[index].onSwitchedTo();
 
     hideSlidingMenu();
+  }
+
+  /** Called when close animation is complete */
+  private void onSlidingMenuClosed() {
+
+    boolean keyboardPreferredStatus = mFragmentKeyboardPreferredStatus[mViewFlipper.getDisplayedChild()];
+    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+    if(keyboardPreferredStatus) {
+      inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+    } else {
+      inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
+    }
   }
 
   private boolean isSlidingMenuShowing() {
@@ -269,6 +304,10 @@ public class MainActivity extends CoinbaseActivity {
       findViewById(R.id.main_gingerbread_compat_overlay).setVisibility(View.GONE);
       mSlidingMenuCompatShowing = false;
       updateTitle();
+      onSlidingMenuClosed();
+    } else if(mSlidingMenuMode == SlidingMenuMode.PINNED) {
+      // Do nothing
+      onSlidingMenuClosed();
     } else {
       if(mSlidingMenu != null) {
         mSlidingMenu.showContent();
