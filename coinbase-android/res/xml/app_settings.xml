@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <CheckBoxPreference android:key="pin_use" android:summary="@string/settings_pin_use_desc" android:title="@string/settings_pin_use_title" android:persistent="false"/>
-    <Preference android:key="pin_change" android:title="@string/settings_pin_change_title" android:persistent="false"/>
-    
+
+    <CheckBoxPreference
+        android:key="pin_use"
+        android:persistent="false"
+        android:summary="@string/settings_pin_use_desc"
+        android:title="@string/settings_pin_use_title" />
+
+    <Preference
+        android:key="pin_change"
+        android:persistent="false"
+        android:title="@string/settings_pin_change_title" />
+
+    <CheckBoxPreference
+        android:key="pin_view_allowed"
+        android:persistent="false"
+        android:summaryOff="@string/settings_pin_view_allowed_desc_off"
+        android:summaryOn="@string/settings_pin_view_allowed_desc_on"
+        android:title="@string/settings_pin_view_allowed_title" />
 
 </PreferenceScreen>

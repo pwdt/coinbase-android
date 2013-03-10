@@ -44,6 +44,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 
@@ -496,6 +497,10 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+
     if("name".equals(data[2]) || "email".equals(data[2])) {
       // Show text prompt
       TextSettingFragment f = new TextSettingFragment();
@@ -567,6 +572,10 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
   public boolean onContextItemSelected(MenuItem item) {
 
     if(item.getItemId() == R.id.account_receive_address_generate) {
+
+      if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+        return true;
+      }
 
       regenerateReceiveAddress();
       return true;

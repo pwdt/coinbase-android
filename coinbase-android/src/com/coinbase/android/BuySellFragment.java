@@ -48,6 +48,7 @@ import android.widget.Toast;
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
+import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
 
 public class BuySellFragment extends ListFragment implements CoinbaseFragment {
@@ -422,6 +423,10 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
       @Override
       public void onClick(View v) {
+
+        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+          return;
+        }
 
         ConfirmBuySellDialogFragment dialog = new ConfirmBuySellDialogFragment();
 

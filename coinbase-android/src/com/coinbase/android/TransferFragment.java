@@ -54,6 +54,7 @@ import android.widget.Toast;
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
+import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
 
 public class TransferFragment extends Fragment implements CoinbaseFragment {
@@ -430,6 +431,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           return;
         }
 
+        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+          return;
+        }
+
         ConfirmTransferFragment dialog = new ConfirmTransferFragment();
 
         Bundle b = new Bundle();
@@ -454,6 +459,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
           // No amount entered
           Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
+          return;
+        }
+
+        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
           return;
         }
 

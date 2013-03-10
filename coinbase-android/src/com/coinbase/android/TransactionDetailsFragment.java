@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
+import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
 
 public class TransactionDetailsFragment extends Fragment {
@@ -48,6 +49,11 @@ public class TransactionDetailsFragment extends Fragment {
     @Override
     protected void onPreExecute() {
       super.onPreExecute();
+
+      if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+        cancel(true);
+        return;
+      }
 
       mDialog = ProgressDialog.show(getActivity(), null, getString(R.string.transactiondetails_progress));
     }

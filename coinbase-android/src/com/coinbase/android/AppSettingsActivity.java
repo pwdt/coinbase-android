@@ -35,7 +35,7 @@ public class AppSettingsActivity extends SherlockPreferenceActivity {
     super.onResume();
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    final int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     final String pinKey = String.format(Constants.KEY_ACCOUNT_PIN, activeAccount);
     boolean hasPin = prefs.getString(pinKey, null) != null;
 
@@ -53,6 +53,21 @@ public class AppSettingsActivity extends SherlockPreferenceActivity {
     });
     pinChange.setEnabled(hasPin);
 
+    final CheckBoxPreference pinViewAllowed = (CheckBoxPreference) findPreference("pin_view_allowed");
+    pinViewAllowed.setChecked(prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount), false));
+    pinViewAllowed.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+
+      @Override
+      public boolean onPreferenceChange(Preference preference, Object newValue) {
+
+        prefs.edit().putBoolean(
+            String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount),
+            (Boolean) newValue).commit();
+        return true;
+      }
+    });
+    pinViewAllowed.setEnabled(hasPin);
+
     CheckBoxPreference pinUse = (CheckBoxPreference) findPreference("pin_use");
     pinUse.setChecked(hasPin);
     pinUse.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -63,8 +78,10 @@ public class AppSettingsActivity extends SherlockPreferenceActivity {
         Boolean usePin = (Boolean) newValue;
         if(usePin == Boolean.TRUE) {
           pinChange.setEnabled(true);
+          pinViewAllowed.setEnabled(true);
         } else {
           pinChange.setEnabled(false);
+          pinViewAllowed.setEnabled(false);
         }
 
         prefs.edit().putString(pinKey, null).commit();

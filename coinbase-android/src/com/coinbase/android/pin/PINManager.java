@@ -1,16 +1,18 @@
 package com.coinbase.android.pin;
 
-import com.coinbase.android.Constants;
-
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
+import com.coinbase.android.Constants;
+
 
 public class PINManager {
 
-  public static final long PIN_REPROMPT_TIME = 5 * 60 * 1000; // Five mintues
+  public static final long PIN_REPROMPT_TIME = 1 * 10 * 1000; // Five minutes
 
   private static PINManager INSTANCE = null;
 
@@ -43,9 +45,46 @@ public class PINManager {
       return true;
     }
 
+    // Is the PIN edit-only?
+    boolean pinViewAllowed = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount), false);
+    if(pinViewAllowed) {
+      return true;
+    }
+
     // Is a reprompt required?
     long timeSinceReprompt = System.currentTimeMillis() - prefs.getLong(String.format(Constants.KEY_ACCOUNT_LAST_PIN_ENTRY_TIME, activeAccount), -1);
     return timeSinceReprompt < PIN_REPROMPT_TIME;
+  }
+
+  /**
+   * Should the user be allowed to edit protected content? If not, PIN prompt will be started.
+   * @param context
+   * @return true if you should proceed with the edit
+   */
+  public boolean checkForEditAccess(Activity activity) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+
+    // Does the user have a PIN?
+    boolean hasPin = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), null) != null;
+    if(!hasPin) {
+      return true;
+    }
+
+    // Is a reprompt required?
+    long timeSinceReprompt = System.currentTimeMillis() - prefs.getLong(String.format(Constants.KEY_ACCOUNT_LAST_PIN_ENTRY_TIME, activeAccount), -1);
+    boolean repromptRequired = timeSinceReprompt > PIN_REPROMPT_TIME;
+
+    if(repromptRequired) {
+
+      Intent intent = new Intent(activity, PINPromptActivity.class);
+      intent.setAction(PINPromptActivity.ACTION_PROMPT);
+      activity.startActivity(intent);
+      return false;
+    } else {
+      return true;
+    }
   }
 
   /**

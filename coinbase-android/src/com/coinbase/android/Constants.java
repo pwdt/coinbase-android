@@ -23,6 +23,7 @@ public class Constants {
 
   public static final String KEY_ACCOUNT_PIN = "account_%d_pin";
   public static final String KEY_ACCOUNT_LAST_PIN_ENTRY_TIME = "account_%d_last_pin_entry_time";
+  public static final String KEY_ACCOUNT_PIN_VIEW_ALLOWED = "account_%d_pin_view_allowed";
 
   public static final String KEY_ACCOUNT_BALANCE = "account_%d_balance_amt";
   public static final String KEY_ACCOUNT_BALANCE_CURRENCY = "account_%d_balance_amt_currency";
