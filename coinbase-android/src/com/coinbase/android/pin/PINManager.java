@@ -10,7 +10,7 @@ import android.preference.PreferenceManager;
 
 public class PINManager {
 
-  public static final long PIN_REPROMPT_TIME = 1 * 10 * 1000; // Five mintues
+  public static final long PIN_REPROMPT_TIME = 5 * 60 * 1000; // Five mintues
 
   private static PINManager INSTANCE = null;
 
