@@ -8,7 +8,7 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-public class WidgetChooseAccountActivity extends CoinbaseActivity {
+public class WidgetChooseAccountActivity extends CoinbaseActivity implements AccountsFragment.ParentActivity {
 
   @Override
   protected void onCreate(Bundle arg0) {
@@ -23,7 +23,7 @@ public class WidgetChooseAccountActivity extends CoinbaseActivity {
     setResult(RESULT_CANCELED);
   }
   
-  public void addAccount() {
+  public void onAddAccount() {
 
     startActivity(new Intent(this, LoginActivity.class));
   }

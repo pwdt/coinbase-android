@@ -20,7 +20,10 @@ public class Constants {
   public static final String KEY_ACCOUNT_TIME_ZONE = "account_%d_time_zone";
   public static final String KEY_ACCOUNT_LIMIT = "account_%1$d_limit_%2$s";
   public static final String KEY_ACCOUNT_LIMIT_CURRENCY = "account_%1$d_limit_currency_%2$s";
-  
+
+  public static final String KEY_ACCOUNT_PIN = "account_%d_pin";
+  public static final String KEY_ACCOUNT_LAST_PIN_ENTRY_TIME = "account_%d_last_pin_entry_time";
+
   public static final String KEY_ACCOUNT_BALANCE = "account_%d_balance_amt";
   public static final String KEY_ACCOUNT_BALANCE_CURRENCY = "account_%d_balance_amt_currency";
   public static final String KEY_ACCOUNT_BALANCE_HOME = "account_%d_balance_home_amt";

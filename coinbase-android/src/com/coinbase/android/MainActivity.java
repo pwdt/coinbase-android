@@ -24,13 +24,15 @@ import android.widget.ViewFlipper;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
+import com.coinbase.android.CoinbaseActivity.RequiresPIN;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
 import com.justinschultz.pusherclient.Pusher;
 import com.slidingmenu.lib.SlidingMenu;
 
 @RequiresAuthentication
-public class MainActivity extends CoinbaseActivity {
+@RequiresPIN
+public class MainActivity extends CoinbaseActivity implements AccountsFragment.ParentActivity {
 
   public static final String ACTION_SCAN = "com.siriusapplications.coinbase.MainActivity.ACTION_SCAN";
   public static final String ACTION_TRANSFER = "com.siriusapplications.coinbase.MainActivity.ACTION_TRANSFER";
@@ -414,6 +416,9 @@ public class MainActivity extends CoinbaseActivity {
     case R.id.menu_about:
       startActivity(new Intent(this, AboutActivity.class));
       return true;
+    case R.id.menu_settings:
+      startActivity(new Intent(this, AppSettingsActivity.class));
+      return true;
     case R.id.menu_barcode:
       startBarcodeScan();
       return true;
@@ -464,6 +469,10 @@ public class MainActivity extends CoinbaseActivity {
 
   }
 
+  public void onAccountChosen(int account) {
+    changeAccount(account);
+  }
+
   public void changeAccount(int account) {
 
     if(account == -1) {
@@ -480,7 +489,7 @@ public class MainActivity extends CoinbaseActivity {
     startActivity(new Intent(this, MainActivity.class));
   }
 
-  public void addAccount() {
+  public void onAddAccount() {
 
     Intent intent = new Intent(this, LoginActivity.class);
     intent.putExtra(LoginActivity.EXTRA_SHOW_INTRO, false);

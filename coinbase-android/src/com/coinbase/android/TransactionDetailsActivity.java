@@ -6,8 +6,9 @@ import android.support.v4.app.Fragment;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.coinbase.android.R;
+import com.coinbase.android.CoinbaseActivity.RequiresPIN;
 
+@RequiresPIN
 public class TransactionDetailsActivity extends SherlockFragmentActivity {
 
   @Override

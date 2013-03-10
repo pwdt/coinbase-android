@@ -11,6 +11,11 @@ import android.support.v4.app.DialogFragment;
 
 public class AccountsFragment extends DialogFragment {
 
+  public static interface ParentActivity {
+    public void onAccountChosen(int index);
+    public void onAddAccount();
+  }
+
   boolean widgetMode = false;
   int selected = -1;
 
@@ -37,11 +42,11 @@ public class AccountsFragment extends DialogFragment {
         if(which == accounts.length) {
           // New account
           if(widgetMode) {
-            WidgetChooseAccountActivity activity = (WidgetChooseAccountActivity) getActivity();
-            activity.addAccount();
+            ParentActivity activity = (ParentActivity) getActivity();
+            activity.onAddAccount();
           } else {
-            MainActivity activity = (MainActivity) getActivity();
-            activity.addAccount();
+            ParentActivity activity = (ParentActivity) getActivity();
+            activity.onAddAccount();
             dialog.dismiss();
           }
           return;
@@ -53,15 +58,9 @@ public class AccountsFragment extends DialogFragment {
     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int id) {
 
-        if(widgetMode) {
-          // Select account
-          WidgetChooseAccountActivity activity = (WidgetChooseAccountActivity) getActivity();
-          activity.onAccountChosen(selected);
-        } else {
-          // Change accounts
-          MainActivity activity = (MainActivity) getActivity();
-          activity.changeAccount(selected);
-        }
+        // Select account
+        ParentActivity activity = (ParentActivity) getActivity();
+        activity.onAccountChosen(selected);
       }
     })
     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {

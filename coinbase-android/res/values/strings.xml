@@ -154,5 +154,12 @@
     <string name="buysell_history_sell">You sold %1$s BTC</string>
     <string name="buysell_history_buy">You purchased %1$s BTC</string>
     <string name="transactiondetails_transfer_buy_notes">Your bitcoins will arrive on %1$s.</string>
+    <string name="pin_title">Unlock Wallet</string>
+    <string name="pin_text">Enter wallet passcode:</string>
+    <string name="pin_switch_accounts">Switch account</string>
+    <string name="pin_incorrect">Incorrect passcode.</string>
+    <string name="settings_pin_change_title">Change passcode</string>
+    <string name="settings_pin_use_title">Enable passcode lock</string>
+    <string name="settings_pin_use_desc">Require a passcode to be entered when opening the app</string>
     
 </resources>

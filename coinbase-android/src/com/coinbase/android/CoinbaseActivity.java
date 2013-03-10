@@ -6,6 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import android.content.Intent;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.coinbase.android.pin.PINManager;
+import com.coinbase.android.pin.PINPromptActivity;
 import com.coinbase.api.LoginManager;
 
 public class CoinbaseActivity extends SherlockFragmentActivity {
@@ -13,6 +15,10 @@ public class CoinbaseActivity extends SherlockFragmentActivity {
   /** This activity requires authentication */
   @Retention(RetentionPolicy.RUNTIME)
   public static @interface RequiresAuthentication { }
+
+  /** This activity requires PIN entry (if PIN is enabled) */
+  @Retention(RetentionPolicy.RUNTIME)
+  public static @interface RequiresPIN { }
 
   @Override
   public void onResume() {
@@ -37,6 +43,17 @@ public class CoinbaseActivity extends SherlockFragmentActivity {
         } else {
           // Now signed in, continue with Activity initialization
         }
+      }
+    }
+
+    if(getClass().isAnnotationPresent(RequiresPIN.class)) {
+      // Check PIN status
+      if(!PINManager.getInstance().shouldGrantAccess(this)) {
+
+        // PIN reprompt required.
+        Intent intent = new Intent(this, PINPromptActivity.class);
+        intent.setAction(PINPromptActivity.ACTION_PROMPT);
+        startActivity(intent);
       }
     }
   }
