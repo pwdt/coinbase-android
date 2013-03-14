@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -427,7 +428,21 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     protected Cursor doInBackground(Void... params) {
 
       TransactionsDatabase database = new TransactionsDatabase(mParent);
-      SQLiteDatabase readableDb = database.getReadableDatabase();
+      SQLiteDatabase readableDb;
+
+      try {
+        readableDb = database.getReadableDatabase();
+      } catch(SQLiteException e) {
+        /*
+         * Since the LoadTransactionsTask is executed concurrently with other AsyncTasks,
+         * they may be writing to the database at the same time we are trying to read it.
+         * This causes a 'database is locked' exception.
+         * Retry later.
+         */
+        Log.w("Coinbase", "Warning: database was locked, trying again");
+        loadTransactionsList();
+        return null;
+      }
 
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
@@ -440,7 +455,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     @Override
     protected void onPostExecute(Cursor result) {
 
-      if(mListView != null) {
+      if(mListView != null && result != null) {
 
         setHeaderPinned(!result.moveToFirst());
 
