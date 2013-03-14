@@ -164,5 +164,6 @@
     <string name="settings_pin_view_allowed_title">Allow viewing without passcode</string>
     <string name="settings_pin_view_allowed_desc_on">Passcode is not required to view transactions</string>
     <string name="settings_pin_view_allowed_desc_off">Passcode is required to view transactions</string>
+    <string name="widget_transactions_compat">Sorry, this widget is not compatible with your device.</string>
     
 </resources>

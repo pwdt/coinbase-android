@@ -54,7 +54,11 @@ public class TransactionsAppWidgetProvider extends AppWidgetProvider {
 
   public void onUpdate(Context context, AppWidgetManager appWidgetManager,
       int[] appWidgetIds) {
-    
+
+    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+      return; // Transactions widget does not work (adapter widgets were added in Honeycomb)
+    }
+
     for (int i = 0; i < appWidgetIds.length; ++i) {
       
       if(!appWidgetManager.getAppWidgetInfo(appWidgetIds[i]).provider.getClassName().equals(getClass().getName())) {
