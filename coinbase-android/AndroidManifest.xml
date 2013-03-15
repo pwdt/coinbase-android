@@ -18,6 +18,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.Coinbase"
+        android:name="com.coinbase.android.CoinbaseApplication"
         android:allowBackup="true">
         <activity
             android:name="com.coinbase.android.MainActivity" android:launchMode="singleTop"
