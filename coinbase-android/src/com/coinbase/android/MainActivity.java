@@ -120,7 +120,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
       mSlidingMenuMode = SlidingMenuMode.FAKE_GINGERBREAD_COMPAT;
     } else {
-      mSlidingMenuMode = 
+      mSlidingMenuMode =
           getResources().getBoolean(R.bool.pin_sliding_menu) ? SlidingMenuMode.PINNED : SlidingMenuMode.NORMAL;
     }
 
@@ -395,6 +395,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mPusher.disconnect();
       mPusher = null;
     }
+
+    // Since we manually opened the keyboard, we must close it when switching
+    // away from the app
+    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+    inputMethodManager.hideSoftInputFromWindow(
+        findViewById(android.R.id.content).getWindowToken(), 0);
   }
 
   public void openTransferMenu(boolean isRequest) {
