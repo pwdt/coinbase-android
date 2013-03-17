@@ -24,8 +24,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +43,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.coinbase.android.Utils.CurrencyType;
+import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.api.LoginManager;
@@ -67,13 +66,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         String userHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
             "usd").toLowerCase(Locale.CANADA);
         BigDecimal homeAmount = new BigDecimal(balance.getString("amount")).multiply(
-            new BigDecimal(exchangeRates.getString("btc_to_" + userHomeCurrency)));
+          new BigDecimal(exchangeRates.getString("btc_to_" + userHomeCurrency)));
 
         String balanceString = Utils.formatCurrencyAmount(balance.getString("amount"));
         String balanceHomeString = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
 
         String[] result = new String[] { balanceString, balance.getString("currency"),
-            balanceHomeString, userHomeCurrency.toUpperCase(Locale.CANADA) };
+                                         balanceHomeString, userHomeCurrency.toUpperCase(Locale.CANADA) };
 
         // Save balance in preferences
         Editor editor = prefs.edit();
@@ -207,83 +206,83 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         return false;
       }
 
-      TransactionsDatabase dbHelper = new TransactionsDatabase(mParent);
-      SQLiteDatabase db = dbHelper.getWritableDatabase();
+      DatabaseObject db = DatabaseObject.getInstance();
 
-      db.beginTransaction();
-      try {
+      synchronized(db.databaseLock) {
+        db.beginTransaction(mParent);
+        try {
 
 
-        if(startPage == 0) {
-          // Remove all old transactions
-          db.delete(TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) });
-        }
+          if(startPage == 0) {
+            // Remove all old transactions
+            db.delete(mParent, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) });
+          }
 
-        // Update user ID
-        Editor editor = prefs.edit();
-        editor.putString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), currentUserId);
-        editor.commit();
+          // Update user ID
+          Editor editor = prefs.edit();
+          editor.putString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), currentUserId);
+          editor.commit();
 
-        for(JSONObject transaction : transactions) {
+          for(JSONObject transaction : transactions) {
 
-          ContentValues values = new ContentValues();
+            ContentValues values = new ContentValues();
 
-          String createdAtStr = transaction.optString("created_at", null);
-          long createdAt;
-          try {
-            if(createdAtStr != null) {
-              createdAt = ISO8601.toCalendar(createdAtStr).getTimeInMillis();
-            } else {
+            String createdAtStr = transaction.optString("created_at", null);
+            long createdAt;
+            try {
+              if(createdAtStr != null) {
+                createdAt = ISO8601.toCalendar(createdAtStr).getTimeInMillis();
+              } else {
+                createdAt = -1;
+              }
+            } catch (ParseException e) {
+              // Error parsing createdAt
+              e.printStackTrace();
               createdAt = -1;
             }
-          } catch (ParseException e) {
-            // Error parsing createdAt
-            e.printStackTrace();
-            createdAt = -1;
+
+            JSONObject transferData = null;
+
+            if(transfers != null) {
+
+              String id = transaction.optString("id");
+              transferData = transfers.get(id);
+            }
+
+            values.put(TransactionEntry._ID, transaction.getString("id"));
+            values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
+            values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
+            values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
+            values.put(TransactionEntry.COLUMN_NAME_TRANSFER_JSON, transferData == null ? null : transferData.toString());
+            values.put(TransactionEntry.COLUMN_NAME_IS_TRANSFER, transferData == null ? 0 : 1);
+
+            db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
           }
 
-          JSONObject transferData = null;
+          db.setTransactionSuccessful(mParent);
+          mLastLoadedPage = loadedPage;
 
-          if(transfers != null) {
+          // Update list
+          loadTransactionsList();
 
-            String id = transaction.optString("id");
-            transferData = transfers.get(id);
-          }
+          // Update transaction widgets
+          updateWidgets();
 
-          values.put(TransactionEntry._ID, transaction.getString("id"));
-          values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
-          values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
-          values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
-          values.put(TransactionEntry.COLUMN_NAME_TRANSFER_JSON, transferData == null ? null : transferData.toString());
-          values.put(TransactionEntry.COLUMN_NAME_IS_TRANSFER, transferData == null ? 0 : 1);
+          // Update the buy / sell history list
+          mParent.getBuySellFragment().onTransactionsSynced();
 
-          db.insert(TransactionEntry.TABLE_NAME, null, values);
+          return true;
+
+        } catch (JSONException e) {
+          // Malformed response from Coinbase.
+          Log.e("Coinbase", "Could not parse JSON response from Coinbase, aborting refresh of transactions.");
+          e.printStackTrace();
+
+          return false;
+        } finally {
+
+          db.endTransaction(mParent);
         }
-
-        db.setTransactionSuccessful();
-        mLastLoadedPage = loadedPage;
-
-        // Update list
-        loadTransactionsList();
-
-        // Update transaction widgets
-        updateWidgets();
-
-        // Update the buy / sell history list
-        mParent.getBuySellFragment().onTransactionsSynced();
-
-        return true;
-
-      } catch (JSONException e) {
-        // Malformed response from Coinbase.
-        Log.e("Coinbase", "Could not parse JSON response from Coinbase, aborting refresh of transactions.");
-        e.printStackTrace();
-
-        return false;
-      } finally {
-
-        db.endTransaction();
-        db.close();
       }
     }
 
@@ -331,8 +330,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(mParent);
         widgetManager.notifyAppWidgetViewDataChanged(
-            widgetManager.getAppWidgetIds(new ComponentName(mParent, TransactionsAppWidgetProvider.class)),
-            R.id.widget_list);
+          widgetManager.getAppWidgetIds(new ComponentName(mParent, TransactionsAppWidgetProvider.class)),
+          R.id.widget_list);
       }
     }
 
@@ -370,45 +369,45 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
         switch(arg0.getId()) {
 
-        case R.id.transaction_title:
+          case R.id.transaction_title:
 
-          ((TextView) arg0).setText(Utils.generateTransactionSummary(mParent, item));
-          return true;
+            ((TextView) arg0).setText(Utils.generateTransactionSummary(mParent, item));
+            return true;
 
-        case R.id.transaction_amount: 
+          case R.id.transaction_amount:
 
-          String amount = item.getJSONObject("amount").getString("amount");
-          String balanceString = Utils.formatCurrencyAmount(amount);
+            String amount = item.getJSONObject("amount").getString("amount");
+            String balanceString = Utils.formatCurrencyAmount(amount);
 
-          int sign = new BigDecimal(amount).compareTo(BigDecimal.ZERO);
-          int color = sign == -1 ? R.color.transaction_negative : (sign == 0 ? R.color.transaction_neutral : R.color.transaction_positive);
+            int sign = new BigDecimal(amount).compareTo(BigDecimal.ZERO);
+            int color = sign == -1 ? R.color.transaction_negative : (sign == 0 ? R.color.transaction_neutral : R.color.transaction_positive);
 
-          ((TextView) arg0).setText(balanceString);
-          ((TextView) arg0).setTextColor(getResources().getColor(color));
-          return true;
+            ((TextView) arg0).setText(balanceString);
+            ((TextView) arg0).setTextColor(getResources().getColor(color));
+            return true;
 
-        case R.id.transaction_currency: 
+          case R.id.transaction_currency:
 
-          ((TextView) arg0).setText(item.getJSONObject("amount").getString("currency"));
-          return true;
+            ((TextView) arg0).setText(item.getJSONObject("amount").getString("currency"));
+            return true;
 
-        case R.id.transaction_status: 
+          case R.id.transaction_status:
 
-          String status = item.optString("status", getString(R.string.transaction_status_error));
+            String status = item.optString("status", getString(R.string.transaction_status_error));
 
-          String readable = status;
-          int background = R.drawable.transaction_unknown;
-          if("complete".equals(status)) {
-            readable = getString(R.string.transaction_status_complete);
-            background = R.drawable.transaction_complete;
-          } else if("pending".equals(status)) {
-            readable = getString(R.string.transaction_status_pending);
-            background = R.drawable.transaction_pending;
-          }
+            String readable = status;
+            int background = R.drawable.transaction_unknown;
+            if("complete".equals(status)) {
+              readable = getString(R.string.transaction_status_complete);
+              background = R.drawable.transaction_complete;
+            } else if("pending".equals(status)) {
+              readable = getString(R.string.transaction_status_pending);
+              background = R.drawable.transaction_pending;
+            }
 
-          ((TextView) arg0).setText(readable);
-          ((TextView) arg0).setBackgroundResource(background);
-          return true;
+            ((TextView) arg0).setText(readable);
+            ((TextView) arg0).setBackgroundResource(background);
+            return true;
         }
 
         return false;
@@ -427,28 +426,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     @Override
     protected Cursor doInBackground(Void... params) {
 
-      TransactionsDatabase database = new TransactionsDatabase(mParent);
-      SQLiteDatabase readableDb;
-
-      try {
-        readableDb = database.getReadableDatabase();
-      } catch(SQLiteException e) {
-        /*
-         * Since the LoadTransactionsTask is executed concurrently with other AsyncTasks,
-         * they may be writing to the database at the same time we are trying to read it.
-         * This causes a 'database is locked' exception.
-         * Retry later.
-         */
-        Log.w("Coinbase", "Warning: database was locked, trying again");
-        loadTransactionsList();
-        return null;
-      }
-
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
-      Cursor c = readableDb.query(TransactionsDatabase.TransactionEntry.TABLE_NAME,
-          null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) }, null, null, null);
+      Cursor c = DatabaseObject.getInstance().query(mParent, TransactionsDatabase.TransactionEntry.TABLE_NAME,
+        null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) }, null, null, null);
       return c;
     }
 
@@ -467,11 +449,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         }
 
         String[] from = { TransactionEntry.COLUMN_NAME_JSON, TransactionEntry.COLUMN_NAME_JSON,
-            TransactionEntry.COLUMN_NAME_JSON, TransactionEntry.COLUMN_NAME_JSON };
+                          TransactionEntry.COLUMN_NAME_JSON, TransactionEntry.COLUMN_NAME_JSON };
         int[] to = { R.id.transaction_title, R.id.transaction_amount,
-            R.id.transaction_status, R.id.transaction_currency };
+                     R.id.transaction_status, R.id.transaction_currency };
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(mParent, R.layout.fragment_transactions_item, result,
-            from, to, 0);
+          from, to, 0);
         adapter.setViewBinder(new TransactionViewBinder());
         mListView.setAdapter(adapter);
       }
@@ -482,7 +464,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem,
-        int visibleItemCount, int totalItemCount) {
+                         int visibleItemCount, int totalItemCount) {
 
       int padding = 2;
       boolean shouldLoadMore = firstVisibleItem + visibleItemCount + padding >= totalItemCount;
@@ -541,7 +523,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+                           Bundle savedInstanceState) {
 
     // Inflate base layout
     ViewGroup view = (ViewGroup) inflater.inflate(R.layout.fragment_transactions, container, false);

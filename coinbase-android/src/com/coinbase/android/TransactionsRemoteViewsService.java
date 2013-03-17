@@ -10,19 +10,18 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.coinbase.android.R;
+import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class TransactionsRemoteViewsService extends RemoteViewsService {
-  
+
   public static final String WIDGET_TRANSACTION_LIMIT = "10";
   public static final String EXTRA_ACCOUNT_ID = "account_id";
 
@@ -30,7 +29,6 @@ public class TransactionsRemoteViewsService extends RemoteViewsService {
 
     Context mContext;
 
-    SQLiteDatabase mDatabase;
     Cursor mCursor;
     int mAccountId;
 
@@ -42,15 +40,12 @@ public class TransactionsRemoteViewsService extends RemoteViewsService {
     @Override
     public void onCreate() {
 
-      TransactionsDatabase database = new TransactionsDatabase(mContext);
-      mDatabase = database.getReadableDatabase();
-
       query();
     }
-     
+
     private void query() {
       Log.i("Coinbase", "Filtering transactions for account " + mAccountId);
-      mCursor = mDatabase.query(TransactionsDatabase.TransactionEntry.TABLE_NAME,
+      mCursor = DatabaseObject.getInstance().query(mContext, TransactionsDatabase.TransactionEntry.TABLE_NAME,
           null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(mAccountId) }, null, null, null, WIDGET_TRANSACTION_LIMIT);
       Log.i("Coinbase", "Got " + mCursor.getCount() + " transactions.");
     }
@@ -89,13 +84,13 @@ public class TransactionsRemoteViewsService extends RemoteViewsService {
 
         rv.setTextViewText(R.id.transaction_amount, balanceString);
         rv.setTextColor(R.id.transaction_amount, mContext.getResources().getColor(color));
-        
+
         // Currency:
         rv.setTextViewText(R.id.transaction_currency, item.getJSONObject("amount").getString("currency"));
-        
+
         // Title:
         rv.setTextViewText(R.id.transaction_title, Utils.generateTransactionSummary(mContext, item));
-        
+
         // Status:
         String status = item.optString("status", getString(R.string.transaction_status_error));
 
@@ -111,7 +106,7 @@ public class TransactionsRemoteViewsService extends RemoteViewsService {
 
         rv.setTextViewText(R.id.transaction_status, readable);
         rv.setInt(R.id.transaction_status, "setBackgroundResource", background);
-        
+
         Intent intent = new Intent();
         intent.putExtra(TransactionDetailsFragment.EXTRA_ID, item.getString("id"));
         rv.setOnClickFillInIntent(R.id.transactions_item, intent);
@@ -143,7 +138,6 @@ public class TransactionsRemoteViewsService extends RemoteViewsService {
     public void onDestroy() {
 
       mCursor.close();
-      mDatabase.close();
     }
 
 

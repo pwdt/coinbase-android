@@ -13,7 +13,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,7 +26,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.coinbase.android.db.TransactionsDatabase;
+import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
@@ -210,9 +209,7 @@ public class TransactionDetailsFragment extends Fragment {
 
       // Fetch transaction JSON from database
       final String transactionId = getArguments().getString(EXTRA_ID);
-      TransactionsDatabase dbHelper = new TransactionsDatabase(getActivity());
-      SQLiteDatabase db = dbHelper.getReadableDatabase();
-      Cursor c = db.query(TransactionEntry.TABLE_NAME, new String[] {
+      Cursor c = DatabaseObject.getInstance().query(getActivity(), TransactionEntry.TABLE_NAME, new String[] {
           TransactionEntry.COLUMN_NAME_JSON,
           TransactionEntry.COLUMN_NAME_IS_TRANSFER,
           TransactionEntry.COLUMN_NAME_TRANSFER_JSON, },
@@ -240,7 +237,6 @@ public class TransactionDetailsFragment extends Fragment {
       } finally {
 
         c.close();
-        db.close();
       }
     }
 

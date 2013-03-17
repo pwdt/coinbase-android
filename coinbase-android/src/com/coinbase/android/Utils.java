@@ -13,7 +13,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,7 +22,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.widget.FilterQueryProvider;
 
-import com.coinbase.android.db.TransactionsDatabase;
+import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -89,7 +88,7 @@ public class Utils {
       int desiredWidth, int desiredHeight) throws WriterException {
 
     Hashtable<EncodeHintType,Object> hints = new Hashtable<EncodeHintType,Object>(2);
-    MultiFormatWriter writer = new MultiFormatWriter();    
+    MultiFormatWriter writer = new MultiFormatWriter();
     BitMatrix result = writer.encode(contents, format, desiredWidth, desiredHeight, hints);
 
     int width = result.getWidth();
@@ -110,22 +109,12 @@ public class Utils {
     return bitmap;
   }
 
-  private static class EmailAutocompleteAdapter extends SimpleCursorAdapter {
-
-    public EmailAutocompleteAdapter(Context context, int layout, Cursor c,
-        String[] from, int[] to, int flags) {
-      super(context, layout, c, from, to, flags);
-    }
-
-    private SQLiteDatabase mDb;
-  }
-
   /** Important note: a call to disposeOfEmailAutocompleteAdapter must be made when you are done with the Adapter */
   public static SimpleCursorAdapter getEmailAutocompleteAdapter(final Context context) {
 
     String[] from = { EmailEntry.COLUMN_NAME_EMAIL };
     int[] to = { android.R.id.text1 };
-    final EmailAutocompleteAdapter adapter = new EmailAutocompleteAdapter(context, android.R.layout.simple_spinner_dropdown_item, null,
+    final SimpleCursorAdapter adapter = new SimpleCursorAdapter(context, android.R.layout.simple_spinner_dropdown_item, null,
         from, to, 0);
 
     adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
@@ -135,9 +124,6 @@ public class Utils {
         return cursor.getString(colIndex);
       }
     });
-
-    TransactionsDatabase database = new TransactionsDatabase(context);
-    adapter.mDb = database.getReadableDatabase();
 
     adapter.setFilterQueryProvider(new FilterQueryProvider() {
       @Override
@@ -150,7 +136,9 @@ public class Utils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
-        Cursor c = adapter.mDb.query(EmailEntry.TABLE_NAME,
+        // This method (runQuery) is called on a background thread
+        // so it is OK to use DatabaseObject
+        Cursor c = DatabaseObject.getInstance().query(context, EmailEntry.TABLE_NAME,
             null, EmailEntry.COLUMN_NAME_ACCOUNT + " = ? AND " + EmailEntry.COLUMN_NAME_EMAIL + " LIKE ?",
             new String[] { Integer.toString(activeAccount), "%" + description + "%" }, null, null, null);
 
@@ -163,9 +151,7 @@ public class Utils {
 
   public static void disposeOfEmailAutocompleteAdapter(SimpleCursorAdapter autocompleteAdapter) {
 
-    if(autocompleteAdapter instanceof EmailAutocompleteAdapter) {
-      ((EmailAutocompleteAdapter) autocompleteAdapter).mDb.close();
-    }
+    // No longer needed with new DatabaseObject
   }
 
   public static String generateTransactionSummary(Context c, JSONObject t) throws JSONException {
@@ -182,16 +168,16 @@ public class Utils {
       JSONObject r = t.optJSONObject("recipient");
       String recipientName = null;
 
-      if(r == null) { 
+      if(r == null) {
         recipientName = c.getString(R.string.transaction_user_external);
-      } else { 
+      } else {
 
         if("transfers@coinbase.com".equals(r.optString("email"))) {
           // This was a bitcoin sell
           return c.getString(R.string.transaction_summary_sell);
         }
 
-        recipientName = r.optString("name", 
+        recipientName = r.optString("name",
             r.optString("email", c.getString(R.string.transaction_user_external)));
       }
 
@@ -205,16 +191,16 @@ public class Utils {
       JSONObject r = t.optJSONObject("sender");
       String senderName = null;
 
-      if(r == null) { 
+      if(r == null) {
         senderName = c.getString(R.string.transaction_user_external);
-      } else { 
+      } else {
 
         if("transfers@coinbase.com".equals(r.optString("email"))) {
           // This was a bitcoin buy
           return c.getString(R.string.transaction_summary_buy);
         }
 
-        senderName = r.optString("name", 
+        senderName = r.optString("name",
             r.optString("email", c.getString(R.string.transaction_user_external)));
       }
 

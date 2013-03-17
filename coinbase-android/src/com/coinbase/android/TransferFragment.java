@@ -19,12 +19,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ClipData;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -52,7 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.Utils.CurrencyType;
-import com.coinbase.android.db.TransactionsDatabase;
+import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
@@ -143,39 +140,38 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       } catch (JSONException e) {
         e.printStackTrace();
         return null;
-      } 
+      }
 
-      TransactionsDatabase dbHelper = new TransactionsDatabase(mParent);
-      SQLiteDatabase db = dbHelper.getWritableDatabase();
-      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-      int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+      synchronized(DatabaseObject.getInstance().databaseLock) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+        int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
-      try {
+        try {
 
-        db.beginTransaction();
+          DatabaseObject.getInstance().beginTransaction(mParent);
 
-        // Remove all old emails
-        db.delete(EmailEntry.TABLE_NAME, null, null);
+          // Remove all old emails
+          DatabaseObject.getInstance().delete(mParent, EmailEntry.TABLE_NAME, null, null);
 
 
-        for(int i = 0; i < contacts.length(); i++) {
+          for(int i = 0; i < contacts.length(); i++) {
 
-          String email = contacts.getJSONObject(i).getJSONObject("contact").getString("email");
+            String email = contacts.getJSONObject(i).getJSONObject("contact").getString("email");
 
-          ContentValues emailValues = new ContentValues();
-          emailValues.put(EmailEntry.COLUMN_NAME_EMAIL, email);
-          emailValues.put(EmailEntry.COLUMN_NAME_ACCOUNT, activeAccount);
-          db.insertWithOnConflict(EmailEntry.TABLE_NAME, null, emailValues, SQLiteDatabase.CONFLICT_IGNORE);
+            ContentValues emailValues = new ContentValues();
+            emailValues.put(EmailEntry.COLUMN_NAME_EMAIL, email);
+            emailValues.put(EmailEntry.COLUMN_NAME_ACCOUNT, activeAccount);
+            DatabaseObject.getInstance().insertWithOnConflict(mParent, EmailEntry.TABLE_NAME, null, emailValues, SQLiteDatabase.CONFLICT_IGNORE);
+          }
+
+          DatabaseObject.getInstance().setTransactionSuccessful(mParent);
+
+        } catch (JSONException e) {
+          e.printStackTrace();
+        } finally {
+
+          DatabaseObject.getInstance().endTransaction(mParent);
         }
-
-        db.setTransactionSuccessful();
-
-      } catch (JSONException e) {
-        e.printStackTrace();
-      } finally {
-
-        db.endTransaction();
-        db.close();
       }
 
       return null;
@@ -298,7 +294,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+                           Bundle savedInstanceState) {
 
     // Inflate the layout for this fragment
     View view = inflater.inflate(R.layout.fragment_transfer, container, false);
@@ -308,7 +304,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
-          long arg3) {
+                                 long arg3) {
 
         onTypeChanged();
       }
@@ -326,7 +322,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
-          long arg3) {
+                                 long arg3) {
 
         onCurrencyChanged();
       }
@@ -364,14 +360,14 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void beforeTextChanged(CharSequence s, int start, int count,
-          int after) {
+                                    int after) {
       }
 
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count) {
         mAmount = s.toString();
 
-        // Update native currency 
+        // Update native currency
         updateNativeCurrency();
       }
     });
@@ -384,7 +380,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void beforeTextChanged(CharSequence s, int start, int count,
-          int after) {
+                                    int after) {
       }
 
       @Override
@@ -401,7 +397,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void beforeTextChanged(CharSequence s, int start, int count,
-          int after) {
+                                    int after) {
       }
 
       @Override
@@ -538,7 +534,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-          String key) {
+                                            String key) {
 
         int activeAccount = sharedPreferences.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
         if(key.equals(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount))) {
@@ -554,7 +550,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   private void updateNativeCurrency() {
 
-    if(mNativeExchangeRates == null || 
+    if(mNativeExchangeRates == null ||
         (System.currentTimeMillis() - mNativeExchangeRateTime) > EXCHANGE_RATE_EXPIRE_TIME) {
 
       // Need to fetch exchange rate again
@@ -588,7 +584,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     BigDecimal amount = new BigDecimal(mAmount);
     BigDecimal result = amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
     mNativeAmount.setText(String.format(mParent.getString(R.string.transfer_amt_native), Utils.formatCurrencyAmount(result, false, CurrencyType.TRADITIONAL),
-        resultCurrency.toUpperCase(Locale.CANADA)));
+      resultCurrency.toUpperCase(Locale.CANADA)));
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -682,8 +678,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         "usd").toUpperCase(Locale.CANADA);
 
     mCurrenciesArray = new String[] {
-        "BTC",
-        nativeCurrency,
+                                     "BTC",
+                                     nativeCurrency,
     };
 
     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
@@ -751,11 +747,11 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
 
     params.add(new BasicNameValuePair(
-        String.format("transaction[%s]", type == TransferType.SEND ? "to" : "from"), toFrom));
+      String.format("transaction[%s]", type == TransferType.SEND ? "to" : "from"), toFrom));
 
     try {
-      JSONObject response = RpcManager.getInstance().callPost(mParent, 
-          String.format("transactions/%s_money", type.getRequestName()), params);
+      JSONObject response = RpcManager.getInstance().callPost(mParent,
+        String.format("transactions/%s_money", type.getRequestName()), params);
 
       boolean success = response.getBoolean("success");
 

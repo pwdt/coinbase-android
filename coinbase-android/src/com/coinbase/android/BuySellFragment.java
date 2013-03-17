@@ -20,7 +20,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -46,6 +45,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.Utils.CurrencyType;
+import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
@@ -258,13 +258,10 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     @Override
     protected Cursor doInBackground(Void... params) {
 
-      TransactionsDatabase database = new TransactionsDatabase(mParent);
-      SQLiteDatabase readableDb = database.getReadableDatabase();
-
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
-      Cursor c = readableDb.query(TransactionsDatabase.TransactionEntry.TABLE_NAME,
+      Cursor c = DatabaseObject.getInstance().query(mParent, TransactionsDatabase.TransactionEntry.TABLE_NAME,
           null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ? " +
               "AND " + TransactionEntry.COLUMN_NAME_IS_TRANSFER + " = 1",
               new String[] { Integer.toString(activeAccount) }, null, null, null);
