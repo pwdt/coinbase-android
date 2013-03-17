@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -206,6 +207,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
         e.printStackTrace();
       } catch (JSONException e) {
 
+        ACRA.getErrorReporter().handleException(new RuntimeException("UpdatePrice", e));
         e.printStackTrace();
       }
 
@@ -559,6 +561,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     } catch (IOException e) {
       e.printStackTrace();
     } catch (JSONException e) {
+      ACRA.getErrorReporter().handleException(new RuntimeException("doBuySell", e));
       e.printStackTrace();
     }
 

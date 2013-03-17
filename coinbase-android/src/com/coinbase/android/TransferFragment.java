@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -138,6 +139,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         e.printStackTrace();
         return null;
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("ReloadContacts", e));
         e.printStackTrace();
         return null;
       }
@@ -227,6 +229,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       } catch (IOException e) {
         e.printStackTrace();
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("RefreshExchangeRate", e));
         e.printStackTrace();
       }
 
@@ -771,6 +774,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     } catch (IOException e) {
       e.printStackTrace();
     } catch (JSONException e) {
+      ACRA.getErrorReporter().handleException(new RuntimeException("doTransfer", e));
       e.printStackTrace();
     }
 

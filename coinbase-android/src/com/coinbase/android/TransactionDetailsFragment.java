@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import org.acra.ACRA;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -140,6 +141,7 @@ public class TransactionDetailsFragment extends Fragment {
       try {
         return RpcManager.getInstance().callGet(getActivity(), "transactions/" + mId).getJSONObject("transaction");
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("LoadTransactionFromInternet", e));
         e.printStackTrace();
       } catch (IOException e) {
         e.printStackTrace();

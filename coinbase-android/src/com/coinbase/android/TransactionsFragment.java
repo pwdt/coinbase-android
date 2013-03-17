@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,6 +90,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         e.printStackTrace();
       } catch (JSONException e) {
 
+        ACRA.getErrorReporter().handleException(new RuntimeException("LoadBalance", e));
         e.printStackTrace();
       }
 
@@ -201,6 +203,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       } catch (JSONException e) {
         // Malformed response from Coinbase.
         Log.e("Coinbase", "Could not parse JSON response from Coinbase, aborting refresh of transactions.");
+        ACRA.getErrorReporter().handleException(new RuntimeException("SyncTransactions", e));
         e.printStackTrace();
 
         return false;
@@ -318,6 +321,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       } catch (IOException e) {
         e.printStackTrace();
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("SyncTransactions:transfers", e));
         e.printStackTrace();
       }
 

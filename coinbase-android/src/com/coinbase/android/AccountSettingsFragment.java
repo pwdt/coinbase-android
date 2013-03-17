@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -71,10 +72,11 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
         e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY, activeAccount, "buy"), userInfo.getJSONObject("buy_limit").getString("currency"));
         e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY, activeAccount, "sell"), userInfo.getJSONObject("sell_limit").getString("currency"));
 
-        e.commit(); 
+        e.commit();
 
         return true;
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("RefreshSettings", e));
         e.printStackTrace();
       } catch (IOException e) {
         e.printStackTrace();
@@ -286,6 +288,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
         return new String[][] { display, data };
 
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("ShowNetworkList", e));
         e.printStackTrace();
         return null;
       } catch (IOException e) {
@@ -350,7 +353,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
         boolean success = response.optBoolean("success");
 
-        if(success) { 
+        if(success) {
           Editor e = prefs.edit();
           e.putString(prefsKey, value);
           e.commit();
@@ -361,6 +364,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
         return success;
 
       } catch (JSONException e) {
+        ACRA.getErrorReporter().handleException(new RuntimeException("UpdateUser", e));
         e.printStackTrace();
         return false;
       } catch (IOException e) {
@@ -394,10 +398,10 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+      boolean shouldGenerateNew = params[0];
 
       try {
 
-        boolean shouldGenerateNew = params[0];
         String address;
 
         if(shouldGenerateNew) {
@@ -427,6 +431,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
         e.printStackTrace();
       } catch (JSONException e) {
 
+        ACRA.getErrorReporter().handleException(new RuntimeException("LoadReceiveAddress " + shouldGenerateNew, e));
         e.printStackTrace();
       }
 
@@ -547,14 +552,14 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     int currentapiVersion = android.os.Build.VERSION.SDK_INT;
     if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 
-      android.content.ClipboardManager clipboard = 
-          (android.content.ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE); 
+      android.content.ClipboardManager clipboard =
+          (android.content.ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE);
       ClipData clip = ClipData.newPlainText("Coinbase", text);
-      clipboard.setPrimaryClip(clip); 
+      clipboard.setPrimaryClip(clip);
     } else {
 
       android.text.ClipboardManager clipboard =
-          (android.text.ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE); 
+          (android.text.ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE);
       clipboard.setText(text);
     }
   }
