@@ -101,7 +101,11 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     protected void onPostExecute(Object[] result) {
 
-      mDialog.dismiss();
+      try {
+        mDialog.dismiss();
+      } catch (Exception e) {
+        // ProgressDialog has been destroyed already
+      }
 
       boolean success = (Boolean) result[0];
       if(success) {
