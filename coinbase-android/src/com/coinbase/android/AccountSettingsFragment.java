@@ -297,7 +297,11 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     @Override
     protected void onPostExecute(String[][] result) {
 
-      mDialog.dismiss();
+      try {
+        mDialog.dismiss();
+      } catch (Exception e) {
+        // ProgressDialog has been destroyed already
+      }
 
       if(result == null) {
 

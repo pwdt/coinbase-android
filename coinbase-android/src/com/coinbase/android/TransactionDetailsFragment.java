@@ -104,7 +104,11 @@ public class TransactionDetailsFragment extends Fragment {
     @Override
     protected void onPostExecute(String result) {
 
-      mDialog.dismiss();
+      try {
+        mDialog.dismiss();
+      } catch (Exception e) {
+        // ProgressDialog has been destroyed already
+      }
 
       if(getActivity() == null) {
         return;
