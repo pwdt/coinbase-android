@@ -1,5 +1,8 @@
 package com.coinbase.android;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -11,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -25,6 +29,8 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
 import com.coinbase.android.CoinbaseActivity.RequiresPIN;
+import com.coinbase.android.merchant.MerchantToolsFragment;
+import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
 import com.justinschultz.pusherclient.Pusher;
@@ -74,36 +80,55 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     FAKE_GINGERBREAD_COMPAT;
   }
 
+  public static final int NUM_FRAGMENTS = 6;
   public static final int FRAGMENT_INDEX_TRANSACTIONS = 0;
   public static final int FRAGMENT_INDEX_TRANSFER = 1;
   public static final int FRAGMENT_INDEX_BUYSELL = 2;
   public static final int FRAGMENT_INDEX_ACCOUNT = 3;
+  public static final int FRAGMENT_INDEX_MERCHANT_TOOLS = 4;
+  public static final int FRAGMENT_INDEX_POINT_OF_SALE = 5;
 
   private int[] mFragmentTitles = new int[] {
-      R.string.title_transactions,
-      R.string.title_transfer,
-      R.string.title_buysell,
-      R.string.title_account,
+     R.string.title_transactions,
+     R.string.title_transfer,
+     R.string.title_buysell,
+     R.string.title_account,
+     R.string.title_merchant_tools,
+     R.string.title_point_of_sale,
   };
   private int[] mFragmentIcons = new int[] {
-      R.drawable.ic_action_transactions,
-      R.drawable.ic_action_transfer,
-      R.drawable.ic_action_buysell,
-      R.drawable.ic_action_account
+     R.drawable.ic_action_transactions,
+     R.drawable.ic_action_transfer,
+     R.drawable.ic_action_buysell,
+     R.drawable.ic_action_account,
+     R.drawable.ic_action_merchant_tools,
+     R.drawable.ic_action_point_of_sale,
+  };
+  private boolean[] mFragmentHasSpacerAfter = new boolean[] {
+     false,
+     false,
+     false,
+     true,
+     false,
+     false,
   };
   private boolean[] mFragmentKeyboardPreferredStatus = new boolean[] {
-      false,
-      true,
-      true,
-      false,
+     false,
+     true,
+     true,
+     false,
+     false,
+     true,
   };
-  private CoinbaseFragment[] mFragments = new CoinbaseFragment[4];
+  private CoinbaseFragment[] mFragments = new CoinbaseFragment[NUM_FRAGMENTS];
 
   ViewFlipper mViewFlipper;
   TransactionsFragment mTransactionsFragment;
   BuySellFragment mBuySellFragment;
   TransferFragment mTransferFragment;
   AccountSettingsFragment mSettingsFragment;
+  MerchantToolsFragment mMerchantToolsFragment;
+  PointOfSaleFragment mPointOfSaleFragment;
   SlidingMenu mSlidingMenu;
   Pusher mPusher;
   MenuItem mRefreshItem;
@@ -159,7 +184,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
           @Override
           public void onClick(View v) {
             // Close sliding menu
-            hideSlidingMenu();
+            hideSlidingMenu(false);
           }
         });
       }
@@ -167,9 +192,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     mSlidingMenu.setOnClosedListener(new SlidingMenu.OnClosedListener() {
 
+      int lastTimeIndex = 0;
+
       @Override
       public void onClosed() {
-        onSlidingMenuClosed();
+        onSlidingMenuClosed(lastTimeIndex != mViewFlipper.getDisplayedChild());
+        lastTimeIndex = mViewFlipper.getDisplayedChild();
       }
     });
 
@@ -195,9 +223,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       @Override
       public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-          long arg3) {
+                              long arg3) {
 
-        switchTo(arg2);
+        int fragment = (Integer) ((BaseAdapter) arg0.getAdapter()).getItem(arg2);
+        if(fragment != -1) {
+          switchTo(fragment);
+        }
       }
     });
 
@@ -234,6 +265,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     } else if(fragment instanceof AccountSettingsFragment) {
       mFragments[FRAGMENT_INDEX_ACCOUNT] = (CoinbaseFragment) fragment;
       mSettingsFragment = (AccountSettingsFragment) fragment;
+    } else if(fragment instanceof MerchantToolsFragment) {
+      mFragments[FRAGMENT_INDEX_MERCHANT_TOOLS] = (CoinbaseFragment) fragment;
+      mMerchantToolsFragment = (MerchantToolsFragment) fragment;
+    } else if(fragment instanceof PointOfSaleFragment) {
+      mFragments[FRAGMENT_INDEX_POINT_OF_SALE] = (CoinbaseFragment) fragment;
+      mPointOfSaleFragment = (PointOfSaleFragment) fragment;
     }
   }
 
@@ -258,24 +295,28 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
    */
   public void switchTo(int index) {
 
+    boolean fragmentChanged = mViewFlipper.getDisplayedChild() != index;
 
     mViewFlipper.setDisplayedChild(index);
     updateTitle();
     mFragments[index].onSwitchedTo();
 
-    hideSlidingMenu();
+    hideSlidingMenu(fragmentChanged);
   }
 
   /** Called when close animation is complete */
-  private void onSlidingMenuClosed() {
+  private void onSlidingMenuClosed(boolean fragmentChanged) {
 
-    boolean keyboardPreferredStatus = mFragmentKeyboardPreferredStatus[mViewFlipper.getDisplayedChild()];
-    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+    if(fragmentChanged) {
 
-    if(keyboardPreferredStatus) {
-      inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-    } else {
-      inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
+      boolean keyboardPreferredStatus = mFragmentKeyboardPreferredStatus[mViewFlipper.getDisplayedChild()];
+      InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+  
+      if(keyboardPreferredStatus) {
+        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+      } else {
+        inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
+      }
     }
   }
 
@@ -300,16 +341,16 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
   }
 
-  private void hideSlidingMenu() {
+  private void hideSlidingMenu(boolean fragmentChanged) {
 
     if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
       findViewById(R.id.main_gingerbread_compat_overlay).setVisibility(View.GONE);
       mSlidingMenuCompatShowing = false;
       updateTitle();
-      onSlidingMenuClosed();
+      onSlidingMenuClosed(fragmentChanged);
     } else if(mSlidingMenuMode == SlidingMenuMode.PINNED) {
       // Do nothing
-      onSlidingMenuClosed();
+      onSlidingMenuClosed(fragmentChanged);
     } else {
       if(mSlidingMenu != null) {
         mSlidingMenu.showContent();
@@ -400,7 +441,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     // away from the app
     InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
     inputMethodManager.hideSoftInputFromWindow(
-        findViewById(android.R.id.content).getWindowToken(), 0);
+      findViewById(android.R.id.content).getWindowToken(), 0);
   }
 
   public void openTransferMenu(boolean isRequest) {
@@ -413,27 +454,27 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public boolean onOptionsItemSelected(MenuItem item) {
 
     switch(item.getItemId()) {
-    case R.id.menu_accounts:
-      new AccountsFragment().show(getSupportFragmentManager(), "accounts");
-      return true;
-    case R.id.menu_sign_out:
-      new SignOutFragment().show(getSupportFragmentManager(), "signOut");
-      return true;
-    case R.id.menu_about:
-      startActivity(new Intent(this, AboutActivity.class));
-      return true;
-    case R.id.menu_settings:
-      startActivity(new Intent(this, AppSettingsActivity.class));
-      return true;
-    case R.id.menu_barcode:
-      startBarcodeScan();
-      return true;
-    case R.id.menu_refresh:
-      refresh();
-      return true;
-    case android.R.id.home:
-      showSlidingMenu();
-      return true;
+      case R.id.menu_accounts:
+        new AccountsFragment().show(getSupportFragmentManager(), "accounts");
+        return true;
+      case R.id.menu_sign_out:
+        new SignOutFragment().show(getSupportFragmentManager(), "signOut");
+        return true;
+      case R.id.menu_about:
+        startActivity(new Intent(this, AboutActivity.class));
+        return true;
+      case R.id.menu_settings:
+        startActivity(new Intent(this, AppSettingsActivity.class));
+        return true;
+      case R.id.menu_barcode:
+        startBarcodeScan();
+        return true;
+      case R.id.menu_refresh:
+        refresh();
+        return true;
+      case android.R.id.home:
+        showSlidingMenu();
+        return true;
     }
 
     return super.onOptionsItemSelected(item);
@@ -441,14 +482,30 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   public class SectionsListAdapter extends BaseAdapter {
 
+    private Integer[] items = null;
+
+    public SectionsListAdapter() {
+
+      List<Integer> itemsList = new ArrayList<Integer>();
+      for(int i = 0; i < NUM_FRAGMENTS; i++) {
+
+        itemsList.add(i);
+        if(mFragmentHasSpacerAfter[i]) {
+          itemsList.add(-1);
+        }
+      }
+      items = itemsList.toArray(new Integer[0]);
+    }
+
     @Override
     public int getCount() {
-      return 4;
+
+      return items.length;
     }
 
     @Override
     public Object getItem(int position) {
-      return position;
+      return items[position];
     }
 
     @Override
@@ -463,12 +520,22 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         convertView = View.inflate(MainActivity.this, R.layout.activity_main_menu_item, null);
       }
 
-      String name = getString(mFragmentTitles[position]);
-
-      ((TextView) convertView.findViewById(R.id.main_menu_item_title)).setText(name);
-
+      TextView title = (TextView) convertView.findViewById(R.id.main_menu_item_title);
       ImageView icon = (ImageView) convertView.findViewById(R.id.main_menu_item_icon);
-      icon.setImageResource(mFragmentIcons[position]);
+
+      int fragment = items[position];
+
+      if(fragment == -1) {
+        // Spacer
+        title.setText(null);
+        icon.setImageDrawable(null);
+        return convertView;
+      }
+
+      String name = getString(mFragmentTitles[fragment]);
+      title.setText(name);
+
+      icon.setImageResource(mFragmentIcons[fragment]);
 
       return convertView;
     }
