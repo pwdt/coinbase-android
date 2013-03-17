@@ -40,20 +40,23 @@ public class UpdateWidgetBalanceService extends Service {
               String.format(Constants.KEY_WIDGET_ACCOUNT, widgetId), -1);
 
 
-          // Step 1: Fetch balance
+          // Step 1: Update widget without balance
+          AppWidgetManager manager = AppWidgetManager.getInstance(UpdateWidgetBalanceService.this);
+          WidgetUpdater updater = (WidgetUpdater) updaterClass.newInstance();
+          updater.updateWidget(UpdateWidgetBalanceService.this, manager, widgetId, null);
+
+          // Step 2: Fetch balance
           String balance;
           if(accountId == -1) {
             balance = "";
           } else {
-            Log.i("Coinbase", "Service fetching balance...");
+            Log.i("Coinbase", "Service fetching balance... [" + updaterClass.getSimpleName() + "]");
             balance = RpcManager.getInstance().callGetOverrideAccount(
                 UpdateWidgetBalanceService.this, "account/balance", accountId).getString("amount");
             balance = Utils.formatCurrencyAmount(balance);
           }
 
-          // Step 2: Update widget
-          AppWidgetManager manager = AppWidgetManager.getInstance(UpdateWidgetBalanceService.this);
-          WidgetUpdater updater = (WidgetUpdater) updaterClass.newInstance();
+          // Step 3: Update widget
           updater.updateWidget(UpdateWidgetBalanceService.this, manager, widgetId, balance);
 
         } catch(JSONException e) {
