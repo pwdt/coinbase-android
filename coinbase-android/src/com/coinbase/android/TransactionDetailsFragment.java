@@ -317,10 +317,9 @@ public class TransactionDetailsFragment extends Fragment {
     view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.GONE : View.VISIBLE);
 
     // Buttons
-    boolean isBuy = data.optJSONObject("sender") != null && "transfers@coinbase.com".equals(data.optJSONObject("sender").optString("email"));
-    boolean isSell = data.optJSONObject("recipient") != null && "transfers@coinbase.com".equals(data.optJSONObject("recipient").optString("email"));
+    boolean isRequest = data.getBoolean("request");
     boolean senderOrRecipientIsExternal = data.optJSONObject("sender") == null || data.optJSONObject("recipient") == null;
-    if(isBuy || isSell || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
+    if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
       cancel.setVisibility(View.GONE);
       resend.setVisibility(View.GONE);
       send.setVisibility(View.GONE);
