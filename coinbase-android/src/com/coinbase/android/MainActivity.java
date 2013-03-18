@@ -8,10 +8,13 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -124,7 +127,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
      true,
      true,
      true,
-     false,
+     true,
      true,
   };
   private CoinbaseFragment[] mFragments = new CoinbaseFragment[NUM_FRAGMENTS];
@@ -136,9 +139,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   AccountSettingsFragment mSettingsFragment;
   MerchantToolsFragment mMerchantToolsFragment;
   PointOfSaleFragment mPointOfSaleFragment;
+  OnSharedPreferenceChangeListener mSharedPreferenceChangeListener;
   SlidingMenu mSlidingMenu;
   Pusher mPusher;
   MenuItem mRefreshItem;
+  ListView mMenuListView;
   boolean mRefreshItemState = false;
   SlidingMenuMode mSlidingMenuMode = SlidingMenuMode.NORMAL;
   boolean mSlidingMenuCompatShowing = false;
@@ -175,14 +180,13 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mSlidingMenu.attachToActivity(this, SlidingMenu.SLIDING_CONTENT);
     }
 
-    ListView slidingList;
     if(mSlidingMenuMode == SlidingMenuMode.NORMAL) {
 
       findViewById(android.R.id.list).setVisibility(View.GONE);
       mSlidingMenu.setMenu(R.layout.activity_main_menu);
-      slidingList = (ListView) mSlidingMenu.findViewById(android.R.id.list);
+      mMenuListView = (ListView) mSlidingMenu.findViewById(android.R.id.list);
     } else {
-      slidingList = (ListView) findViewById(android.R.id.list);
+      mMenuListView = (ListView) findViewById(android.R.id.list);
 
       if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
         findViewById(R.id.main_gingerbread_compat_overlay).setVisibility(View.GONE);
@@ -225,8 +229,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     });
 
     // Set up Sliding Menu list
-    slidingList.setAdapter(new SectionsListAdapter());
-    slidingList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    mMenuListView.setAdapter(new SectionsListAdapter());
+    mMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
       @Override
       public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
@@ -249,11 +253,37 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         });
       }
     }).start();
+    
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    mSharedPreferenceChangeListener = new OnSharedPreferenceChangeListener() {
+
+      @Override
+      public void onSharedPreferenceChanged(SharedPreferences arg0, String arg1) {
+
+        if(arg1.endsWith("enable_merchant_tools")) {
+          // Update merchant tools visibility
+          updateMerchantToolsVisibility();
+        }
+      }
+    };
+    prefs.registerOnSharedPreferenceChangeListener(mSharedPreferenceChangeListener);
+    updateMerchantToolsVisibility();
 
     getSupportActionBar().setDisplayHomeAsUpEnabled(!(mSlidingMenuMode == SlidingMenuMode.PINNED));
     switchTo(0);
 
     onNewIntent(getIntent());
+  }
+  
+  private void updateMerchantToolsVisibility() {
+    
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String key = String.format(Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, activeAccount);
+    mFragmentVisible[FRAGMENT_INDEX_MERCHANT_TOOLS] = prefs.getBoolean(key, false);
+    mFragmentVisible[FRAGMENT_INDEX_POINT_OF_SALE] = prefs.getBoolean(key, false);
+    ((BaseAdapter) mMenuListView.getAdapter()).notifyDataSetChanged();
   }
 
   @Override
@@ -436,6 +466,14 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   }
 
   @Override
+  protected void onDestroy() {
+    super.onDestroy();
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    prefs.unregisterOnSharedPreferenceChangeListener(mSharedPreferenceChangeListener);
+  }
+
+  @Override
   protected void onPause() {
     super.onPause();
 
@@ -492,6 +530,16 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     private Integer[] items = null;
 
     public SectionsListAdapter() {
+      buildData();
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+      buildData();
+      super.notifyDataSetChanged();
+    }
+
+    private void buildData() {
 
       List<Integer> itemsList = new ArrayList<Integer>();
       for(int i = 0; i < NUM_FRAGMENTS; i++) {

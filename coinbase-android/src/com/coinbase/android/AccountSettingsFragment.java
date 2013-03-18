@@ -99,7 +99,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
     @Override
     public int getCount() {
-      return mPreferences.length - (Constants.DEBUG_BUILD ? 0 : 1);
+      return mPreferences.length;
     }
 
     @Override
@@ -140,6 +140,9 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
             Utils.formatCurrencyAmount(prefs.getString(String.format(Constants.KEY_ACCOUNT_LIMIT, mActiveAccount, "sell"), "0")),
             prefs.getString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY, mActiveAccount, "sell"), "BTC"));
 
+      } else if("enable_merchant_tools".equals(item[2])) {
+        desc = getString(prefs.getBoolean(
+          String.format((String) item[1], mActiveAccount), false) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
       } else {
         desc = prefs.getString(
             String.format((String) item[1], mActiveAccount), null);
@@ -447,7 +450,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       { R.string.account_native_currency, Constants.KEY_ACCOUNT_NATIVE_CURRENCY, "native_currency" },
       { R.string.account_limits, Constants.KEY_ACCOUNT_LIMIT, "limits" },
       { R.string.account_receive_address, Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, "receive_address" },
-      { R.string.account_refresh_token, Constants.KEY_ACCOUNT_REFRESH_TOKEN, "refresh_token" }
+      { R.string.account_enable_merchant_tools, Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, "enable_merchant_tools" },
   };
 
   MainActivity mParent;
@@ -467,7 +470,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
           String key) {
 
         // Refresh list
-        setListAdapter(new PreferenceListAdapter());
+        ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
       }
     };
     prefs.registerOnSharedPreferenceChangeListener(mChangeListener);
@@ -543,6 +546,12 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       // Copy to clipboard
       setClipboard(prefs.getString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), ""));
       Toast.makeText(mParent, R.string.account_receive_address_copied, Toast.LENGTH_SHORT).show();
+    } else if("enable_merchant_tools".equals(data[2])) {
+
+      String key = String.format((String) data[1], activeAccount);
+      Editor e = prefs.edit();
+      e.putBoolean(key, !prefs.getBoolean(key, false));
+      e.commit();
     }
   }
 
