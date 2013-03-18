@@ -251,7 +251,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   }
 
-  private static final int EXCHANGE_RATE_EXPIRE_TIME = 60000 * 5; // Expires in 5 minutes
+  public static final int EXCHANGE_RATE_EXPIRE_TIME = 60000 * 5; // Expires in 5 minutes
 
   private MainActivity mParent;
 
@@ -422,7 +422,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        if("".equals(mAmount)) {
+        if("".equals(mAmount) || ".".equals(mAmount)) {
 
           // No amount entered
           Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
@@ -458,7 +458,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        if("".equals(mAmount)) {
+        if("".equals(mAmount) || ".".equals(mAmount)) {
 
           // No amount entered
           Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
@@ -494,7 +494,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         Bundle args = new Bundle();
         args.putString("data", requestUri);
         args.putBoolean("isNfc", false);
-        args.putString("desiredAmount", getBtcAmount().toString());
+        args.putString("desiredAmount", getBtcAmount() == null ? null : getBtcAmount().toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "qrrequest");
 
@@ -514,7 +514,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         Bundle args = new Bundle();
         args.putString("data", requestUri);
         args.putBoolean("isNfc", true);
-        args.putString("desiredAmount", getBtcAmount().toString());
+        args.putString("desiredAmount", getBtcAmount() == null ? null : getBtcAmount().toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "nfcrequest");
 
@@ -605,9 +605,40 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
   }
 
+  public void startQrNfcRequest(boolean isNfc, String amt, String notes) {
+
+    String requestUri = generateRequestUri(amt, notes);
+
+    DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
+    Bundle args = new Bundle();
+    args.putString("data", requestUri);
+    args.putBoolean("isNfc", isNfc);
+    args.putString("desiredAmount", amt);
+    f.setArguments(args);
+    f.show(getFragmentManager(), "qrrequest");
+
+    // After using a receive address, generate a new one for next time.
+    mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+  }
+
+  public void startEmailRequest(String amt, String notes) {
+
+    TransferEmailPromptFragment dialog = new TransferEmailPromptFragment();
+
+    Bundle b = new Bundle();
+
+    b.putSerializable("type", TransferType.REQUEST);
+    b.putString("amount", amt);
+    b.putString("notes", notes);
+
+    dialog.setArguments(b);
+
+    dialog.show(getFragmentManager(), "requestEmail");
+  }
+
   private BigDecimal getBtcAmount() {
 
-    if(mAmount == null || "".equals(mAmount)) {
+    if(mAmount == null || "".equals(mAmount) || ".".equals(mAmount)) {
       return null;
     }
 
@@ -627,6 +658,19 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   private String generateRequestUri() {
 
+    BigDecimal btc = getBtcAmount();
+    String s;
+    if(btc == null) {
+      s = null;
+    } else {
+      s = btc.toPlainString();
+    }
+
+    return generateRequestUri(s, mNotes);
+  }
+
+  private String generateRequestUri(String amt, String notes) {
+
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String receiveAddress = prefs.getString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), null);
@@ -634,19 +678,19 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     boolean hasAmount = false;
 
-    if(mAmount != null && !"".equals(mAmount)) {
-      requestUri += "?amount=" + getBtcAmount();
+    if(amt != null && !"".equals(amt)) {
+      requestUri += "?amount=" + amt;
       hasAmount = true;
     }
 
-    if(mNotes != null && !"".equals(mNotes)) {
+    if(notes != null && !"".equals(notes)) {
       if(hasAmount) {
         requestUri += "&";
       } else {
         requestUri += "?";
       }
 
-      requestUri += "message=" + mNotes;
+      requestUri += "message=" + notes;
     }
 
     return requestUri;

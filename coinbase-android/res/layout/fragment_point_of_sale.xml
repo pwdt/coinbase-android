@@ -7,14 +7,14 @@
         android:id="@+id/transfer_send_money"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/layout_padding">
+        android:padding="@dimen/layout_padding" >
 
         <TextView
             android:id="@+id/pos_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pos_title"
             android:padding="5dp"
+            android:text="@string/pos_title"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <EditText
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/pos_notes"
-                android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp" >
 
             <Button
                 android:id="@+id/pos_request_email"
@@ -74,6 +74,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/pos_request_qr" />
+
+            <Button
+                android:id="@+id/pos_request_nfc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/pos_request_nfc" />
         </LinearLayout>
     </RelativeLayout>
 

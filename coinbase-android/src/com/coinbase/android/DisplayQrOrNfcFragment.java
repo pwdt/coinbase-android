@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -103,6 +105,10 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
             mIcon.setVisibility(View.VISIBLE);
             mProgress.setVisibility(View.GONE);
             mIcon.setImageResource(finalSuccess ? R.drawable.ic_payment_success : R.drawable.ic_payment_error);
+            
+            Button button = ((AlertDialog) getDialog()).getButton(ProgressDialog.BUTTON_POSITIVE);
+            button.setText(android.R.string.ok);
+            button.invalidate();
           } else {
             mIcon.setVisibility(View.GONE);
             mProgress.setVisibility(View.VISIBLE);
@@ -215,7 +221,7 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
       view.setBackgroundColor(Color.WHITE);
     }
 
-    b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+    b.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 
       @Override
       public void onClick(DialogInterface dialog, int which) {

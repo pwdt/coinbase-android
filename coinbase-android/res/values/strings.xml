@@ -169,7 +169,8 @@
     <string name="widget_transactions_compat">Sorry, this widget is not compatible with your device.</string>
     <string name="pos_title">Request money</string>
     <string name="pos_amt">Amount in %1$s</string>
-    <string name="pos_request_qr">QR Code / NFC</string>
+    <string name="pos_request_qr">QR Code</string>
+    <string name="pos_request_nfc">NFC</string>
     <string name="pos_request_email">Email</string>
     <string name="pos_btc">= %1$s BTC</string>
     <string name="pos_notes">Notes</string>
