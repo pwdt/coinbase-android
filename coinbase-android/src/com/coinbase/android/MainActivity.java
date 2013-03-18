@@ -552,6 +552,9 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
           itemsList.add(-1);
         }
       }
+      if(itemsList.get(itemsList.size() - 1) == -1) {
+        itemsList.remove(itemsList.size() - 1); // Do not end in a divider
+      }
       items = itemsList.toArray(new Integer[0]);
     }
 

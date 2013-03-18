@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -202,6 +203,27 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     String btcAmount = new BigDecimal(nativeCurrencyAmount).multiply(new BigDecimal(nativeToBtc)).toString();
     return btcAmount;
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String notes = prefs.getString(String.format(Constants.KEY_ACCOUNT_POS_NOTES, activeAccount), "");
+    mNotes.setText(notes);
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    Editor e = prefs.edit();
+    e.putString(String.format(Constants.KEY_ACCOUNT_POS_NOTES, activeAccount), mNotes.getText().toString());
+    e.commit();
   }
 
   public void refresh() {
