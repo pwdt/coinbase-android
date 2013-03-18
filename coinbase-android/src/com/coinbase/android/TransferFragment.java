@@ -493,6 +493,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         DisplayQrCodeFragment f = new DisplayQrCodeFragment();
         Bundle args = new Bundle();
         args.putString("data", requestUri);
+        args.putString("desiredAmount", getBtcAmount().toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "qrrequest");
 

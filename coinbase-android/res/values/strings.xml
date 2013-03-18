@@ -173,5 +173,8 @@
     <string name="pos_request_email">Email</string>
     <string name="pos_btc">= %1$s BTC</string>
     <string name="pos_notes">Notes</string>
+    <string name="waiting_for_payment">Waiting for payment...</string>
+    <string name="payment_received">Received %1$s BTC (%2$s %3$s).</string>
+    <string name="payment_received_short">Received %1$s BTC (%2$s %3$s), but you requested %4$s BTC.</string>
     
 </resources>
