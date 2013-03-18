@@ -1,54 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <ImageView
-        android:id="@+id/qrcode"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:id="@+id/nfc_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/qrcode"
-        android:text="@string/transfer_nfc_ready"
-        android:padding="15dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/nfc_status"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/payment_status_container"
-        android:padding="10dp">
-
-        <ProgressBar
-            android:id="@+id/payment_progress"
-            android:layout_width="40dp"
-            android:layout_height="40dp" />
+        android:layout_height="wrap_content" >
 
         <ImageView
-            android:id="@+id/payment_icon"
-            android:src="@drawable/ic_payment_success"
-            android:layout_width="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            android:layout_height="wrap_content" />
+            android:id="@+id/qrcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true" />
 
         <TextView
-            android:id="@+id/payment_status"
-            android:layout_width="wrap_content"
+            android:id="@+id/nfc_status"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="5dp"
-            android:text="@string/waiting_for_payment"
+            android:layout_below="@+id/qrcode"
+            android:padding="15dp"
+            android:text="@string/transfer_nfc_ready"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/payment_status_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/qrcode"
+            android:layout_centerHorizontal="true"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="10dp">
 
-</RelativeLayout>
+            <ProgressBar
+                android:id="@+id/payment_progress"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+
+            <ImageView
+                android:id="@+id/payment_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_payment_success"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/payment_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="5dp"
+                android:text="@string/waiting_for_payment"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</ScrollView>
