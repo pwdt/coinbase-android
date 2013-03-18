@@ -180,5 +180,6 @@
     <string name="waiting_for_payment">Waiting for payment...</string>
     <string name="payment_received">Received %1$s BTC (%2$s %3$s).</string>
     <string name="payment_received_short">Received %1$s BTC (%2$s %3$s), but you requested %4$s BTC.</string>
+    <string name="pos_description">The Point of Sale tab is a simplified view of the Send / Receive tab, optimized for use by merchants.</string>
     
 </resources>
