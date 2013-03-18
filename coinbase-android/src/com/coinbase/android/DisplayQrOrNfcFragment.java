@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -15,12 +16,14 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -31,7 +34,9 @@ import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 
-public class DisplayQrCodeFragment extends DialogFragment {
+public class DisplayQrOrNfcFragment extends DialogFragment {
+
+  private static final boolean IS_NFC_SUPPORTED = Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 
   private class CheckStatusTask extends TimerTask {
 
@@ -184,6 +189,12 @@ public class DisplayQrCodeFragment extends DialogFragment {
     View view = View.inflate(getActivity(), R.layout.dialog_qrcode, null);
     ImageView imageView = (ImageView) view.findViewById(R.id.qrcode);
     imageView.setImageBitmap(bitmap);
+    imageView.setVisibility(getArguments().getBoolean("isNfc") ? View.GONE : View.VISIBLE);
+
+    TextView nfcStatus = (TextView) view.findViewById(R.id.nfc_status);
+    boolean nfcSupported = IS_NFC_SUPPORTED && NfcAdapter.getDefaultAdapter(getActivity()) != null;
+    nfcStatus.setText(nfcSupported ? R.string.transfer_nfc_ready : R.string.transfer_nfc_failure);
+    nfcStatus.setVisibility(getArguments().getBoolean("isNfc") ? View.VISIBLE : View.GONE);
 
     View paymentStatusContainer = view.findViewById(R.id.payment_status_container);
     if(checkForNewPayments) {
@@ -216,10 +227,41 @@ public class DisplayQrCodeFragment extends DialogFragment {
   }
 
   @Override
+  public void onStart() {
+    super.onStart();
+
+    if(IS_NFC_SUPPORTED && getArguments().getBoolean("isNfc")) {
+      startNfc(getArguments().getString("data"));
+    }
+  }
+
+  @Override
   public void onStop() {
     super.onStop();
 
+    if(IS_NFC_SUPPORTED) {
+      stopNfc();
+    }
+
     mStatusCheckTimer.cancel();
+  }
+
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  private void startNfc(String uri) {
+
+    if(getActivity() != null && NfcAdapter.getDefaultAdapter(getActivity()) != null) {
+
+      NdefMessage message = new NdefMessage(new NdefRecord[] { NdefRecord.createUri(uri) });
+      NfcAdapter.getDefaultAdapter(getActivity()).setNdefPushMessage(message, getActivity());
+    }
+  }
+
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  private void stopNfc() {
+
+    if(getActivity() != null && NfcAdapter.getDefaultAdapter(getActivity()) != null) {
+      NfcAdapter.getDefaultAdapter(getActivity()).setNdefPushMessage(null, getActivity());
+    }
   }
 
 }

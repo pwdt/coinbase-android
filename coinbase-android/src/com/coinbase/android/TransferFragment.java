@@ -490,9 +490,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
         String requestUri = generateRequestUri();
 
-        DisplayQrCodeFragment f = new DisplayQrCodeFragment();
+        DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
         Bundle args = new Bundle();
         args.putString("data", requestUri);
+        args.putBoolean("isNfc", false);
         args.putString("desiredAmount", getBtcAmount().toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "qrrequest");
@@ -509,9 +510,11 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
         String requestUri = generateRequestUri();
 
-        SendNfcFragment f = new SendNfcFragment();
+        DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
         Bundle args = new Bundle();
         args.putString("data", requestUri);
+        args.putBoolean("isNfc", true);
+        args.putString("desiredAmount", getBtcAmount().toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "nfcrequest");
 
