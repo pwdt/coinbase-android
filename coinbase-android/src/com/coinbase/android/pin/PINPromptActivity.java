@@ -62,7 +62,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
 
       @Override
       public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-          int arg3) {
+                                    int arg3) {
       }
 
       @Override
@@ -86,7 +86,9 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
       public boolean onEditorAction(TextView arg0, int arg1, KeyEvent arg2) {
 
         if(mIsSetMode) {
-          onPinEntered(arg0.getText().toString());
+          if(!"".equals(arg0.getText().toString())) {
+            onPinEntered(arg0.getText().toString());
+          }
         } else {
           Toast.makeText(PINPromptActivity.this, R.string.pin_incorrect, Toast.LENGTH_SHORT).show();
         }
