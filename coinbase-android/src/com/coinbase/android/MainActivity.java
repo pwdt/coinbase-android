@@ -119,6 +119,14 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
      false,
      true,
   };
+  private boolean[] mFragmentVisible = new boolean[] {
+     true,
+     true,
+     true,
+     true,
+     false,
+     true,
+  };
   private CoinbaseFragment[] mFragments = new CoinbaseFragment[NUM_FRAGMENTS];
 
   ViewFlipper mViewFlipper;
@@ -488,7 +496,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       List<Integer> itemsList = new ArrayList<Integer>();
       for(int i = 0; i < NUM_FRAGMENTS; i++) {
 
-        itemsList.add(i);
+        if(mFragmentVisible[i]) {
+          itemsList.add(i);
+        }
+
         if(mFragmentHasSpacerAfter[i]) {
           itemsList.add(-1);
         }
