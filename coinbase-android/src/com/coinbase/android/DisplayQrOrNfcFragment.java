@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.coinbase.android.Utils.CurrencyType;
@@ -182,6 +183,7 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
 
     String contents = getArguments().getString("data");
     boolean checkForNewPayments = getArguments().getBoolean("checkForNewPayments", true);
+    boolean isNfc = getArguments().getBoolean("isNfc", false);
     String desiredAmount = getArguments().getString("desiredAmount");
 
     Bitmap bitmap;
@@ -200,7 +202,7 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
     TextView nfcStatus = (TextView) view.findViewById(R.id.nfc_status);
     boolean nfcSupported = IS_NFC_SUPPORTED && NfcAdapter.getDefaultAdapter(getActivity()) != null;
     nfcStatus.setText(nfcSupported ? R.string.transfer_nfc_ready : R.string.transfer_nfc_failure);
-    nfcStatus.setVisibility(getArguments().getBoolean("isNfc") ? View.VISIBLE : View.GONE);
+    nfcStatus.setVisibility(isNfc ? View.VISIBLE : View.GONE);
 
     View paymentStatusContainer = view.findViewById(R.id.payment_status_container);
     if(checkForNewPayments) {
@@ -209,6 +211,8 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
       TimerTask task = new CheckStatusTask(getActivity(), paymentStatusContainer, System.currentTimeMillis(),
         desiredAmount == null ? null : new BigDecimal(desiredAmount));
       mStatusCheckTimer.scheduleAtFixedRate(task, checkInterval, checkInterval);
+      RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) paymentStatusContainer.getLayoutParams();
+      params.addRule(RelativeLayout.BELOW, isNfc ? R.id.nfc_status : R.id.qrcode);
     } else {
 
       paymentStatusContainer.setVisibility(View.GONE);
