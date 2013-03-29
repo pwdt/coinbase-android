@@ -366,6 +366,14 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
   }
 
+  private void toggleSlidingMenu() {
+    if(isSlidingMenuShowing()) {
+      hideSlidingMenu(false);
+    } else {
+      showSlidingMenu();
+    }
+  }
+
   private void showSlidingMenu() {
 
     if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
@@ -518,7 +526,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         refresh();
         return true;
       case android.R.id.home:
-        showSlidingMenu();
+        toggleSlidingMenu();
         return true;
     }
 
