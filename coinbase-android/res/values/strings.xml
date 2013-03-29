@@ -185,5 +185,6 @@
     <string name="account_android_pin_all">Require passcode to open the app</string>
     <string name="account_android_pin_edit">Require passcode only when tranferring money</string>
     <string name="account_android_pin_none">Passcode not enabled</string>
+    <string name="exchange_rate_error">Could not load exchange rate.</string>
     
 </resources>

@@ -438,6 +438,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           return;
         }
 
+        if(getBtcAmount() == null) {
+          return;
+        }
+
         ConfirmTransferFragment dialog = new ConfirmTransferFragment();
 
         Bundle b = new Bundle();
@@ -466,6 +470,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         }
 
         if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+          return;
+        }
+
+        if(getBtcAmount() == null) {
           return;
         }
 
@@ -650,6 +658,11 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     boolean fromBitcoin = "BTC".equalsIgnoreCase(mTransferCurrency);
     String format = fromBitcoin ? "%s_to_" + nativeCurrency.toLowerCase(Locale.CANADA) : "%s_to_btc";
     String key = String.format(format, mTransferCurrency.toLowerCase(Locale.CANADA));
+
+    if(!fromBitcoin && mNativeExchangeRates == null) {
+      Toast.makeText(mParent, R.string.exchange_rate_error, Toast.LENGTH_SHORT).show();
+      return null;
+    }
 
     BigDecimal amount = new BigDecimal(mAmount);
     BigDecimal result = fromBitcoin ? amount : amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
