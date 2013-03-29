@@ -27,3 +27,6 @@ proguard/
 # Settings
 coinbase-android/.settings/
 library-slidingmenu/library/.settings/
+
+# Misc
+Thumbs.db
