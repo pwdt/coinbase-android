@@ -40,7 +40,13 @@ public class Utils {
     Bundle args = new Bundle();
     args.putString(MessageDialogFragment.ARG_MESSAGE, message);
     fragment.setArguments(args);
-    fragment.show(m, "Utils.showMessageDialog");
+
+    try {
+      fragment.show(m, "Utils.showMessageDialog");
+    } catch(IllegalStateException e) {
+      // Expected if application has been destroyed
+      // Ignore
+    }
   }
 
   public static enum CurrencyType {
