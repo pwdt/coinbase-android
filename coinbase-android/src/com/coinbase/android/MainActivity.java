@@ -523,6 +523,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         startBarcodeScan();
         return true;
       case R.id.menu_refresh:
+        if(isSlidingMenuShowing()){
+          hideSlidingMenu(false);
+        }
+
         refresh();
         return true;
       case android.R.id.home:
