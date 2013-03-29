@@ -130,13 +130,14 @@ public class LoginActivity extends CoinbaseActivity {
 
       public boolean _shouldOverrideUrlLoading(WebView view, String url) {
 
+        Uri uri = Uri.parse(url);
         if(url.startsWith(REDIRECT_URL)) {
           // OAuth redirect - we will handle this.
           String oauthCode = Uri.parse(url).getQueryParameter("code");
           new OAuthCodeTask().execute(oauthCode);
           return true;
-        } else if(Uri.parse(url).getPath().startsWith("/transactions")) { 
-          // The coinbase site is trying to redirect us to the transactions page
+        } else if(uri.getPath().startsWith("/transactions") || uri.getPath().isEmpty()) { 
+          // The coinbase site is trying to redirect us to the transactions page or the home page
           // Since we are not logged in go to the login page
           loadLoginUrl();
           return true;
@@ -166,7 +167,6 @@ public class LoginActivity extends CoinbaseActivity {
 
     });
 
-    changeMode(getIntent().getBooleanExtra(EXTRA_SHOW_INTRO, true) ? true : false);
     onNewIntent(getIntent());
   }
 
@@ -179,8 +179,10 @@ public class LoginActivity extends CoinbaseActivity {
     if(getIntent().getData() != null) {
       // Load this URL in the web view
       mLoginWebView.loadUrl(getIntent().getDataString());
+      changeMode(false);
     } else {
       loadLoginUrl();
+      changeMode(getIntent().getBooleanExtra(EXTRA_SHOW_INTRO, true) ? true : false);
     }
   }
 
