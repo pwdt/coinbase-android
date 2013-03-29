@@ -516,9 +516,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       case R.id.menu_about:
         startActivity(new Intent(this, AboutActivity.class));
         return true;
-      case R.id.menu_settings:
-        startActivity(new Intent(this, AppSettingsActivity.class));
-        return true;
       case R.id.menu_barcode:
         startBarcodeScan();
         return true;

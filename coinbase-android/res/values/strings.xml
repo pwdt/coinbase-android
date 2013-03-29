@@ -181,5 +181,9 @@
     <string name="payment_received">Received %1$s BTC (%2$s %3$s).</string>
     <string name="payment_received_short">Received %1$s BTC (%2$s %3$s), but you requested %4$s BTC.</string>
     <string name="pos_description">The Point of Sale tab is a simplified view of the Send / Receive tab, optimized for use by merchants.</string>
+    <string name="account_android_pin">Android app passcode</string>
+    <string name="account_android_pin_all">Require passcode to open the app</string>
+    <string name="account_android_pin_edit">Require passcode only when tranferring money</string>
+    <string name="account_android_pin_none">Passcode not enabled</string>
     
 </resources>

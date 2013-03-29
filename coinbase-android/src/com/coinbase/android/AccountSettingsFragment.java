@@ -46,6 +46,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.pin.PINManager;
+import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 
@@ -143,6 +144,12 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       } else if("enable_merchant_tools".equals(item[2])) {
         desc = getString(prefs.getBoolean(
           String.format((String) item[1], mActiveAccount), false) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
+      } else if("pin".equals(item[2])) {
+        boolean enabled = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, mActiveAccount), null) != null;
+        boolean editOnly = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, mActiveAccount), false);
+
+        desc = getString(enabled ? (editOnly ? R.string.account_android_pin_edit : R.string.account_android_pin_all) : R.string.account_android_pin_none);
+
       } else {
         desc = prefs.getString(
             String.format((String) item[1], mActiveAccount), null);
@@ -451,6 +458,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       { R.string.account_limits, Constants.KEY_ACCOUNT_LIMIT, "limits" },
       { R.string.account_receive_address, Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, "receive_address" },
       { R.string.account_enable_merchant_tools, Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, "enable_merchant_tools" },
+      { R.string.account_android_pin, Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, "pin" },
   };
 
   MainActivity mParent;
@@ -552,6 +560,9 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       Editor e = prefs.edit();
       e.putBoolean(key, !prefs.getBoolean(key, false));
       e.commit();
+    } else if("pin".equals(data[2])) {
+
+      new PINSettingDialogFragment().show(getFragmentManager(), "pin");
     }
   }
 

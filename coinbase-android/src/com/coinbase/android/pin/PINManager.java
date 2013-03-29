@@ -12,7 +12,7 @@ import com.coinbase.android.Constants;
 
 public class PINManager {
 
-  public static final long PIN_REPROMPT_TIME = 1 * 10 * 1000; // Five minutes
+  public static final long PIN_REPROMPT_TIME = 5 * 60 * 1000; // Five minutes
 
   private static PINManager INSTANCE = null;
 

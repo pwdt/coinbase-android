@@ -92,7 +92,6 @@
         </activity>
         <activity android:name=".pin.PINPromptActivity"
             android:windowSoftInputMode="stateVisible"></activity>
-        <activity android:name="AppSettingsActivity"></activity>
     </application>
 
 </manifest>

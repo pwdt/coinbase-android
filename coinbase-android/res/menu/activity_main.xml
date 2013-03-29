@@ -1,11 +1,32 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_refresh" android:showAsAction="ifRoom" android:title="@string/menu_refresh" android:icon="@drawable/ic_action_refresh"></item><item android:id="@+id/menu_barcode" android:title="@string/menu_barcode" android:showAsAction="ifRoom" android:icon="@drawable/ic_action_barcode"></item><item android:id="@+id/menu_sign_out" android:showAsAction="never" android:title="@string/menu_sign_out"></item><item android:id="@+id/menu_accounts" android:title="@string/menu_accounts" android:showAsAction="never"></item><item android:id="@+id/menu_settings"
-        android:title="@string/menu_settings"
-        android:orderInCategory="99"
-        android:showAsAction="never" android:visible="true"/>
-    <item android:id="@+id/menu_about" android:title="@string/menu_about" android:orderInCategory="100" android:showAsAction="never"></item>
-    
-    
-    
-    
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_refresh"
+        android:icon="@drawable/ic_action_refresh"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_refresh">
+    </item>
+    <item
+        android:id="@+id/menu_barcode"
+        android:icon="@drawable/ic_action_barcode"
+        android:showAsAction="ifRoom"
+        android:title="@string/menu_barcode">
+    </item>
+    <item
+        android:id="@+id/menu_sign_out"
+        android:showAsAction="never"
+        android:title="@string/menu_sign_out">
+    </item>
+    <item
+        android:id="@+id/menu_accounts"
+        android:showAsAction="never"
+        android:title="@string/menu_accounts">
+    </item>
+    <item
+        android:id="@+id/menu_about"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/menu_about">
+    </item>
+
 </menu>
