@@ -28,6 +28,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
   public static final String ACTION_SET = "com.coinbase.android.pin.ACTION_SET";
 
   private boolean mIsSetMode = false;
+  private EditText mPinNumberField = null;
 
   @Override
   protected void onCreate(Bundle arg0) {
@@ -48,6 +49,14 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
       public void onClick(View v) {
 
         new AccountsFragment().show(getSupportFragmentManager(), "accounts");
+      }
+    });
+    findViewById(R.id.pin_submit).setOnClickListener(new View.OnClickListener() {
+
+      @Override
+      public void onClick(View v) {
+
+        onSubmit();
       }
     });
     findViewById(R.id.pin_switch_accounts).setVisibility(mIsSetMode ? View.GONE : View.VISIBLE);
@@ -80,21 +89,26 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
 
     });
 
-    ((EditText) findViewById(R.id.pin_number)).setOnEditorActionListener(new OnEditorActionListener() {
+    mPinNumberField = ((EditText) findViewById(R.id.pin_number));
+    mPinNumberField.setOnEditorActionListener(new OnEditorActionListener() {
 
       @Override
       public boolean onEditorAction(TextView arg0, int arg1, KeyEvent arg2) {
 
-        if(mIsSetMode) {
-          if(!"".equals(arg0.getText().toString())) {
-            onPinEntered(arg0.getText().toString());
-          }
-        } else {
-          Toast.makeText(PINPromptActivity.this, R.string.pin_incorrect, Toast.LENGTH_SHORT).show();
-        }
+        onSubmit();
         return true;
       }
     });
+  }
+
+  private void onSubmit() {
+    if(mIsSetMode) {
+      if(!"".equals(mPinNumberField.getText().toString())) {
+        onPinEntered(mPinNumberField.getText().toString());
+      }
+    } else {
+      Toast.makeText(PINPromptActivity.this, R.string.pin_incorrect, Toast.LENGTH_SHORT).show();
+    }
   }
 
   private void onPinEntered(String pin) {

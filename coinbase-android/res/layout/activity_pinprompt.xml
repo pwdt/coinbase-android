@@ -37,13 +37,29 @@
         android:text="isaac@siriusapplications.com"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
+    <View android:id="@+id/center_anchor"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerHorizontal="true"/>
+
     <Button
         android:id="@+id/pin_switch_accounts"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/pin_account"
-        android:layout_centerHorizontal="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/center_anchor"
         android:layout_marginTop="10dp"
         android:text="@string/pin_switch_accounts" />
+
+    <Button
+        android:id="@+id/pin_submit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pin_account"
+        android:layout_alignParentRight="true"
+        android:layout_alignLeft="@+id/center_anchor"
+        android:layout_marginTop="10dp"
+        android:text="@string/pin_submit" />
 
 </RelativeLayout>

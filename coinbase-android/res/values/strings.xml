@@ -161,7 +161,7 @@
     <string name="transactiondetails_transfer_buy_notes">Your bitcoins will arrive on %1$s.</string>
     <string name="pin_title">Unlock Wallet</string>
     <string name="pin_text">Enter wallet passcode:</string>
-    <string name="pin_switch_accounts">Switch account</string>
+    <string name="pin_switch_accounts">Accounts</string>
     <string name="pin_incorrect">Incorrect passcode.</string>
     <string name="settings_pin_change_title">Change passcode</string>
     <string name="settings_pin_use_title">Enable passcode lock</string>
@@ -186,5 +186,6 @@
     <string name="account_android_pin_edit">Require passcode only when tranferring money</string>
     <string name="account_android_pin_none">Passcode not enabled</string>
     <string name="exchange_rate_error">Could not load exchange rate.</string>
+    <string name="pin_submit">Submit</string>
     
 </resources>
