@@ -173,12 +173,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           currentUserId = response.getJSONObject("current_user").getString("id");
 
           JSONArray transactionsArray = response.optJSONArray("transactions");
+          numPages = response.getInt("num_pages");
 
           if(transactionsArray == null) {
             // No transactions
             continue;
           }
-          numPages = response.getInt("num_pages");
 
           for(int j = 0; j < transactionsArray.length(); j++) {
 
