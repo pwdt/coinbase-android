@@ -190,6 +190,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   private String getBtcAmount() {
 
+    if(mExchangeRates != null) {
+      return null;
+    }
+
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
