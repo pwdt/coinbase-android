@@ -438,7 +438,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           return;
         }
 
-        if(getBtcAmount() == null) {
+        Object btcAmount = getBtcAmount();
+        if(btcAmount == null || btcAmount == Boolean.FALSE) {
           return;
         }
 
@@ -447,7 +448,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         Bundle b = new Bundle();
 
         b.putSerializable("type", TransferType.values()[mTransferType]);
-        b.putString("amount", getBtcAmount().toPlainString());
+        b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
         b.putString("notes", mNotes);
         b.putString("toFrom", mRecipient);
 
@@ -473,7 +474,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           return;
         }
 
-        if(getBtcAmount() == null) {
+        Object btcAmount = getBtcAmount();
+        if(btcAmount == null || btcAmount == Boolean.FALSE) {
           return;
         }
 
@@ -482,7 +484,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         Bundle b = new Bundle();
 
         b.putSerializable("type", TransferType.values()[mTransferType]);
-        b.putString("amount", getBtcAmount().toPlainString());
+        b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
         b.putString("notes", mNotes);
 
         dialog.setArguments(b);
@@ -497,12 +499,16 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       public void onClick(View v) {
 
         String requestUri = generateRequestUri();
+        Object btcAmount = getBtcAmount();
+        if(btcAmount == Boolean.FALSE) {
+          return;
+        }
 
         DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
         Bundle args = new Bundle();
         args.putString("data", requestUri);
         args.putBoolean("isNfc", false);
-        args.putString("desiredAmount", getBtcAmount() == null ? null : getBtcAmount().toString());
+        args.putString("desiredAmount", btcAmount == null ? null : btcAmount.toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "qrrequest");
 
@@ -517,12 +523,16 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       public void onClick(View v) {
 
         String requestUri = generateRequestUri();
+        Object btcAmount = getBtcAmount();
+        if(btcAmount == Boolean.FALSE) {
+          return;
+        }
 
         DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
         Bundle args = new Bundle();
         args.putString("data", requestUri);
         args.putBoolean("isNfc", true);
-        args.putString("desiredAmount", getBtcAmount() == null ? null : getBtcAmount().toString());
+        args.putString("desiredAmount", btcAmount == null ? null : btcAmount.toString());
         f.setArguments(args);
         f.show(getFragmentManager(), "nfcrequest");
 
@@ -644,7 +654,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     dialog.show(getFragmentManager(), "requestEmail");
   }
 
-  private BigDecimal getBtcAmount() {
+  private Object getBtcAmount() {
 
     if(mAmount == null || "".equals(mAmount) || ".".equals(mAmount)) {
       return null;
@@ -661,7 +671,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     if(!fromBitcoin && mNativeExchangeRates == null) {
       Toast.makeText(mParent, R.string.exchange_rate_error, Toast.LENGTH_SHORT).show();
-      return null;
+      return Boolean.FALSE;
     }
 
     BigDecimal amount = new BigDecimal(mAmount);
@@ -671,12 +681,12 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   private String generateRequestUri() {
 
-    BigDecimal btc = getBtcAmount();
+    Object btc = getBtcAmount();
     String s;
-    if(btc == null) {
+    if(btc == null || btc == Boolean.FALSE) {
       s = null;
     } else {
-      s = btc.toPlainString();
+      s = ((BigDecimal) btc).toPlainString();
     }
 
     return generateRequestUri(s, mNotes);
