@@ -25,10 +25,17 @@
             android:layout_below="@+id/pos_title"
             android:layout_marginRight="5dp"
             android:layout_marginTop="10dp"
-            android:layout_toLeftOf="@+id/pos_btc"
+            android:layout_toLeftOf="@+id/pos_currency"
             android:ems="10"
             android:hint="@string/pos_amt"
             android:inputType="numberDecimal" />
+
+        <Spinner
+            android:id="@+id/pos_currency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/pos_btc"
+            android:layout_alignBaseline="@+id/pos_amt" />
 
         <TextView
             android:id="@+id/pos_btc"

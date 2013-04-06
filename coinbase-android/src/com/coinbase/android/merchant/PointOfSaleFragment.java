@@ -2,6 +2,7 @@ package com.coinbase.android.merchant;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Locale;
 
 import org.acra.ACRA;
@@ -20,8 +21,11 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.coinbase.android.CoinbaseFragment;
@@ -75,6 +79,8 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private TextView mBtcDisplay;
   private EditText mAmount, mNotes;
   private Button mSubmitEmail, mSubmitQr, mSubmitNfc;
+  private Spinner mCurrency;
+  private String[] mCurrenciesArray;
 
   @Override
   public void onSwitchedTo() {
@@ -93,6 +99,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mSubmitEmail = (Button) view.findViewById(R.id.pos_request_email);
     mSubmitQr = (Button) view.findViewById(R.id.pos_request_qr);
     mSubmitNfc = (Button) view.findViewById(R.id.pos_request_nfc);
+    mCurrency = (Spinner) view.findViewById(R.id.pos_currency);
 
     mAmount.addTextChangedListener(new TextWatcher() {
 
@@ -137,8 +144,58 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
         mParent.getTransferFragment().startQrNfcRequest(true, getBtcAmount(), mNotes.getText().toString());
       }
     });
+    
+    initializeCurrencySpinner();
+    mCurrency.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+      @Override
+      public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+
+        updateAmountHint();
+        updateBtcDisplay();
+      }
+
+      @Override
+      public void onNothingSelected(AdapterView<?> arg0) {
+        // Ignore
+      }});
 
     return view;
+  }
+
+  private void initializeCurrencySpinner() {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
+        "usd").toUpperCase(Locale.CANADA);
+
+    mCurrenciesArray = new String[] {
+                                     "BTC",
+                                     nativeCurrency,
+    };
+
+    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+        mParent, R.layout.fragment_transfer_currency, Arrays.asList(mCurrenciesArray)) {
+
+      @Override
+      public View getView(int position, View convertView, ViewGroup parent) {
+
+        TextView view = (TextView) super.getView(position, convertView, parent);
+        view.setText(mCurrenciesArray[position]);
+        return view;
+      }
+
+      @Override
+      public View getDropDownView(int position, View convertView, ViewGroup parent) {
+
+        TextView view = (TextView) super.getDropDownView(position, convertView, parent);
+        view.setText(mCurrenciesArray[position]);
+        return view;
+      }
+    };
+    arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    mCurrency.setAdapter(arrayAdapter);
   }
 
   @Override
@@ -190,22 +247,32 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   private String getBtcAmount() {
 
-    if(mExchangeRates != null) {
+    if(mExchangeRates == null) {
       return null;
+    }
+ 
+    String enteredAmount = mAmount.getText().toString();
+
+    if("".equals(enteredAmount) || ".".equals(enteredAmount)) {
+      return null;
+    }
+
+    if(mCurrency.getSelectedItemPosition() == 0) {
+      // Prices are entered in BTC
+      return mAmount.getText().toString();
     }
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
         "usd").toLowerCase(Locale.CANADA);
-    String nativeCurrencyAmount = mAmount.getText().toString();
     String nativeToBtc = mExchangeRates.optString(nativeCurrency + "_to_btc");
 
-    if(nativeToBtc == null || "".equals(nativeCurrencyAmount) || ".".equals(nativeCurrencyAmount)) {
+    if(nativeToBtc == null) {
       return null;
     }
 
-    String btcAmount = new BigDecimal(nativeCurrencyAmount).multiply(new BigDecimal(nativeToBtc)).toString();
+    String btcAmount = new BigDecimal(enteredAmount).multiply(new BigDecimal(nativeToBtc)).toString();
     return btcAmount;
   }
 
@@ -216,7 +283,9 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String notes = prefs.getString(String.format(Constants.KEY_ACCOUNT_POS_NOTES, activeAccount), "");
+    boolean btcPrices = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_POS_BTC_AMT, activeAccount), false);
     mNotes.setText(notes);
+    mCurrency.setSelection(btcPrices ? 0 : 1);
   }
 
   @Override
@@ -227,18 +296,20 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     Editor e = prefs.edit();
     e.putString(String.format(Constants.KEY_ACCOUNT_POS_NOTES, activeAccount), mNotes.getText().toString());
+    e.putBoolean(String.format(Constants.KEY_ACCOUNT_POS_BTC_AMT, activeAccount), mCurrency.getSelectedItemPosition() == 0);
     e.commit();
+  }
+  
+  private void updateAmountHint() {
+
+    // Update text hint
+    String currency = mCurrenciesArray[mCurrency.getSelectedItemPosition()];
+    mAmount.setHint(String.format(getString(R.string.pos_amt), currency.toUpperCase(Locale.CANADA)));
   }
 
   public void refresh() {
 
-    // Update text hint
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-        "usd").toUpperCase(Locale.CANADA);
-    mAmount.setHint(String.format(getString(R.string.pos_amt), nativeCurrency));
-
+    updateAmountHint();
     updateBtcDisplay();
   }
 }
