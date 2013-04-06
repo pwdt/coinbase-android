@@ -661,7 +661,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         Uri uri = Uri.parse(contents);
         if(uri != null && "bitcoin".equals(uri.getScheme())) {
           // Is bitcoin URI
-          mViewFlipper.setDisplayedChild(FRAGMENT_INDEX_TRANSFER); // Switch to transfer fragment
+          switchTo(FRAGMENT_INDEX_TRANSFER); // Switch to transfer fragment
           mTransferFragment.fillFormForBitcoinUri(uri);
         }
 
