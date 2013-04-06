@@ -34,6 +34,7 @@ import com.coinbase.android.MainActivity;
 import com.coinbase.android.R;
 import com.coinbase.android.TransferFragment;
 import com.coinbase.android.Utils;
+import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.api.RpcManager;
 
 public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
@@ -225,9 +226,20 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       return;
     }
 
-    String btcAmount = getBtcAmount();
+    String displayAmount;
+    CurrencyType currencyType;
+    int string;
+    if(mCurrency.getSelectedItemPosition() == 0) {
+      displayAmount = getNativeAmount();
+      currencyType = CurrencyType.TRADITIONAL;
+      string = R.string.pos_traditional;
+    } else {
+      displayAmount = getBtcAmount();
+      currencyType = CurrencyType.BTC;
+      string = R.string.pos_btc;
+    }
 
-    if(btcAmount == null) {
+    if(displayAmount == null) {
 
       mBtcDisplay.setText(null);
       setButtonsEnabled(false);
@@ -235,7 +247,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     }
 
     setButtonsEnabled(true);
-    mBtcDisplay.setText(String.format(getString(R.string.pos_btc), Utils.formatCurrencyAmount(btcAmount)));
+    mBtcDisplay.setText(String.format(getString(string), Utils.formatCurrencyAmount(
+      new BigDecimal(displayAmount),
+      false,
+      currencyType), mCurrenciesArray[1]));
   }
 
   private void setButtonsEnabled(boolean enabled) {
@@ -274,6 +289,32 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     String btcAmount = new BigDecimal(enteredAmount).multiply(new BigDecimal(nativeToBtc)).toString();
     return btcAmount;
+  }
+
+  private String getNativeAmount() {
+
+    if(mExchangeRates == null) {
+      return null;
+    }
+ 
+    String enteredAmount = mAmount.getText().toString();
+
+    if("".equals(enteredAmount) || ".".equals(enteredAmount)) {
+      return null;
+    }
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
+        "usd").toLowerCase(Locale.CANADA);
+    String rate = mExchangeRates.optString("btc_to_" + nativeCurrency);
+
+    if(rate == null) {
+      return null;
+    }
+
+    String amount = new BigDecimal(enteredAmount).multiply(new BigDecimal(rate)).toString();
+    return amount;
   }
 
   @Override
