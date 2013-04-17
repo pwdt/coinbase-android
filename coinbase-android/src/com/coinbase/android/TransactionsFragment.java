@@ -182,7 +182,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           for(int j = 0; j < transactionsArray.length(); j++) {
 
-            JSONObject transaction = transactionsArray.getJSONObject(j).getJSONObject("transaction");
+            JSONObject transaction = transactionsArray.getJSONObject(j).optJSONObject("transaction");
+
+            if(transaction == null) {
+              continue; // This transaction is empty
+            }
+
             transactions.add(transaction);
           }
 
