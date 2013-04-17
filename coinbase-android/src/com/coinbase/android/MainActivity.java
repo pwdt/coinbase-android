@@ -526,6 +526,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
         refresh();
         return true;
+      case R.id.menu_help:
+        Intent helpIntent = new Intent(Intent.ACTION_VIEW);
+        helpIntent.setData(Uri.parse("http://support.coinbase.com/"));
+        startActivity(helpIntent);
+        return true;
       case android.R.id.home:
         toggleSlidingMenu();
         return true;
