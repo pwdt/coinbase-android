@@ -188,5 +188,7 @@
     <string name="account_android_pin_none">Passcode not enabled</string>
     <string name="exchange_rate_error">Could not load exchange rate.</string>
     <string name="pin_submit">Submit</string>
+    <string name="account_invalid_title">Authorization failed</string>
+    <string name="account_invalid">This device is no longer authorized to access your Coinbase account. Please sign in again.</string>
     
 </resources>

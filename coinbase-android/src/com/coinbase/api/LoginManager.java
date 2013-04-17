@@ -324,6 +324,20 @@ public class LoginManager {
     return prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null);
   }
 
+  public void setAccountValid(Context context, int accountId, boolean status) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    Editor e = prefs.edit();
+    e.putBoolean(String.format(Constants.KEY_ACCOUNT_VALID, accountId), status);
+    e.commit();
+  }
+
+  public boolean getAccountValid(Context context, int accountId) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    return prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_VALID, accountId), true);
+  }
+
   public void deleteCurrentAccount(Context context) {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

@@ -136,19 +136,31 @@ public class RpcManager {
       }
     }
 
+    if(!LoginManager.getInstance().getAccountValid(context, account)) {
+      // Don't bother doing the request - this account is not valid
+      throw new IOException("Account is not valid");
+    }
+
     String accessToken = LoginManager.getInstance().getAccessToken(context, account);
     request.addHeader("Authorization", String.format("Bearer %s", accessToken));
 
     HttpResponse response = client.execute(request);
     int code = response.getStatusLine().getStatusCode();
 
-    if(code == 401 && retry) {
+    if(code == 401 ) {
 
       // Authentication error.
-      // This may be caused by an outdated access token - attempt to fetch a new one
-      // before failing.
-      LoginManager.getInstance().refreshAccessToken(context, account);
-      return call(context, method, verb, params, false, account);
+      if(retry) {
+        // This may be caused by an outdated access token - attempt to fetch a new one
+        // before failing.
+        LoginManager.getInstance().refreshAccessToken(context, account);
+        return call(context, method, verb, params, false, account);
+      } else {
+        // We already retried and it didn't work. The OAuth token must be no longer valid.
+        // Update the LoginManager so that the UI can display an appropriate message.
+        LoginManager.getInstance().setAccountValid(context, account, false);
+        throw new IOException("Account is no longer valid");
+      }
     } else if(code != 200) {
 
       throw new IOException("HTTP response " + code + " to request " + method + " for account " + account);
