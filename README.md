@@ -29,3 +29,12 @@ To build the Android app in [Eclipse](http://developer.android.com/sdk/index.htm
 4.	Deselect all projects and only add: coinbase-android, library-actionbarsherlock, library-slidingmenu
 5.  Go to Window > Android SDK Manager and check the box to install "Google APIs" under Android 4.2.2 (this is needed for SlidingMenu)
 5. 	The project should now build!
+
+## Translations
+
+We welcome crowdsourced translations! Just submit a pull request including the edited files. Create a new folder
+
+> coinbase-android/res/values-xx_XX
+
+where xx is your language code and XX is your country code (a partial list can be found at https://developer.android.com/reference/java/util/Locale.html).
+Copy and paste the `coinbase-android/res/values/strings.xml` file into the new folder, and edit the file to add your translations. Thanks!
