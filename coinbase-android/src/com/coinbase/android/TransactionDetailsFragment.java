@@ -216,7 +216,12 @@ public class TransactionDetailsFragment extends Fragment {
           TransactionEntry.COLUMN_NAME_IS_TRANSFER,
           TransactionEntry.COLUMN_NAME_TRANSFER_JSON, },
           TransactionEntry._ID + " = ?", new String[] { transactionId }, null, null, null);
-      c.moveToFirst();
+      if(!c.moveToFirst()) {
+        // Transaction not found
+        Toast.makeText(getActivity(), R.string.transactiondetails_error, Toast.LENGTH_SHORT).show();
+        getActivity().finish();
+        return view;
+      }
 
       JSONObject data, transferData;
       try {
