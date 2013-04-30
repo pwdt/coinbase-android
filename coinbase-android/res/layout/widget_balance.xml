@@ -6,7 +6,7 @@
     android:id="@+id/widget_outer">
 	<RelativeLayout
 	    android:id="@+id/widget_base"
-	    android:background="@drawable/appwidget_dark_bg"
+	    android:background="@drawable/appwidget_balance_bg"
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 	  <RelativeLayout
@@ -24,7 +24,7 @@
 	        android:layout_centerVertical="true"
 	        android:layout_alignParentLeft="true"
 	        android:text="@string/widget_balance_default"
-	        android:textColor="#FFFFFF"
+          android:textColor="#666666"
 	        android:textAppearance="?android:attr/textAppearanceLarge" />
 	
 	    <TextView
@@ -34,7 +34,7 @@
 	        android:text="@string/btc"
 	        android:layout_alignBaseline="@+id/widget_balance"
 	        android:layout_toRightOf="@+id/widget_balance"
-	        android:textColor="#FFFFFF"
+          android:textColor="#666666"
 	        android:layout_marginLeft="5dp"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    </RelativeLayout>
@@ -48,7 +48,7 @@
 	        android:layout_centerVertical="true"
 	        android:layout_toLeftOf="@+id/widget_refresh"
 	        android:padding="10dp"
-	        android:src="@drawable/ic_action_barcode" />
+	        android:src="@drawable/ic_action_barcode_light" />
 	
 	    <ImageButton
 	        android:id="@+id/widget_refresh"
@@ -59,7 +59,7 @@
 	        android:layout_centerVertical="true"
 	        android:layout_toLeftOf="@+id/widget_transfer"
 	        android:padding="10dp"
-	        android:src="@drawable/ic_action_refresh" />
+	        android:src="@drawable/ic_action_refresh_light" />
 	
 	    <ImageButton
 	        android:id="@+id/widget_transfer"
@@ -70,7 +70,7 @@
 	        android:layout_centerVertical="true"
 	        android:layout_alignParentRight="true"
 	        android:padding="10dp"
-	        android:src="@drawable/ic_action_transfer" />
+	        android:src="@drawable/ic_action_transfer_light" />
 	
 	</RelativeLayout>
 </FrameLayout>
