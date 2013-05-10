@@ -48,7 +48,7 @@
     <string name="buysell_type_buy_text">Buy</string>
     <string name="buysell_type_sell_text">Sell</string>
     <string name="btc">BTC</string>
-    <string name="buysell_amount_hint">10</string>
+    <string name="buysell_amount_hint"></string>
     <string name="buysell_total_label">Total:</string>
     <string name="buysell_submit_buy">Buy Bitcoins</string>
     <string name="buysell_submit_sell">Sell Bitcoins</string>
