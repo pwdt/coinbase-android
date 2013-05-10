@@ -1,5 +1,7 @@
 package com.coinbase.android;
 
+import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -25,7 +27,7 @@ import com.coinbase.api.LoginManager;
 
 public class LoginActivity extends CoinbaseActivity {
 
-  private static final String REDIRECT_URL = "http://example.com/coinbase-redirect";
+  private static final String REDIRECT_URL = "urn:ietf:wg:oauth:2.0:oob";
   public static final String EXTRA_SHOW_INTRO = "show_intro";
 
   WebView mLoginWebView;
@@ -131,9 +133,10 @@ public class LoginActivity extends CoinbaseActivity {
       public boolean _shouldOverrideUrlLoading(WebView view, String url) {
 
         Uri uri = Uri.parse(url);
-        if(url.startsWith(REDIRECT_URL)) {
+        List<String> pathSegments = uri.getPathSegments();
+        if(pathSegments.size() == 3 && "oauth".equals(pathSegments.get(0)) && "authorize".equals(pathSegments.get(1))) {
           // OAuth redirect - we will handle this.
-          String oauthCode = Uri.parse(url).getQueryParameter("code");
+          String oauthCode = pathSegments.get(2);
           new OAuthCodeTask().execute(oauthCode);
           return true;
         } else if(uri.getPath().startsWith("/transactions") || uri.getPath().isEmpty()) { 
