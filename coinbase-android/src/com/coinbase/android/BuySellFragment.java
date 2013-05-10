@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -29,8 +30,11 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,15 +98,34 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
       final BuySellType type = (BuySellType) getArguments().getSerializable("type");
-      final String amount1 = getArguments().getString("amount1"),
-          amount2 = getArguments().getString("amount2"),
-          amount2currency = getArguments().getString("amount2currency");
+      final String amount1 = getArguments().getString("amount1");
+      final boolean agreeBtcAmountVaries = getArguments().getBoolean("agreeBtcAmountVaries", false);
 
-      int messageResource = type == BuySellType.BUY ? R.string.buysell_confirm_message_buy : R.string.buysell_confirm_message_sell;
-      String message = String.format(getString(messageResource), amount1, amount2, amount2currency);
+      final TextView message = new TextView(getActivity());
+      message.setBackgroundColor(Color.WHITE);
+      message.setTextColor(Color.BLACK);
+      message.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+      message.setLinksClickable(true);
+      message.setMovementMethod(LinkMovementMethod.getInstance());
+
+      float scale = getResources().getDisplayMetrics().density;
+      int paddingPx = (int) (15 * scale + 0.5f);
+      message.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+
+      if(agreeBtcAmountVaries) {
+
+        message.setText(Html.fromHtml(getString(R.string.buysell_confirm_message_buy_varies)));
+      } else {
+
+        final String amount2 = getArguments().getString("amount2"),
+            amount2currency = getArguments().getString("amount2currency");
+
+        int messageResource = type == BuySellType.BUY ? R.string.buysell_confirm_message_buy : R.string.buysell_confirm_message_sell;
+        message.setText(String.format(getString(messageResource), amount1, amount2, amount2currency));
+      }
 
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-      builder.setMessage(message)
+      builder.setView(message)
       .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int id) {
 
@@ -110,7 +133,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
           BuySellFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getBuySellFragment();
 
           if(parent != null) {
-            parent.startBuySellTask(type, amount1);
+            parent.startBuySellTask(type, amount1, agreeBtcAmountVaries);
           }
         }
       })
@@ -126,7 +149,9 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
   private class DoBuySellTask extends AsyncTask<Object, Void, Object[]> {
 
+    private static final String BTC_AMOUNT_VARIES_ERROR = "Sorry, the maximum number of purchases on Coinbase has been reached";
     private ProgressDialog mDialog;
+    private boolean mAgreeBtcAmountVaries;
 
     @Override
     protected void onPreExecute() {
@@ -137,7 +162,8 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
     protected Object[] doInBackground(Object... params) {
 
-      return doBuySell((BuySellType) params[0], (String) params[1]);
+      mAgreeBtcAmountVaries = params.length > 3 && params[3] != null;
+      return doBuySell((BuySellType) params[0], (String) params[1], mAgreeBtcAmountVaries);
     }
 
     protected void onPostExecute(Object[] result) {
@@ -161,7 +187,24 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
         mParent.refresh();
       } else {
 
-        Utils.showMessageDialog(getFragmentManager(), (String) result[1]);
+        if(result[1] != null && ((String) result[1]).trim().startsWith(BTC_AMOUNT_VARIES_ERROR)
+            && !mAgreeBtcAmountVaries) {
+
+          // Prompt to buy again, but with different message
+          BuySellType type = (BuySellType) result[2];
+          String amount = (String) result[3];
+          ConfirmBuySellDialogFragment dialog = new ConfirmBuySellDialogFragment();
+          Bundle b = new Bundle();
+          b.putSerializable("type", type);
+          b.putString("amount1", amount);
+          b.putBoolean("agreeBtcAmountVaries", true);
+          dialog.setArguments(b);
+          dialog.show(getFragmentManager(), "confirm");
+        } else {
+
+          System.out.println("Does not start with '" + mAgreeBtcAmountVaries);
+          Utils.showMessageDialog(getFragmentManager(), String.format(getString(R.string.buysell_error_api), (String) result[1]));
+        }
       }
     }
   }
@@ -535,15 +578,19 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     mBuySellSpinner.setAdapter(arrayAdapter);
   }
 
-  protected void startBuySellTask(BuySellType type, String amount) {
+  protected void startBuySellTask(BuySellType type, String amount, boolean agreeBtcAmountVaries) {
 
-    Utils.runAsyncTaskConcurrently(new DoBuySellTask(), type, amount);
+    Utils.runAsyncTaskConcurrently(new DoBuySellTask(), type, amount, agreeBtcAmountVaries);
   }
 
-  private Object[] doBuySell(BuySellType type, String amount) {
+  private Object[] doBuySell(BuySellType type, String amount, boolean agreeBtcAmountVaries) {
 
     List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
     params.add(new BasicNameValuePair("qty", amount));
+
+    if(type == BuySellType.BUY && agreeBtcAmountVaries) {
+      params.add(new BasicNameValuePair("agree_btc_amount_varies", "true"));
+    }
 
     try {
       JSONObject response = RpcManager.getInstance().callPost(mParent, type.getRequestType() + "s", params);
@@ -556,7 +603,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
       } else {
 
         String errorMessage = response.getJSONArray("errors").optString(0);
-        return new Object[] { false, String.format(getString(R.string.buysell_error_api), errorMessage) };
+        return new Object[] { false, errorMessage, type, amount };
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -566,7 +613,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     }
 
     // There was an exception
-    return new Object[] { false, getString(R.string.buysell_error_exception) };
+    return new Object[] { false, getString(R.string.buysell_error_exception), type, amount };
   }
 
   private void setHeaderPinned(boolean pinned) {

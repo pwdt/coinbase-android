@@ -190,5 +190,6 @@
     <string name="pin_submit">Submit</string>
     <string name="account_invalid_title">Authorization failed</string>
     <string name="account_invalid">This device is no longer authorized to access your Coinbase account. Please sign in again.</string>
+    <string name="buysell_confirm_message_buy_varies">Due to higher than normal buy volumes, we are unable to provide exact price quotes right now.<![CDATA[<br><br>]]>Instead of pausing buys entirely, we decided to give people the option to purchase bitcoin at the market price in a few days. Once your USD funds arrive, we will exchange them to bitcoin at the market price.<![CDATA[<br><br><a href="https://coinbase.com/buys">More information</a>]]></string>
     
 </resources>
