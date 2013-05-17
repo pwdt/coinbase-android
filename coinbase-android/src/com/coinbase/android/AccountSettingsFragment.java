@@ -16,6 +16,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -515,7 +516,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
     Object[] data = (Object[]) l.getItemAtPosition(position);
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    final int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
     if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
       return;
@@ -541,7 +542,11 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     } else if("refresh_token".equals(data[2])) {
 
       // Refresh token
-      LoginManager.getInstance().refreshAccessToken(mParent, activeAccount);
+      new Thread(new Runnable() {
+        public void run() {
+          LoginManager.getInstance().refreshAccessToken(mParent, activeAccount);
+        }
+      }).start();
     } else if("limits".equals(data[2])) {
 
       // Open browser
@@ -573,7 +578,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 
       android.content.ClipboardManager clipboard =
-          (android.content.ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE);
+          (ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE);
       ClipData clip = ClipData.newPlainText("Coinbase", text);
       clipboard.setPrimaryClip(clip);
     } else {
