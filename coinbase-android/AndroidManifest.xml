@@ -81,6 +81,8 @@
               android:configChanges="orientation|keyboardHidden"
               android:theme="@android:style/Theme.NoTitleBar"
               android:windowSoftInputMode="stateAlwaysHidden"></activity>
+        <activity android:name="com.coinbase.android.ReceiveAddressesActivity"
+            android:configChanges="orientation|screenSize"></activity>
         <service android:name="com.coinbase.android.TransactionsRemoteViewsService"
               android:permission="android.permission.BIND_REMOTEVIEWS"></service>
         <service android:name="com.coinbase.android.UpdateWidgetBalanceService"></service>

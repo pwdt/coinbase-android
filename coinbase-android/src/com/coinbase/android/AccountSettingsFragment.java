@@ -556,9 +556,8 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       startActivity(i);
     } else if("receive_address".equals(data[2])) {
 
-      // Copy to clipboard
-      setClipboard(prefs.getString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), ""));
-      Toast.makeText(mParent, R.string.account_receive_address_copied, Toast.LENGTH_SHORT).show();
+      // Open all addresses
+      startActivity(new Intent(mParent, ReceiveAddressesActivity.class));
     } else if("enable_merchant_tools".equals(data[2])) {
 
       String key = String.format((String) data[1], activeAccount);
@@ -568,24 +567,6 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     } else if("pin".equals(data[2])) {
 
       new PINSettingDialogFragment().show(getFragmentManager(), "pin");
-    }
-  }
-
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-  private void setClipboard(String text) {
-
-    int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-    if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-
-      android.content.ClipboardManager clipboard =
-          (ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE);
-      ClipData clip = ClipData.newPlainText("Coinbase", text);
-      clipboard.setPrimaryClip(clip);
-    } else {
-
-      android.text.ClipboardManager clipboard =
-          (android.text.ClipboardManager) mParent.getSystemService(Context.CLIPBOARD_SERVICE);
-      clipboard.setText(text);
     }
   }
 
