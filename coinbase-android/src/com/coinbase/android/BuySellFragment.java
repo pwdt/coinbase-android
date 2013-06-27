@@ -184,6 +184,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
         int messageId = type == BuySellType.BUY ? R.string.buysell_success_buy : R.string.buysell_success_sell;
         String text = String.format(getString(messageId), (String) result[1]);
         Toast.makeText(mParent, text, Toast.LENGTH_SHORT).show();
+        mAmount.setText(null);
 
         // Sync transactions
         mParent.refresh();
