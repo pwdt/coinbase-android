@@ -366,7 +366,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
         if(!LoginManager.getInstance().getAccountValid(mParent, activeAccount)) {
           // Request failed because account is no longer valid
-          new AccountInvalidDialogFragment().show(getFragmentManager(), "accountinvalid");
+          if(getFragmentManager() != null) {
+            new AccountInvalidDialogFragment().show(getFragmentManager(), "accountinvalid");
+          }
         }
       }
 
