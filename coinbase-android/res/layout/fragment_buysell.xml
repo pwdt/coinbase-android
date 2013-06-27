@@ -86,7 +86,9 @@
             android:padding="10dp"
             android:text="@string/buysell_help"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#666666" />
+            android:textColor="#666666"
+            android:autoLink="all"
+            android:linksClickable="true" />
     </RelativeLayout>
 
     <ListView
