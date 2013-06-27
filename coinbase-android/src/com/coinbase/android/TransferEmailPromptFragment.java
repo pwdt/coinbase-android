@@ -10,10 +10,8 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import com.coinbase.android.R;
 import com.coinbase.android.TransferFragment.TransferType;
 
 public class TransferEmailPromptFragment extends DialogFragment {
@@ -53,7 +51,7 @@ public class TransferEmailPromptFragment extends DialogFragment {
         TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
 
         if(parent != null) {
-          parent.startTransferTask(type, amount, notes, field.getText().toString());
+          parent.startTransferTask(type, amount, notes, field.getText().toString(), false);
         }
       }
     });

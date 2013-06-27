@@ -94,7 +94,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     protected Object[] doInBackground(Object... params) {
 
-      return doTransfer((TransferType) params[0], (String) params[1], (String) params[2], (String) params[3]);
+      return doTransfer((TransferType) params[0], (String) params[1], (String) params[2], (String) params[3], (Boolean) params[4]);
     }
 
     protected void onPostExecute(Object[] result) {
@@ -190,8 +190,20 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       final String amount = getArguments().getString("amount"),
           toFrom = getArguments().getString("toFrom"),
           notes = getArguments().getString("notes");
+      final boolean isFeePrompt = getArguments().getBoolean("isFeePrompt");
 
-      int messageResource = type == TransferType.REQUEST ? R.string.transfer_confirm_message_request : R.string.transfer_confirm_message_send;
+      int messageResource;
+
+      if(type == TransferType.REQUEST) {
+        messageResource =  R.string.transfer_confirm_message_request;
+      } else {
+        if(isFeePrompt) {
+          messageResource =  R.string.transfer_confirm_message_send_fee;
+        } else {
+          messageResource =  R.string.transfer_confirm_message_send;
+        }
+      }
+
       String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount), toFrom);
 
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -203,7 +215,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
 
           if(parent != null) {
-            parent.startTransferTask(type, amount, notes, toFrom);
+            parent.startTransferTask(type, amount, notes, toFrom, isFeePrompt);
           }
         }
       })
@@ -451,6 +463,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
         b.putString("notes", mNotes);
         b.putString("toFrom", mRecipient);
+        b.putBoolean("isFeePrompt", ((BigDecimal) btcAmount).compareTo(new BigDecimal("0.001")) == -1);
 
         dialog.setArguments(b);
 
@@ -806,18 +819,22 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     updateNativeCurrency();
   }
 
-  protected void startTransferTask(TransferType type, String amount, String notes, String toFrom) {
+  protected void startTransferTask(TransferType type, String amount, String notes, String toFrom, boolean addFee) {
 
-    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, notes, toFrom);
+    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, notes, toFrom, addFee);
   }
 
-  private Object[] doTransfer(TransferType type, String amount, String notes, String toFrom) {
+  private Object[] doTransfer(TransferType type, String amount, String notes, String toFrom, boolean addFee) {
 
     List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
     params.add(new BasicNameValuePair("transaction[amount]", amount));
 
     if(notes != null && !"".equals(notes)) {
       params.add(new BasicNameValuePair("transaction[notes]", notes));
+    }
+
+    if(addFee) {
+      params.add(new BasicNameValuePair("transaction[user_fee]", "0.0005"));
     }
 
     params.add(new BasicNameValuePair(
