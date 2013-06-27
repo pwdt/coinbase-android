@@ -1,23 +1,10 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:tools="http://schemas.android.com/tools"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:id="@+id/main_layout">
 
-    <FrameLayout 
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:id="@+id/main_gingerbread_compat_overlay">
-	    <ListView
-	        android:id="@android:id/list"
-	        android:layout_width="@dimen/main_menu_width"
-	        android:layout_height="match_parent"
-	        android:gravity="left"
-	        android:background="@color/main_menu_background"
-	        android:cacheColorHint="@color/main_menu_background" >
-	    </ListView>
-    </FrameLayout>
-
+    <!-- The main content view -->
     <ViewFlipper
         android:id="@+id/flipper"
         android:layout_width="match_parent"
@@ -60,4 +47,14 @@
             class="com.coinbase.android.merchant.PointOfSaleFragment" />
     </ViewFlipper>
 
-</FrameLayout>
+    <!-- The navigation drawer -->
+    <ListView
+        android:id="@+id/drawer"
+        android:layout_width="@dimen/main_menu_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:background="@color/main_menu_background"
+        android:cacheColorHint="@color/main_menu_background" >
+    </ListView>
+
+</android.support.v4.widget.DrawerLayout>

@@ -12,11 +12,13 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -36,7 +38,6 @@ import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
 import com.justinschultz.pusherclient.Pusher;
-import com.slidingmenu.lib.SlidingMenu;
 
 @RequiresAuthentication
 @RequiresPIN
@@ -74,12 +75,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       return builder.create();
     }
-  }
-
-  private enum SlidingMenuMode {
-    NORMAL,
-    PINNED,
-    FAKE_GINGERBREAD_COMPAT;
   }
 
   public static final int NUM_FRAGMENTS = 6;
@@ -140,12 +135,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   MerchantToolsFragment mMerchantToolsFragment;
   PointOfSaleFragment mPointOfSaleFragment;
   OnSharedPreferenceChangeListener mSharedPreferenceChangeListener;
-  SlidingMenu mSlidingMenu;
+  DrawerLayout mSlidingMenu;
+  ActionBarDrawerToggle mDrawerToggle;
   Pusher mPusher;
   MenuItem mRefreshItem;
   ListView mMenuListView;
   boolean mRefreshItemState = false;
-  SlidingMenuMode mSlidingMenuMode = SlidingMenuMode.NORMAL;
   boolean mSlidingMenuCompatShowing = false;
   long mLastRefreshTime = -1;
 
@@ -154,79 +149,33 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-      mSlidingMenuMode = SlidingMenuMode.FAKE_GINGERBREAD_COMPAT;
-    } else {
-      mSlidingMenuMode =
-          getResources().getBoolean(R.bool.pin_sliding_menu) ? SlidingMenuMode.PINNED : SlidingMenuMode.NORMAL;
-    }
-
     // Set up the ViewFlipper
     mViewFlipper = (ViewFlipper) findViewById(R.id.flipper);
 
-    // configure the SlidingMenu
-    mSlidingMenu = new SlidingMenu(this);
-    mSlidingMenu.setMode(SlidingMenu.LEFT);
-    mSlidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-    mSlidingMenu.setShadowWidthRes(R.dimen.main_menu_shadow_width);
-    mSlidingMenu.setShadowDrawable(R.drawable.main_menu_shadow);
-    mSlidingMenu.setBehindWidthRes(R.dimen.main_menu_width);
-    mSlidingMenu.setFadeDegree(0f);
-    mSlidingMenu.setBehindScrollScale(0);
-    mSlidingMenu.setSlidingEnabled(mSlidingMenuMode == SlidingMenuMode.NORMAL);
-
-    if(mSlidingMenuMode != SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
-
-      mSlidingMenu.attachToActivity(this, SlidingMenu.SLIDING_CONTENT);
-    }
-
-    if(mSlidingMenuMode == SlidingMenuMode.NORMAL) {
-
-      findViewById(android.R.id.list).setVisibility(View.GONE);
-      mSlidingMenu.setMenu(R.layout.activity_main_menu);
-      mMenuListView = (ListView) mSlidingMenu.findViewById(android.R.id.list);
-    } else {
-      mMenuListView = (ListView) findViewById(android.R.id.list);
-
-      if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
-        findViewById(R.id.main_gingerbread_compat_overlay).setVisibility(View.GONE);
-        findViewById(R.id.main_gingerbread_compat_overlay).setOnClickListener(new View.OnClickListener() {
-
-          @Override
-          public void onClick(View v) {
-            // Close sliding menu
-            hideSlidingMenu(false);
-          }
-        });
-      }
-    }
-
-    mSlidingMenu.setOnClosedListener(new SlidingMenu.OnClosedListener() {
+    // Configure the DrawerLayout
+    mSlidingMenu = (DrawerLayout) findViewById(R.id.main_layout);
+    mMenuListView = (ListView) findViewById(R.id.drawer);
+    mDrawerToggle = new ActionBarDrawerToggle(this, mSlidingMenu,
+      R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
 
       int lastTimeIndex = 0;
 
       @Override
-      public void onClosed() {
+      public void onDrawerClosed(View drawerView) {
         onSlidingMenuClosed(lastTimeIndex != mViewFlipper.getDisplayedChild());
         lastTimeIndex = mViewFlipper.getDisplayedChild();
-      }
-    });
-
-    mSlidingMenu.setOnCloseListener(new SlidingMenu.OnCloseListener() {
-
-      @Override
-      public void onClose() {
         updateTitle();
       }
-    });
-
-    mSlidingMenu.setOnOpenListener(new SlidingMenu.OnOpenListener() {
 
       @Override
-      public void onOpen() {
+      public void onDrawerOpened(View drawerView) {
         updateTitle();
       }
-    });
+      
+    };
+    mSlidingMenu.setDrawerListener(mDrawerToggle);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setHomeButtonEnabled(true);
 
     // Set up Sliding Menu list
     mMenuListView.setAdapter(new SectionsListAdapter());
@@ -270,10 +219,22 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     prefs.registerOnSharedPreferenceChangeListener(mSharedPreferenceChangeListener);
     updateMerchantToolsVisibility();
 
-    getSupportActionBar().setDisplayHomeAsUpEnabled(!(mSlidingMenuMode == SlidingMenuMode.PINNED));
     switchTo(0);
 
     onNewIntent(getIntent());
+  }
+
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState) {
+    super.onPostCreate(savedInstanceState);
+    // Sync the toggle state after onRestoreInstanceState has occurred.
+    mDrawerToggle.syncState();
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    mDrawerToggle.onConfigurationChanged(newConfig);
   }
   
   private void updateMerchantToolsVisibility() {
@@ -359,11 +320,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   private boolean isSlidingMenuShowing() {
 
-    if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
-      return mSlidingMenuCompatShowing;
-    } else {
-      return mSlidingMenu.isMenuShowing();
-    }
+    return mSlidingMenu.isDrawerOpen(Gravity.LEFT);
   }
 
   private void toggleSlidingMenu() {
@@ -376,51 +333,23 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   private void showSlidingMenu() {
 
-    if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
-      findViewById(R.id.main_gingerbread_compat_overlay).setVisibility(View.VISIBLE);
-      findViewById(R.id.main_gingerbread_compat_overlay).bringToFront();
-      mSlidingMenuCompatShowing = true;
-      updateTitle();
-    } else {
-      mSlidingMenu.showMenu();
-    }
+    mSlidingMenu.openDrawer(Gravity.LEFT);
   }
 
   private void hideSlidingMenu(boolean fragmentChanged) {
 
-    if(mSlidingMenuMode == SlidingMenuMode.FAKE_GINGERBREAD_COMPAT) {
-      findViewById(R.id.main_gingerbread_compat_overlay).setVisibility(View.GONE);
-      mSlidingMenuCompatShowing = false;
-      updateTitle();
-      onSlidingMenuClosed(fragmentChanged);
-    } else if(mSlidingMenuMode == SlidingMenuMode.PINNED) {
-      // Do nothing
-      onSlidingMenuClosed(fragmentChanged);
-    } else {
-      if(mSlidingMenu != null) {
-        mSlidingMenu.showContent();
-      }
+    if(mSlidingMenu != null) {
+      mSlidingMenu.closeDrawers();
     }
   }
 
   private void updateTitle() {
 
-    getSupportActionBar().setDisplayHomeAsUpEnabled(mSlidingMenuMode != SlidingMenuMode.PINNED &&
-        !isSlidingMenuShowing());
-
-    if((mSlidingMenu != null && isSlidingMenuShowing()) || mSlidingMenuMode == SlidingMenuMode.PINNED) {
+    if((mSlidingMenu != null && isSlidingMenuShowing()) || mSlidingMenu.getDrawerLockMode(Gravity.LEFT) == DrawerLayout.LOCK_MODE_LOCKED_OPEN) {
       getSupportActionBar().setTitle(R.string.app_name);
     } else {
       getSupportActionBar().setTitle(mFragmentTitles[mViewFlipper.getDisplayedChild()]);
     }
-  }
-
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-
-    // Screen width may have changed so this needs to be set again
-    mSlidingMenu.setBehindWidthRes(R.dimen.main_menu_width);
   }
 
   @Override

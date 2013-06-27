@@ -194,5 +194,7 @@
     <string name="addresses_help">Below is a list of bitcoin addresses associated with your account. New bitcoin addresses are generated for each payment on Coinbase, so you shouldn\'t need to remember or reuse them. Bitcoin addresses remain connected to your account forever so it is safe to send money to them indefinitely.</string>
     <string name="addresses_nolabel">(no label)</string>
     <string name="addresses_copied">Copied to clipboard.</string>
+    <string name="drawer_open">Open menu</string>
+    <string name="drawer_close">Close menu</string>
 
 </resources>
