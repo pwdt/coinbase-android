@@ -331,6 +331,14 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
   }
 
+  @Override
+  public void onBackPressed() {
+
+    if(isSlidingMenuShowing()) {
+      hideSlidingMenu(false);
+    }
+  }
+
   private void showSlidingMenu() {
 
     mSlidingMenu.openDrawer(Gravity.LEFT);
