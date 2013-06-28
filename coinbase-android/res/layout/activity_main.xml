@@ -5,56 +5,9 @@
       android:id="@+id/main_layout">
 
     <!-- The main content view -->
-    <ViewFlipper
-        android:id="@+id/flipper"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-
-        <fragment
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/fragment_transactions"
-            class="com.coinbase.android.TransactionsFragment" />
-
-        <fragment
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/fragment_transfer"
-            class="com.coinbase.android.TransferFragment" />
-
-        <fragment
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/fragment_buysell"
-            class="com.coinbase.android.BuySellFragment" />
-
-        <fragment
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/fragment_accountsettings"
-            class="com.coinbase.android.AccountSettingsFragment" />
-
-        <fragment
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/fragment_merchanttools"
-            class="com.coinbase.android.merchant.MerchantToolsFragment" />
-
-        <fragment
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/fragment_pointofsale"
-            class="com.coinbase.android.merchant.PointOfSaleFragment" />
-    </ViewFlipper>
+    <include layout="@layout/activity_main_content" />
 
     <!-- The navigation drawer -->
-    <ListView
-        android:id="@+id/drawer"
-        android:layout_width="@dimen/main_menu_width"
-        android:layout_height="match_parent"
-        android:layout_gravity="left"
-        android:background="@color/main_menu_background"
-        android:cacheColorHint="@color/main_menu_background" >
-    </ListView>
+    <include layout="@layout/activity_main_drawer" />
 
 </android.support.v4.widget.DrawerLayout>
