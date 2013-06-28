@@ -488,10 +488,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       boolean shouldLoadMore = firstVisibleItem + visibleItemCount + padding >= totalItemCount;
 
       if(shouldLoadMore && mLastLoadedPage != -1 && mLastLoadedPage < SyncTransactionsTask.MAX_ENDLESS_PAGES &&
-          mLastLoadedPage != mMaxPage) {
+          mLastLoadedPage < mMaxPage) {
 
         // Load more transactions
         if(mSyncTask == null) {
+          Log.i("Coinbase", "Infinite scroll is loading more pages (last loaded page " + mLastLoadedPage + ", max " + mMaxPage + ")");
           mSyncTask = new SyncTransactionsTask();
           mSyncTask.execute(mLastLoadedPage);
         }
