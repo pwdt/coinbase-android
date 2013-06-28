@@ -197,5 +197,6 @@
     <string name="addresses_copied">Copied to clipboard.</string>
     <string name="drawer_open">Open menu</string>
     <string name="drawer_close">Close menu</string>
+    <string name="transactions_empty">No transactions.</string>
 
 </resources>
