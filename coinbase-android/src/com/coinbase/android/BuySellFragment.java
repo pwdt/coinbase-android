@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -216,7 +218,12 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     }
   }
 
-  private class UpdatePriceTask extends AsyncTask<String, Void, String[]> {
+  private enum UpdatePriceFailure {
+    ERROR_LOADING,
+    NO_DATA_ENTERED;
+  }
+
+  private class UpdatePriceTask extends AsyncTask<String, Void, Object> {
 
     @Override
     protected void onPreExecute() {
@@ -228,7 +235,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
     boolean mIsSingleUpdate;
 
-    protected String[] doInBackground(String... params) {
+    protected Object doInBackground(String... params) {
 
       try {
 
@@ -243,14 +250,14 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
         }
 
         if(amount.isEmpty() || ".".equals(amount) || new BigDecimal(amount).doubleValue() == 0) {
-          return new String[] { null };
+          return UpdatePriceFailure.NO_DATA_ENTERED;
         }
 
         Collection<BasicNameValuePair> requestParams = new ArrayList<BasicNameValuePair>();
         requestParams.add(new BasicNameValuePair("qty", amount));
 
         JSONObject result = RpcManager.getInstance().callGet(mParent, "prices/" + type, requestParams);
-        return new String[] { result.getString("amount"), result.getString("currency") };
+        return result;
 
       } catch (IOException e) {
 
@@ -261,10 +268,10 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
         e.printStackTrace();
       }
 
-      return null;
+      return UpdatePriceFailure.ERROR_LOADING;
     }
 
-    protected void onPostExecute(String[] result) {
+    protected void onPostExecute(Object result) {
 
       TextView target = mIsSingleUpdate ? mText2 : mTotal;
       int format = mIsSingleUpdate ? R.string.buysell_text2 : R.string.buysell_total;
@@ -272,29 +279,58 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
       if(target != null) {
 
-        if(result == null) {
+        if(result instanceof UpdatePriceFailure) {
 
-          target.setText(error);
+          if(result == UpdatePriceFailure.ERROR_LOADING) {
+            target.setVisibility(View.VISIBLE);
+            target.setText(error);
+          } else if(result == UpdatePriceFailure.NO_DATA_ENTERED) {
+            target.setText(null);
+            target.setVisibility(View.GONE);
+          }
         } else {
 
-          if(result[0] == null) {
-            target.setText(null);
+          target.setVisibility(View.VISIBLE);
+          JSONObject json = (JSONObject) result;
+          String subtotalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("subtotal").optString("amount")), false, CurrencyType.TRADITIONAL);
+          String subtotalCurrency = json.optJSONObject("subtotal").optString("currency");
+
+          if(mIsSingleUpdate) {
+
+            target.setText(String.format(mParent.getString(format), subtotalAmount, subtotalCurrency));
           } else {
 
-            String currentPrice = Utils.formatCurrencyAmount(new BigDecimal(result[0]), false, CurrencyType.TRADITIONAL);
+            String totalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("total").optString("amount")), false, CurrencyType.TRADITIONAL);
+            String totalCurrency = json.optJSONObject("total").optString("currency");
 
-            if(mIsSingleUpdate) {
-            } else {
+            mSubmitButton.setEnabled(true);
+            mCurrentPrice = totalAmount;
+            mCurrentPriceCurrency = totalCurrency;
 
-              mSubmitButton.setEnabled(true);
-              mCurrentPrice = currentPrice;
-              mCurrentPriceCurrency = result[1];
+            // Create breakdown of transaction
+            StringBuffer breakdown = new StringBuffer();
+            JSONArray fees = json.optJSONArray("fees");
+
+            breakdown.append("<font color=\"#757575\">");
+            breakdown.append("Subtotal: $" + subtotalAmount + " " + subtotalCurrency + "<br>");
+
+            for(int i = 0; i < fees.length(); i++) {
+              JSONObject fee = fees.optJSONObject(i);
+              String type = (String) fee.keys().next();
+              String amount = fee.optJSONObject(type).optString("amount");
+              String currency = fee.optJSONObject(type).optString("currency");
+              breakdown.append(type.substring(0, 1).toUpperCase(Locale.CANADA)).append(type.substring(1)).append(" fee: $");
+              breakdown.append(Utils.formatCurrencyAmount(new BigDecimal(amount), false, CurrencyType.TRADITIONAL));
+              breakdown.append(' ').append(currency).append("<br>");
             }
 
-            target.setText(String.format(mParent.getString(format), currentPrice, result[1]));
+            breakdown.append("</font>");
+            breakdown.append("Total: $" + totalAmount + " " + totalCurrency);
 
-            return;
+            target.setText(Html.fromHtml(breakdown.toString()));
           }
+
+          return;
         }
       }
 
@@ -557,6 +593,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     }
 
     mUpdatePriceTask = new UpdatePriceTask();
+    mTotal.setVisibility(View.GONE);
     Utils.runAsyncTaskConcurrently(mUpdatePriceTask, mAmount.getText().toString(), type.getRequestType());
   }
 

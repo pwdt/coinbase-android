@@ -49,11 +49,10 @@
     <string name="buysell_type_sell_text">Sell</string>
     <string name="btc">BTC</string>
     <string name="buysell_amount_hint"></string>
-    <string name="buysell_total_label">Total:</string>
+    <string name="buysell_total">%1$s: %2$s %3$s</string>
     <string name="buysell_submit_buy">Buy Bitcoins</string>
     <string name="buysell_submit_sell">Sell Bitcoins</string>
     <string name="buysell_total_error">Could not get price</string>
-    <string name="buysell_total">$%1$s %2$s</string>
     <string name="buysell_confirm_message_buy">Are you sure you would like to buy %1$s BTC for $%2$s %3$s? Your primary bank account will be charged.</string>
     <string name="buysell_confirm_message_sell">Are you sure you would like to sell %1$s BTC for $%2$s %3$s? Your primary bank account will be credited.</string>
     <string name="buysell_error_exception">The request could not be completed.</string>
