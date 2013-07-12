@@ -870,41 +870,49 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     return new Object[] { false, getString(R.string.transfer_error_exception) };
   }
 
-  public void fillFormForBitcoinUri(Uri uri) {
+  public void fillFormForBitcoinUri(String content) {
 
-    String address = uri.getSchemeSpecificPart().split("\\?")[0];
-    String amount = null, label = null, message = null;
+    String amount = null, label = null, message = null, address = null;
 
-    // Parse query
-    String query = uri.getQuery();
-    if(query != null) {
-      try {
-        for (String param : query.split("&")) {
-          String pair[] = param.split("=");
-          String key;
-          key = URLDecoder.decode(pair[0], "UTF-8");
-          String value = null;
-          if (pair.length > 1) {
-            value = URLDecoder.decode(pair[1], "UTF-8");
+    if(content.startsWith("bitcoin:")) {
+
+      Uri uri = Uri.parse(content);
+      address = uri.getSchemeSpecificPart().split("\\?")[0];
+
+      // Parse query
+      String query = uri.getQuery();
+      if(query != null) {
+        try {
+          for (String param : query.split("&")) {
+            String pair[] = param.split("=");
+            String key;
+            key = URLDecoder.decode(pair[0], "UTF-8");
+            String value = null;
+            if (pair.length > 1) {
+              value = URLDecoder.decode(pair[1], "UTF-8");
+            }
+
+            if("amount".equals(key)) {
+              amount = value;
+            } else if("label".equals(key)) {
+              label = value;
+            } else if("message".equals(key)) {
+              message = value;
+            }
           }
-
-          if("amount".equals(key)) {
-            amount = value;
-          } else if("label".equals(key)) {
-            label = value;
-          } else if("message".equals(key)) {
-            message = value;
-          }
+        } catch (UnsupportedEncodingException e) {
+          // Will never happen
+          throw new RuntimeException(e);
         }
-      } catch (UnsupportedEncodingException e) {
-        // Will never happen
-        throw new RuntimeException(e);
       }
+    } else {
+      // Assume barcode consisted of a bitcoin address only (not a URI)
+      address = content;
     }
 
     if(address == null) {
 
-      Log.e("Coinbase", "bitcoin: URI had no address (" + uri + ")");
+      Log.e("Coinbase", "Could not parse URI! (" + content + ")");
       return;
     }
 

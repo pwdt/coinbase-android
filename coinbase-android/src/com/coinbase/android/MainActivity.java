@@ -383,7 +383,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(intent.getData() != null && "bitcoin".equals(intent.getData().getScheme())) {
       // Handle bitcoin: URI
       switchTo(FRAGMENT_INDEX_TRANSFER);
-      mTransferFragment.fillFormForBitcoinUri(getIntent().getData());
+      mTransferFragment.fillFormForBitcoinUri(getIntent().getData().toString());
     } else if(ACTION_SCAN.equals(intent.getAction())) {
       // Scan barcode
       startBarcodeScan();
@@ -614,12 +614,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         String contents = intent.getStringExtra("SCAN_RESULT");
         String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
-        Uri uri = Uri.parse(contents);
-        if(uri != null && "bitcoin".equals(uri.getScheme())) {
-          // Is bitcoin URI
-          switchTo(FRAGMENT_INDEX_TRANSFER); // Switch to transfer fragment
-          mTransferFragment.fillFormForBitcoinUri(uri);
-        }
+        switchTo(FRAGMENT_INDEX_TRANSFER); // Switch to transfer fragment
+        mTransferFragment.fillFormForBitcoinUri(contents);
 
       } else if (resultCode == RESULT_CANCELED) {
         // Barcode scan was cancelled
