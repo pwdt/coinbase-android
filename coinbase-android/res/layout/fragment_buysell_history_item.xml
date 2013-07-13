@@ -24,7 +24,7 @@
         android:layout_toLeftOf="@+id/buysell_history_currency"
         android:layout_alignParentTop="true"
         android:text="40.90"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/buysell_history_status"
