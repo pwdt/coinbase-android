@@ -178,7 +178,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       };
       mSlidingMenu.setDrawerListener(mDrawerToggle);
-      mSlidingMenu.setDrawerShadow(R.drawable.drawer_shadow, Gravity.LEFT);
     }
 
     // Set up Sliding Menu list
