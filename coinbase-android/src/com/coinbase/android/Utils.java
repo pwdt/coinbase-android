@@ -72,7 +72,7 @@ public class Utils {
   }
 
   public static final String formatCurrencyAmount(String amount, boolean ignoreSign) {
-    return formatCurrencyAmount(new BigDecimal(amount), false, CurrencyType.BTC);
+    return formatCurrencyAmount(new BigDecimal(amount), ignoreSign, CurrencyType.BTC);
   }
 
   public static final String formatCurrencyAmount(BigDecimal balanceNumber, boolean ignoreSign, CurrencyType type) {

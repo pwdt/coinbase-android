@@ -24,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -266,12 +267,13 @@ public class TransactionDetailsFragment extends Fragment {
         cancel = (Button) view.findViewById(R.id.transactiondetails_request_cancel),
         send = (Button) view.findViewById(R.id.transactiondetails_request_send),
         decline = (Button) view.findViewById(R.id.transactiondetails_request_decline);
+    View cancelSpacer = view.findViewById(R.id.transactiondetails_request_cancel_spacer),
+        declineSpacer = view.findViewById(R.id.transactiondetails_request_decline_spacer);
 
     boolean sentToMe = data.optJSONObject("sender") == null || !currentUserId.equals(data.getJSONObject("sender").optString("id"));
 
     // Amount
-    String amountText = Utils.formatCurrencyAmount(data.getJSONObject("amount").getString("amount"), true) + " " +
-        data.getJSONObject("amount").getString("currency");
+    String amountText = Utils.formatCurrencyAmount(data.getJSONObject("amount").getString("amount"), true);
     amount.setText(amountText);
     amountLabel.setText(sentToMe ? R.string.transactiondetails_amountreceived : R.string.transactiondetails_amountsent);
 
@@ -319,28 +321,44 @@ public class TransactionDetailsFragment extends Fragment {
 
     boolean noNotes = "null".equals(notesText) || notesText == null || "".equals(notesText);
     notes.setText(noNotes ? null : notesText);
-    view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.GONE : View.VISIBLE);
+    notes.setVisibility(noNotes ? View.GONE : View.VISIBLE);
+
+    if(noNotes) {
+      // We need to update the layout_below parameter of the resend and send buttons
+      RelativeLayout.LayoutParams p1 = (RelativeLayout.LayoutParams) resend.getLayoutParams();
+      p1.addRule(RelativeLayout.BELOW, to.getId());
+      RelativeLayout.LayoutParams p2 = (RelativeLayout.LayoutParams) send.getLayoutParams();
+      p2.addRule(RelativeLayout.BELOW, to.getId());
+    }
+
+    view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.INVISIBLE : View.VISIBLE);
 
     // Buttons
     boolean isRequest = data.getBoolean("request");
     boolean senderOrRecipientIsExternal = data.optJSONObject("sender") == null || data.optJSONObject("recipient") == null;
     if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
       cancel.setVisibility(View.GONE);
+      cancelSpacer.setVisibility(View.GONE);
       resend.setVisibility(View.GONE);
       send.setVisibility(View.GONE);
       decline.setVisibility(View.GONE);
+      declineSpacer.setVisibility(View.GONE);
     } else if(sentToMe) {
 
       cancel.setVisibility(View.VISIBLE);
+      cancelSpacer.setVisibility(View.VISIBLE);
       resend.setVisibility(View.VISIBLE);
       send.setVisibility(View.GONE);
       decline.setVisibility(View.GONE);
+      declineSpacer.setVisibility(View.GONE);
     } else {
 
       cancel.setVisibility(View.GONE);
+      cancelSpacer.setVisibility(View.GONE);
       resend.setVisibility(View.GONE);
       send.setVisibility(View.VISIBLE);
       decline.setVisibility(View.VISIBLE);
+      declineSpacer.setVisibility(View.VISIBLE);
 
       send.setText(String.format(getString(R.string.transactiondetails_request_send), amountText, recipient));
     }

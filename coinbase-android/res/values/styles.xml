@@ -14,10 +14,11 @@
     <color name="transaction_positive">#005500</color>
     <color name="transaction_negative">#550000</color>
     <color name="transaction_neutral">#000000</color>
-    <color name="transactiondetails_label">#444444</color>
+    <color name="transactiondetails_label">#000000</color>
 
     <style name="TransactionDetailsLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:textColor">@color/transactiondetails_label</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="TransactionStatus">
