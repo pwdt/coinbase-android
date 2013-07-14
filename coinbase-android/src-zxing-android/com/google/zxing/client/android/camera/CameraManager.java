@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
@@ -44,8 +45,8 @@ public final class CameraManager {
 
   private static final int MIN_FRAME_WIDTH = 0;
   private static final int MIN_FRAME_HEIGHT = 0;
-  private static final int MAX_FRAME_WIDTH = 600;
-  private static final int MAX_FRAME_HEIGHT = 400;
+  private static final int MAX_FRAME_WIDTH = 800;
+  private static final int MAX_FRAME_HEIGHT = 600;
 
   private final Context context;
   private final CameraConfigurationManager configManager;
@@ -53,6 +54,7 @@ public final class CameraManager {
   private AutoFocusManager autoFocusManager;
   private Rect framingRect;
   private Rect framingRectInPreview;
+  private Point framingViewSize;
   private boolean initialized;
   private boolean previewing;
   private int requestedFramingRectWidth;
@@ -240,13 +242,23 @@ public final class CameraManager {
         // Called early, before init even finished
         return null;
       }
-      int width = screenResolution.x * 3 / 4;
+      int width;
+      if(context.getResources().getConfiguration().orientation != Configuration.ORIENTATION_PORTRAIT) {
+        width = screenResolution.x * 3 / 4;
+      } else {
+        width = screenResolution.x * 9 / 10;
+      }
       if (width < MIN_FRAME_WIDTH) {
         width = MIN_FRAME_WIDTH;
       } else if (width > MAX_FRAME_WIDTH) {
         width = MAX_FRAME_WIDTH;
       }
-      int height = screenResolution.y * 3 / 4;
+      int height;
+      if(context.getResources().getConfiguration().orientation != Configuration.ORIENTATION_PORTRAIT) {
+        height = screenResolution.y * 3 / 4;
+      } else {
+        height = width * 3 / 4;
+      }
       if (height < MIN_FRAME_HEIGHT) {
         height = MIN_FRAME_HEIGHT;
       } else if (height > MAX_FRAME_HEIGHT) {
@@ -277,13 +289,24 @@ public final class CameraManager {
         // Called early, before init even finished
         return null;
       }
-      rect.left = rect.left * cameraResolution.x / screenResolution.x;
-      rect.right = rect.right * cameraResolution.x / screenResolution.x;
-      rect.top = rect.top * cameraResolution.y / screenResolution.y;
-      rect.bottom = rect.bottom * cameraResolution.y / screenResolution.y;
+      if(context.getResources().getConfiguration().orientation != Configuration.ORIENTATION_PORTRAIT) {
+        rect.left = rect.left * cameraResolution.x / screenResolution.x;
+        rect.right = rect.right * cameraResolution.x / screenResolution.x;
+        rect.top = rect.top * cameraResolution.y / screenResolution.y;
+        rect.bottom = rect.bottom * cameraResolution.y / screenResolution.y;
+      } else {
+        rect.left = rect.left * cameraResolution.y / framingViewSize.x;
+        rect.right = rect.right * cameraResolution.y / framingViewSize.x;
+        rect.top = rect.top * cameraResolution.x / framingViewSize.y;
+        rect.bottom = rect.bottom * cameraResolution.x / framingViewSize.y;
+      }
       framingRectInPreview = rect;
     }
     return framingRectInPreview;
+  }
+  
+  public void setFramingViewSize(Point framingViewSize) {
+    this.framingViewSize = framingViewSize;
   }
 
   /**

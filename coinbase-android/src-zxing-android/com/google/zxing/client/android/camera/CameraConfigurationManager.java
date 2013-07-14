@@ -16,8 +16,15 @@
 
 package com.google.zxing.client.android.camera;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.preference.PreferenceManager;
@@ -26,12 +33,6 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import com.google.zxing.client.android.PreferencesActivity;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * A class which deals with reading, parsing, and setting the camera parameters which are used to
@@ -112,6 +113,9 @@ final class CameraConfigurationManager {
     }
 
     parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
+    if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+      camera.setDisplayOrientation(90);
+    }
     camera.setParameters(parameters);
   }
 
@@ -212,7 +216,12 @@ final class CameraConfigurationManager {
       if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
         continue;
       }
-      boolean isCandidatePortrait = realWidth < realHeight;
+      boolean isCandidatePortrait;
+      if(this.context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+        isCandidatePortrait = realWidth < realHeight ^ screenResolution.x < screenResolution.y;
+      } else {
+        isCandidatePortrait = realWidth < realHeight;
+      }
       int maybeFlippedWidth = isCandidatePortrait ? realHeight : realWidth;
       int maybeFlippedHeight = isCandidatePortrait ? realWidth : realHeight;
       if (maybeFlippedWidth == screenResolution.x && maybeFlippedHeight == screenResolution.y) {
@@ -221,7 +230,12 @@ final class CameraConfigurationManager {
         return exactPoint;
       }
       float aspectRatio = (float) maybeFlippedWidth / (float) maybeFlippedHeight;
-      float newDiff = Math.abs(aspectRatio - screenAspectRatio);
+      float newDiff;
+      if(this.context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+        newDiff = Math.abs(screenResolution.y * realHeight - realWidth * screenResolution.x);
+      } else {
+        newDiff = Math.abs(aspectRatio - screenAspectRatio);
+      }
       if (newDiff < diff) {
         bestSize = new Point(realWidth, realHeight);
         diff = newDiff;

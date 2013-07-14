@@ -78,7 +78,7 @@
                        android:resource="@xml/transactions_appwidget_provider" />
         </receiver>
         <activity android:name="com.google.zxing.client.android.CaptureActivity"
-              android:configChanges="orientation|keyboardHidden"
+              android:configChanges="keyboardHidden"
               android:theme="@android:style/Theme.NoTitleBar"
               android:windowSoftInputMode="stateAlwaysHidden"></activity>
         <activity android:name="com.coinbase.android.ReceiveAddressesActivity"
