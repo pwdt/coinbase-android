@@ -271,11 +271,18 @@ public class TransactionDetailsFragment extends Fragment {
         declineSpacer = view.findViewById(R.id.transactiondetails_request_decline_spacer);
 
     boolean sentToMe = data.optJSONObject("sender") == null || !currentUserId.equals(data.getJSONObject("sender").optString("id"));
+    boolean isRequest = data.getBoolean("request");
 
     // Amount
     String amountText = Utils.formatCurrencyAmount(data.getJSONObject("amount").getString("amount"), true);
     amount.setText(amountText);
-    amountLabel.setText(sentToMe ? R.string.transactiondetails_amountreceived : R.string.transactiondetails_amountsent);
+    int amountLabelResource = R.string.transactiondetails_amountsent;
+    if(isRequest) {
+      amountLabelResource = R.string.transactiondetails_amountrequested;
+    } else if(sentToMe) {
+      amountLabelResource = R.string.transactiondetails_amountreceived;
+    }
+    amountLabel.setText(amountLabelResource);
 
     // To / From
     String recipient = getName(data.optJSONObject("recipient"), data.optString("recipient_address"), currentUserId);
@@ -334,7 +341,6 @@ public class TransactionDetailsFragment extends Fragment {
     view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.INVISIBLE : View.VISIBLE);
 
     // Buttons
-    boolean isRequest = data.getBoolean("request");
     boolean senderOrRecipientIsExternal = data.optJSONObject("sender") == null || data.optJSONObject("recipient") == null;
     if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
       cancel.setVisibility(View.GONE);

@@ -82,6 +82,7 @@
     <string name="transaction_summary_sell">You sold bitcoins</string>
     <string name="transaction_summary_buy">You purchased bitcoins</string>
     <string name="transactiondetails_amountreceived">Amount Received</string>
+    <string name="transactiondetails_amountrequested">Amount Requested</string>
     <string name="transactiondetails_from">From</string>
     <string name="transactiondetails_to">To</string>
     <string name="transactiondetails_date">Date</string>
