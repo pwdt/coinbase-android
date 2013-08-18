@@ -31,9 +31,6 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="Theme.Coinbase" parent="@style/Theme.Sherlock.Light.DarkActionBar">
-    </style>
-
     <style name="Theme.Coinbase.Transparent" parent="android:Theme">
 	    <item name="android:windowIsTranslucent">true</item>
 	    <item name="android:windowBackground">@android:color/transparent</item>

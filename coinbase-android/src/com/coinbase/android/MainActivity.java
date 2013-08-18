@@ -160,7 +160,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(!mPinSlidingMenu) {
       mSlidingMenu = (DrawerLayout) findViewById(R.id.main_layout);
       mDrawerToggle = new ActionBarDrawerToggle(this, mSlidingMenu,
-        R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
+        R.drawable.ic_drawer_white, R.string.drawer_open, R.string.drawer_close) {
 
         int lastTimeIndex = 0;
 
