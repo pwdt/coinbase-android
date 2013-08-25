@@ -20,9 +20,11 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -179,6 +181,7 @@ public class TransactionDetailsFragment extends Fragment {
   }
 
   ViewGroup mView;
+  View mContainer;
 
   @Override
   public void onDestroyView() {
@@ -193,6 +196,7 @@ public class TransactionDetailsFragment extends Fragment {
     // Inflate base layout
     ViewGroup view = (ViewGroup) inflater.inflate(R.layout.fragment_transactiondetails, container, false);
     mView = view;
+    mContainer = view.findViewById(R.id.transactiondetails_container);
 
     // Get user ID
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());

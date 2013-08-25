@@ -8,6 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
+        android:id="@+id/transactiondetails_container"
         android:background="@drawable/fragment_transactiondetails_bg" >
 
         <!-- Header -->
@@ -79,7 +80,7 @@
                 android:layout_below="@+id/transactiondetails_label_amount"
                 android:layout_marginTop="5dp"
                 android:text="100.00"
-                android:textColor="#6CC644"
+                android:textColor="#50bf82"
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
@@ -91,7 +92,7 @@
                 android:layout_marginLeft="5dp"
                 android:layout_toRightOf="@+id/transactiondetails_amount"
                 android:text="@string/btc"
-                android:textColor="#888"
+                android:textColor="#50bf82"
                 android:textSize="25sp" />
         </RelativeLayout>
 
