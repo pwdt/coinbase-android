@@ -114,6 +114,11 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         String text = String.format(getString(messageId), (String) result[1], (String) result[3]);
         Toast.makeText(mParent, text, Toast.LENGTH_SHORT).show();
 
+        // Clear form
+        mAmountView.setText("");
+        mNotesView.setText("");
+        mRecipientView.setText("");
+        
         // Sync transactions
         mParent.refresh();
         mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
