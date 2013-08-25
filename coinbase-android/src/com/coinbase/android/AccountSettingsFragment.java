@@ -144,7 +144,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
       } else if("enable_merchant_tools".equals(item[2])) {
         desc = getString(prefs.getBoolean(
-          String.format((String) item[1], mActiveAccount), false) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
+          String.format((String) item[1], mActiveAccount), true) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
       } else if("pin".equals(item[2])) {
         boolean enabled = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, mActiveAccount), null) != null;
         boolean editOnly = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, mActiveAccount), false);
