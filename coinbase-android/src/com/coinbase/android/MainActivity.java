@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
+import android.graphics.PorterDuff.Mode;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -22,8 +23,10 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -105,7 +108,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
      false,
      false,
      false,
-     true,
+     false,
      false,
      false,
   };
@@ -182,14 +185,21 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     // Set up Sliding Menu list
     mMenuListView = (ListView) findViewById(R.id.drawer);
+    mMenuListView.addHeaderView(View.inflate(this, R.layout.activity_main_drawer_profile, null));
     mMenuListView.setAdapter(new SectionsListAdapter());
     mMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
       @Override
       public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                               long arg3) {
+        
+        if(arg2 == 0) {
+          // Switch account
+          new AccountsFragment().show(getSupportFragmentManager(), "accounts");
+          return;
+        }
 
-        int fragment = (Integer) ((BaseAdapter) arg0.getAdapter()).getItem(arg2);
+        int fragment = (Integer) mMenuListView.getAdapter().getItem(arg2);
         if(fragment != -1) {
           switchTo(fragment);
         }
@@ -253,7 +263,18 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     String key = String.format(Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, activeAccount);
     mFragmentVisible[FRAGMENT_INDEX_MERCHANT_TOOLS] = false; //prefs.getBoolean(key, true);
     mFragmentVisible[FRAGMENT_INDEX_POINT_OF_SALE] = prefs.getBoolean(key, true);
-    ((BaseAdapter) mMenuListView.getAdapter()).notifyDataSetChanged();
+    getAdapter().notifyDataSetChanged();
+  }
+  
+  private BaseAdapter getAdapter() {
+    
+    Adapter adapter = mMenuListView.getAdapter();
+    
+    if(adapter instanceof HeaderViewListAdapter) {
+      return (BaseAdapter) ((HeaderViewListAdapter) adapter).getWrappedAdapter();
+    } else {
+      return (BaseAdapter) adapter;
+    }
   }
 
   @Override
@@ -561,8 +582,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       String name = getString(mFragmentTitles[fragment]);
       title.setText(name);
+      title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-Light"));
 
       icon.setImageResource(mFragmentIcons[fragment]);
+      icon.setColorFilter(getResources().getColor(R.color.drawer_item_color), Mode.MULTIPLY);
 
       return convertView;
     }
