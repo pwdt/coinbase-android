@@ -1,6 +1,8 @@
 package com.coinbase.android;
 
 import java.math.BigDecimal;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -91,7 +93,7 @@ public class Utils {
 
   /** Based off of ZXing Android client code */
   public static Bitmap createBarcode(String contents, BarcodeFormat format,
-      int desiredWidth, int desiredHeight) throws WriterException {
+                                     int desiredWidth, int desiredHeight) throws WriterException {
 
     Hashtable<EncodeHintType,Object> hints = new Hashtable<EncodeHintType,Object>(2);
     MultiFormatWriter writer = new MultiFormatWriter();
@@ -121,7 +123,7 @@ public class Utils {
     String[] from = { EmailEntry.COLUMN_NAME_EMAIL };
     int[] to = { android.R.id.text1 };
     final SimpleCursorAdapter adapter = new SimpleCursorAdapter(context, android.R.layout.simple_spinner_dropdown_item, null,
-        from, to, 0);
+      from, to, 0);
 
     adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
       @Override
@@ -145,8 +147,8 @@ public class Utils {
         // This method (runQuery) is called on a background thread
         // so it is OK to use DatabaseObject
         Cursor c = DatabaseObject.getInstance().query(context, EmailEntry.TABLE_NAME,
-            null, EmailEntry.COLUMN_NAME_ACCOUNT + " = ? AND " + EmailEntry.COLUMN_NAME_EMAIL + " LIKE ?",
-            new String[] { Integer.toString(activeAccount), "%" + description + "%" }, null, null, null);
+          null, EmailEntry.COLUMN_NAME_ACCOUNT + " = ? AND " + EmailEntry.COLUMN_NAME_EMAIL + " LIKE ?",
+          new String[] { Integer.toString(activeAccount), "%" + description + "%" }, null, null, null);
 
         return c;
       }
@@ -184,7 +186,7 @@ public class Utils {
         }
 
         recipientName = r.optString("name",
-            r.optString("email", c.getString(R.string.transaction_user_external)));
+          r.optString("email", c.getString(R.string.transaction_user_external)));
       }
 
       if(t.getBoolean("request")) {
@@ -207,7 +209,7 @@ public class Utils {
         }
 
         senderName = r.optString("name",
-            r.optString("email", c.getString(R.string.transaction_user_external)));
+          r.optString("email", c.getString(R.string.transaction_user_external)));
       }
 
       if(t.getBoolean("request")) {
@@ -238,5 +240,23 @@ public class Utils {
     } else {
       task.execute(params);
     }
+  }
+
+  public static String md5(String original) {
+    MessageDigest md;
+
+    try {
+      md = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("MD5 does not exist", e);
+    }
+
+    md.update(original.getBytes());
+    byte[] digest = md.digest();
+    StringBuffer sb = new StringBuffer();
+    for (byte b : digest) {
+      sb.append(Integer.toHexString((int) (b & 0xff)));
+    }
+    return sb.toString();
   }
 }

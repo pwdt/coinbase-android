@@ -1,7 +1,9 @@
 package com.coinbase.android;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -16,19 +18,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
-import android.graphics.ComposeShader;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -159,6 +157,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   Pusher mPusher;
   MenuItem mRefreshItem;
   ListView mMenuListView;
+  View mMenuProfileView;
   boolean mRefreshItemState = false;
   boolean mPinSlidingMenu = false;
   long mLastRefreshTime = -1;
@@ -201,7 +200,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     // Set up Sliding Menu list
     mMenuListView = (ListView) findViewById(R.id.drawer);
-    mMenuListView.addHeaderView(createProfileView());
+    createProfileView();
+    mMenuListView.addHeaderView(mMenuProfileView);
     mMenuListView.setAdapter(new SectionsListAdapter());
     mMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -259,68 +259,91 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
    */
   class AvatarDrawable extends Drawable {
 
-      private final float mCornerRadius;
-      private final RectF mRect = new RectF();
-      private final BitmapShader mBitmapShader;
-      private final Paint mPaint;
+    private final float mCornerRadius;
+    private final RectF mRect = new RectF();
+    private final BitmapShader mBitmapShader;
+    private final Paint mPaint;
 
-      AvatarDrawable(Bitmap bitmap, float cornerRadius, int sizeDp) {
-          mCornerRadius = cornerRadius;
+    AvatarDrawable(Bitmap bitmap, float cornerRadius, int sizeDp) {
+      mCornerRadius = cornerRadius;
 
-          int sizePx = (int)(sizeDp * getResources().getDisplayMetrics().density);
-          mBitmapShader = new BitmapShader(Bitmap.createScaledBitmap(bitmap, sizePx, sizePx, true),
-                  Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+      int sizePx = (int)(sizeDp * getResources().getDisplayMetrics().density);
+      mBitmapShader = new BitmapShader(Bitmap.createScaledBitmap(bitmap, sizePx, sizePx, true),
+        Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
 
-          mPaint = new Paint();
-          mPaint.setAntiAlias(true);
-          mPaint.setShader(mBitmapShader);
+      mPaint = new Paint();
+      mPaint.setAntiAlias(true);
+      mPaint.setShader(mBitmapShader);
 
-      }
+    }
 
-      @Override
-      protected void onBoundsChange(Rect bounds) {
-          super.onBoundsChange(bounds);
-          mRect.set(0, 0, bounds.width(), bounds.height());
-      }
+    @Override
+    protected void onBoundsChange(Rect bounds) {
+      super.onBoundsChange(bounds);
+      mRect.set(0, 0, bounds.width(), bounds.height());
+    }
 
-      @Override
-      public void draw(Canvas canvas) {
-          canvas.drawRoundRect(mRect, mCornerRadius, mCornerRadius, mPaint);
-      }
+    @Override
+    public void draw(Canvas canvas) {
+      canvas.drawRoundRect(mRect, mCornerRadius, mCornerRadius, mPaint);
+    }
 
-      @Override
-      public int getOpacity() {
-          return PixelFormat.TRANSLUCENT;
-      }
+    @Override
+    public int getOpacity() {
+      return PixelFormat.TRANSLUCENT;
+    }
 
-      @Override
-      public void setAlpha(int alpha) {
-          mPaint.setAlpha(alpha);
-      }
+    @Override
+    public void setAlpha(int alpha) {
+      mPaint.setAlpha(alpha);
+    }
 
-      @Override
-      public void setColorFilter(ColorFilter cf) {
-          mPaint.setColorFilter(cf);
-      }       
+    @Override
+    public void setColorFilter(ColorFilter cf) {
+      mPaint.setColorFilter(cf);
+    }       
   }
 
-  private View createProfileView() {
-    View view = View.inflate(this, R.layout.activity_main_drawer_profile, null);
+  private class LoadAvatarTask extends AsyncTask<String, Void, Bitmap> {
 
-    ImageView photo = (ImageView) view.findViewById(R.id.drawer_profile_avatar);
+    @Override
+    protected Bitmap doInBackground(String... arg0) {
+
+      try {
+        return BitmapFactory.decodeStream(new URL(String.format("http://www.gravatar.com/avatar/%1$s?s=100&d=https://coinbase.com/assets/avatar.png",
+          Utils.md5(arg0[0].toLowerCase(Locale.CANADA).trim()))).openStream());
+      } catch (Exception e) {
+        return null;
+      }
+    }
+
+    @Override
+    protected void onPostExecute(Bitmap result) {
+      if(result != null) {
+        ((ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar)).setImageDrawable(new AvatarDrawable(
+          result, 25 * getResources().getDisplayMetrics().density, 50));
+      }
+    }
+  }
+
+  private void createProfileView() {
+    mMenuProfileView = View.inflate(this, R.layout.activity_main_drawer_profile, null);
+
+    ImageView photo = (ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar);
 
     photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar), 
       25 * getResources().getDisplayMetrics().density, 50));
-    
-    TextView name = (TextView) view.findViewById(R.id.drawer_profile_name);
-    TextView email = (TextView) view.findViewById(R.id.drawer_profile_account);
+
+    TextView name = (TextView) mMenuProfileView.findViewById(R.id.drawer_profile_name);
+    TextView email = (TextView) mMenuProfileView.findViewById(R.id.drawer_profile_account);
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String emailText = prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null);
     name.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, activeAccount), null));
-    email.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null));
+    email.setText(emailText);
 
-    return view;
+    new LoadAvatarTask().execute(emailText);
   }
 
   @Override
