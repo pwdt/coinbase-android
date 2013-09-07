@@ -19,10 +19,11 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/drawer_profile_avatar"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="4dp"
         android:layout_toRightOf="@+id/drawer_profile_avatar"
         android:text="Isaac Waller"
         android:textColor="@color/drawer_item_color"
-        android:textSize="7pt"
+        android:textSize="7.5pt"
         android:textStyle="bold" />
 
     <TextView
@@ -31,11 +32,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/drawer_profile_name"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="5dp"
         android:layout_toRightOf="@+id/drawer_profile_avatar"
         android:singleLine="true"
         android:text="isaac@siriusapplications.com"
-        android:textColor="@color/drawer_item_color"
+        android:textColor="#676767"
         android:textSize="7pt" />
 
 </RelativeLayout>

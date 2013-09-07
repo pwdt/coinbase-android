@@ -11,7 +11,23 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.ComposeShader;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RadialGradient;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -89,44 +105,44 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public static final int FRAGMENT_INDEX_POINT_OF_SALE = 5;
 
   private int[] mFragmentTitles = new int[] {
-     R.string.title_transactions,
-     R.string.title_transfer,
-     R.string.title_buysell,
-     R.string.title_account,
-     R.string.title_merchant_tools,
-     R.string.title_point_of_sale,
+                                             R.string.title_transactions,
+                                             R.string.title_transfer,
+                                             R.string.title_buysell,
+                                             R.string.title_account,
+                                             R.string.title_merchant_tools,
+                                             R.string.title_point_of_sale,
   };
   private int[] mFragmentIcons = new int[] {
-     R.drawable.ic_action_transactions,
-     R.drawable.ic_action_transfer,
-     R.drawable.ic_action_buysell,
-     R.drawable.ic_action_account,
-     R.drawable.ic_action_merchant_tools,
-     R.drawable.ic_action_point_of_sale,
+                                            R.drawable.ic_action_transactions,
+                                            R.drawable.ic_action_transfer,
+                                            R.drawable.ic_action_buysell,
+                                            R.drawable.ic_action_account,
+                                            R.drawable.ic_action_merchant_tools,
+                                            R.drawable.ic_action_point_of_sale,
   };
   private boolean[] mFragmentHasSpacerAfter = new boolean[] {
-     false,
-     false,
-     false,
-     false,
-     false,
-     false,
+                                                             false,
+                                                             false,
+                                                             false,
+                                                             false,
+                                                             false,
+                                                             false,
   };
   private boolean[] mFragmentKeyboardPreferredStatus = new boolean[] {
-     false,
-     true,
-     true,
-     false,
-     false,
-     true,
+                                                                      false,
+                                                                      true,
+                                                                      true,
+                                                                      false,
+                                                                      false,
+                                                                      true,
   };
   private boolean[] mFragmentVisible = new boolean[] {
-     true,
-     true,
-     true,
-     true,
-     true,
-     true,
+                                                      true,
+                                                      true,
+                                                      true,
+                                                      true,
+                                                      true,
+                                                      true,
   };
   private CoinbaseFragment[] mFragments = new CoinbaseFragment[NUM_FRAGMENTS];
 
@@ -185,14 +201,14 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     // Set up Sliding Menu list
     mMenuListView = (ListView) findViewById(R.id.drawer);
-    mMenuListView.addHeaderView(View.inflate(this, R.layout.activity_main_drawer_profile, null));
+    mMenuListView.addHeaderView(createProfileView());
     mMenuListView.setAdapter(new SectionsListAdapter());
     mMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
       @Override
       public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                               long arg3) {
-        
+
         if(arg2 == 0) {
           // Switch account
           new AccountsFragment().show(getSupportFragmentManager(), "accounts");
@@ -216,7 +232,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         });
       }
     }).start();
-    
+
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     mSharedPreferenceChangeListener = new OnSharedPreferenceChangeListener() {
@@ -238,6 +254,75 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     onNewIntent(getIntent());
   }
 
+  /*
+   * http://www.curious-creature.org/2012/12/11/android-recipe-1-image-with-rounded-corners/
+   */
+  class AvatarDrawable extends Drawable {
+
+      private final float mCornerRadius;
+      private final RectF mRect = new RectF();
+      private final BitmapShader mBitmapShader;
+      private final Paint mPaint;
+
+      AvatarDrawable(Bitmap bitmap, float cornerRadius, int sizeDp) {
+          mCornerRadius = cornerRadius;
+
+          int sizePx = (int)(sizeDp * getResources().getDisplayMetrics().density);
+          mBitmapShader = new BitmapShader(Bitmap.createScaledBitmap(bitmap, sizePx, sizePx, true),
+                  Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+
+          mPaint = new Paint();
+          mPaint.setAntiAlias(true);
+          mPaint.setShader(mBitmapShader);
+
+      }
+
+      @Override
+      protected void onBoundsChange(Rect bounds) {
+          super.onBoundsChange(bounds);
+          mRect.set(0, 0, bounds.width(), bounds.height());
+      }
+
+      @Override
+      public void draw(Canvas canvas) {
+          canvas.drawRoundRect(mRect, mCornerRadius, mCornerRadius, mPaint);
+      }
+
+      @Override
+      public int getOpacity() {
+          return PixelFormat.TRANSLUCENT;
+      }
+
+      @Override
+      public void setAlpha(int alpha) {
+          mPaint.setAlpha(alpha);
+      }
+
+      @Override
+      public void setColorFilter(ColorFilter cf) {
+          mPaint.setColorFilter(cf);
+      }       
+  }
+
+  private View createProfileView() {
+    View view = View.inflate(this, R.layout.activity_main_drawer_profile, null);
+
+    ImageView photo = (ImageView) view.findViewById(R.id.drawer_profile_avatar);
+
+    photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar), 
+      25 * getResources().getDisplayMetrics().density, 50));
+    
+    TextView name = (TextView) view.findViewById(R.id.drawer_profile_name);
+    TextView email = (TextView) view.findViewById(R.id.drawer_profile_account);
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    name.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, activeAccount), null));
+    email.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null));
+
+    return view;
+  }
+
   @Override
   protected void onPostCreate(Bundle savedInstanceState) {
     super.onPostCreate(savedInstanceState);
@@ -255,9 +340,9 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mDrawerToggle.onConfigurationChanged(newConfig);
     }
   }
-  
+
   private void updateMerchantToolsVisibility() {
-    
+
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String key = String.format(Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, activeAccount);
@@ -265,11 +350,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     mFragmentVisible[FRAGMENT_INDEX_POINT_OF_SALE] = prefs.getBoolean(key, true);
     getAdapter().notifyDataSetChanged();
   }
-  
+
   private BaseAdapter getAdapter() {
-    
+
     Adapter adapter = mMenuListView.getAdapter();
-    
+
     if(adapter instanceof HeaderViewListAdapter) {
       return (BaseAdapter) ((HeaderViewListAdapter) adapter).getWrappedAdapter();
     } else {
@@ -339,7 +424,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       boolean keyboardPreferredStatus = mFragmentKeyboardPreferredStatus[mViewFlipper.getDisplayedChild()];
       InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-  
+
       if(keyboardPreferredStatus) {
         inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
       } else {
@@ -582,7 +667,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       String name = getString(mFragmentTitles[fragment]);
       title.setText(name);
-      title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-Light"));
+      // title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-Light"));
 
       icon.setImageResource(mFragmentIcons[fragment]);
       icon.setColorFilter(getResources().getColor(R.color.drawer_item_color), Mode.MULTIPLY);
