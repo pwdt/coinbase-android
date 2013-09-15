@@ -789,6 +789,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     } else {
       mRefreshItem.setEnabled(true);
       mRefreshItem.setActionView(null);
+      mTransactionsFragment.refreshComplete();
     }
   }
 

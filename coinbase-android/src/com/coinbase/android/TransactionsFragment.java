@@ -1,21 +1,5 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import org.acra.ACRA;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
@@ -49,6 +33,26 @@ import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
+
+import org.acra.ACRA;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
+import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
+import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 
 public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
@@ -505,13 +509,15 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
   }
 
-  MainActivity mParent;
+  MainActivity mParent;
+
   boolean mBalanceLoading;
   FrameLayout mListHeaderContainer;
   ListView mListView;
   ViewGroup mListHeader, mMainView;
   TextView mBalanceText, mBalanceCurrency, mBalanceHome, mAccount;
   TextView mSyncErrorView;
+  PullToRefreshAttacher mPullToRefreshAttacher;
 
   SyncTransactionsTask mSyncTask;
   int mLastLoadedPage = -1, mMaxPage = -1;
@@ -604,6 +610,22 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       }
     });
 
+    // Configure pull to refresh
+    mPullToRefreshAttacher = PullToRefreshAttacher.get(mParent);
+    PullToRefreshLayout ptrLayout =
+            (PullToRefreshLayout) view.findViewById(R.id.fragment_transactions_ptr);
+    ptrLayout.setPullToRefreshAttacher(mPullToRefreshAttacher,
+            new uk.co.senab.actionbarpulltorefresh.library.PullToRefreshAttacher.OnRefreshListener() {
+      @Override
+      public void onRefreshStarted(View view) {
+        mParent.refresh();
+      }
+    });
+    DefaultHeaderTransformer ht =
+            (DefaultHeaderTransformer) mPullToRefreshAttacher.getHeaderTransformer();
+    ht.setPullText("Swipe down to refresh");
+    ht.setRefreshingText("Refreshing...");
+
     // Load transaction list
     loadTransactionsList();
 
@@ -620,6 +642,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       mSyncTask = new SyncTransactionsTask();
       mSyncTask.execute();
     }
+  }
+
+  public void refreshComplete() {
+    mPullToRefreshAttacher.setRefreshComplete();
   }
 
   private void setHeaderPinned(boolean pinned) {
