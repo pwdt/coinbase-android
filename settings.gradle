@@ -1,2 +1,1 @@
-include ':library-actionbarsherlock:library'
 include ':coinbase-android'
