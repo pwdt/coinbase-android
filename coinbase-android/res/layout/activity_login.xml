@@ -13,42 +13,47 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:id="@+id/login_intro"
-      android:background="@drawable/login_background">
+      android:background="#348eda">
+    
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/home_globe"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true" />
+    
+    <View
+        android:id="@+id/anchor"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerInParent="true" />
 
 	  <RelativeLayout
-	      android:layout_width="wrap_content"
+	      android:layout_width="300dp"
 	      android:layout_height="wrap_content"
-	      android:layout_centerInParent="true"
+	      android:layout_above="@+id/anchor"
+	      android:layout_centerHorizontal="true"
 	      android:padding="15dp">
 
 	      <ImageView
 	          android:id="@+id/login_intro_logo"
-	          android:layout_width="wrap_content"
-	          android:layout_height="50dp"
-	          android:layout_centerHorizontal="true"
+	          android:layout_width="190dp"
+	          android:layout_height="39.5dp"
+	          android:layout_alignParentLeft="true"
+	          android:scaleType="fitXY"
 	          android:src="@drawable/coinbase_logo_transparent" />
-
-	      <TextView
-	          android:id="@+id/login_intro_title"
-	          android:layout_width="wrap_content"
-	          android:layout_height="wrap_content"
-	          android:layout_centerHorizontal="true"
-	          android:layout_marginTop="10dp"
-	          android:text="@string/login_intro_title"
-	          android:layout_below="@+id/login_intro_logo"
-	          android:visibility="gone"
-	          android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	      <Button
 	          android:id="@+id/login_intro_submit"
 	          android:layout_marginTop="10dp"
 	          android:layout_width="wrap_content"
 	          android:layout_height="wrap_content"
-	          android:layout_centerHorizontal="true"
-	          android:layout_below="@+id/login_intro_title"
+            android:layout_alignParentLeft="true"
+	          android:layout_below="@+id/login_intro_logo"
 	          android:text="@string/login_intro_submit"
-	          android:paddingLeft="25dp"
-	          android:paddingRight="25dp" />
+	          android:background="@null"
+	          android:textColor="#ffffff"
+	          android:padding="0dp" />
 
     </RelativeLayout>
   </RelativeLayout>
