@@ -134,12 +134,7 @@ public class LoginActivity extends CoinbaseActivity {
 
         Uri uri = Uri.parse(url);
         List<String> pathSegments = uri.getPathSegments();
-        if(pathSegments.size() == 3 && "oauth".equals(pathSegments.get(0)) && "authorize".equals(pathSegments.get(1))) {
-          // OAuth redirect - we will handle this.
-          String oauthCode = pathSegments.get(2);
-          new OAuthCodeTask().execute(oauthCode);
-          return true;
-        } else if(uri.getPath().startsWith("/transactions") || uri.getPath().isEmpty()) { 
+        if(uri.getPath().startsWith("/transactions") || uri.getPath().isEmpty()) {
           // The coinbase site is trying to redirect us to the transactions page or the home page
           // Since we are not logged in go to the login page
           loadLoginUrl();
@@ -168,6 +163,16 @@ public class LoginActivity extends CoinbaseActivity {
         setProgressBarVisible(newProgress != 100); 
       }
 
+      @Override
+      public void onReceivedTitle(WebView view, String title) {
+
+        // Check if we have received the OAuth token
+        if(!title.contains(" ") && title.length() > 25) {
+          // Title is long and does not contain spaces;
+          // must be the OAuth token!
+          new OAuthCodeTask().execute(title);
+        }
+      }
     });
 
     onNewIntent(getIntent());
