@@ -45,7 +45,7 @@ public class LoginManager {
   // production
   protected static final String CLIENT_ID = "34183b03a3e1f0b74ee6aa8a6150e90125de2d6c1ee4ff7880c2b7e6e98b11f5";
   protected static final String CLIENT_SECRET = "2c481f46f9dc046b4b9a67e630041b9906c023d139fbc77a47053328b9d3122d";
-  protected static final String CLIENT_BASEURL = "https://coinbase.com";
+  protected static final String CLIENT_BASEURL = "https://coinbase.com:443";
 
   // development (adjust to your setup)
   //protected static final String CLIENT_ID = "b93a59f74763e8fd109c6f895ae8a74b495828d797e48a3e8cd276c6a6dab028";

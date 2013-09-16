@@ -33,3 +33,4 @@ Thumbs.db
 
 # Android Studio
 coinbase-android/build
+.gradle
