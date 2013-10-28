@@ -49,11 +49,16 @@ public class CoinbaseActivity extends SherlockFragmentActivity {
     if(getClass().isAnnotationPresent(RequiresPIN.class)) {
       // Check PIN status
       if(!PINManager.getInstance().shouldGrantAccess(this)) {
-
-        // PIN reprompt required.
-        Intent intent = new Intent(this, PINPromptActivity.class);
-        intent.setAction(PINPromptActivity.ACTION_PROMPT);
-        startActivity(intent);
+        // Check if user wants to quit PIN lock
+        if(PINManager.getInstance().isQuitPINLock()){
+          PINManager.getInstance().setQuitPINLock(false);
+          finish();
+        } else {
+          // PIN reprompt required.
+          Intent intent = new Intent(this, PINPromptActivity.class);
+          intent.setAction(PINPromptActivity.ACTION_PROMPT);
+          startActivity(intent);
+        }
       }
     }
   }
