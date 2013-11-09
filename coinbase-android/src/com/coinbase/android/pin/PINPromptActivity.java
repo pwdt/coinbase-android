@@ -130,6 +130,15 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
     }
   }
 
+  @Override
+  public void onBackPressed() {
+      super.onBackPressed();
+
+      if(!mIsSetMode) {
+          PINManager.getInstance().setQuitPINLock(true);
+      }
+  }
+
   public void onAccountChosen(int account) {
 
     // Change active account
