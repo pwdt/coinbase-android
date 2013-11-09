@@ -29,6 +29,8 @@ public class PINManager {
 
   boolean bad = false;
 
+  private static boolean isQuitPINLock = false;
+
   /**
    * Should the user be allowed to access protected content?
    * @param context
@@ -109,5 +111,19 @@ public class PINManager {
     Editor e = prefs.edit();
     e.putString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), pin);
     e.commit();
+  }
+
+  /**
+   * Set quitting PIN Lock.
+   */
+  public void setQuitPINLock(boolean quitPINLock) {
+      isQuitPINLock = quitPINLock;
+  }
+
+  /**
+   * Return whether user wants to quit PIN Lock.
+   */
+  public boolean isQuitPINLock() {
+      return isQuitPINLock;
   }
 }
