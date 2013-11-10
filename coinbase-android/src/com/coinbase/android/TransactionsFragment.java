@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
@@ -13,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -45,10 +45,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
 import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
@@ -246,7 +244,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
               createdAt = -1;
             }
 
-            values.put(TransactionEntry._ID, transaction.getString("id"));
+            values.put(TransactionEntry._ID, transaction.getString("transaction_id"));
             values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
             values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
             values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
@@ -625,9 +623,15 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     c.moveToPosition(position);
 
     String transactionId = c.getString(c.getColumnIndex(TransactionEntry._ID));
-    Intent intent = new Intent(mParent, TransactionDetailsActivity.class);
-    intent.putExtra(TransactionDetailsFragment.EXTRA_ID, transactionId);
-    mParent.startActivityForResult(intent, 1);
+    Bundle args = new Bundle();
+    args.putString(TransactionDetailsFragment.EXTRA_ID, transactionId);
+    TransactionDetailsFragment fragment = new TransactionDetailsFragment();
+    fragment.setArguments(args);
+
+    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+    transaction.add(R.id.transaction_details_host, fragment);
+    transaction.addToBackStack("details");
+    transaction.commit();
   }
 
   @Override
