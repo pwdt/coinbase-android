@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:padding="10dp" >
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:padding="10dp">
 
     <TextView
         android:id="@+id/transaction_title"
@@ -14,35 +14,32 @@
         android:maxLines="2"
         android:textSize="16sp"
         android:layout_marginRight="100dp"
-        android:textColor="#000000" />
+        android:textColor="#000000"/>
 
-    <TextView
-        android:id="@+id/transaction_amount"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toLeftOf="@+id/transaction_currency"
-        android:layout_alignParentTop="true"
-        android:text="1.1186"
-        android:textSize="20sp" />
-
-    <TextView
-        android:id="@+id/transaction_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/transaction_amount"
-        android:background="@drawable/transaction_pending"
-        android:text="@string/transaction_status_pending"
-        style="@style/TransactionStatus" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/transaction_currency"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/transaction_amount"
-        android:layout_alignParentRight="true"
-        android:text="@string/btc"
-        android:textColor="#222222"
-        android:layout_marginLeft="3dp" />
+        <TextView
+            android:id="@+id/transaction_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\u0E3F1.1186"
+            android:textSize="20sp"
+            android:layout_gravity="right"/>
+
+        <TextView
+            android:id="@+id/transaction_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/transaction_amount"
+            android:text="@string/transaction_status_pending"
+            android:textSize="6pt"
+            android:layout_gravity="right"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

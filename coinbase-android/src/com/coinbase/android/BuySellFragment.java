@@ -1,20 +1,5 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-
-import org.acra.ACRA;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -22,12 +7,10 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
@@ -54,11 +37,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.Utils.CurrencyType;
-import com.coinbase.android.db.DatabaseObject;
-import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
+
+import org.acra.ACRA;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
@@ -346,39 +342,12 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     @Override
     protected Cursor doInBackground(Void... params) {
 
-      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-      int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-
-      Cursor c = DatabaseObject.getInstance().query(mParent, TransactionsDatabase.TransactionEntry.TABLE_NAME,
-          null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ? " +
-              "AND " + TransactionEntry.COLUMN_NAME_IS_TRANSFER + " = 1",
-              new String[] { Integer.toString(activeAccount) }, null, null, null);
-      return c;
+      return null;
     }
 
     @Override
     protected void onPostExecute(Cursor result) {
 
-      if(getView() != null && getListView() != null) {
-
-        setHeaderPinned(!result.moveToFirst());
-
-        if(getListView().getAdapter() != null) {
-
-          // Just update existing adapter
-          ((CursorAdapter) getListAdapter()).changeCursor(result);
-          return;
-        }
-
-        String[] from = { TransactionEntry.COLUMN_NAME_TRANSFER_JSON, TransactionEntry.COLUMN_NAME_TRANSFER_JSON,
-            TransactionEntry.COLUMN_NAME_TRANSFER_JSON, TransactionEntry.COLUMN_NAME_TRANSFER_JSON };
-        int[] to = { R.id.buysell_history_title, R.id.buysell_history_amount,
-            R.id.buysell_history_status, R.id.buysell_history_currency };
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(mParent, R.layout.fragment_buysell_history_item, result,
-            from, to, 0);
-        adapter.setViewBinder(new TransferViewBinder());
-        setListAdapter(adapter);
-      }
     }
   }
 

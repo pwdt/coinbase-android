@@ -11,10 +11,13 @@
         <item name="android:textColor">@color/wallet_balance_color_invalid</item>
     </style>
 
-    <color name="transaction_positive">#005500</color>
-    <color name="transaction_negative">#550000</color>
+    <color name="transaction_positive">#4EB17B</color>
+    <color name="transaction_negative">#B14E4E</color>
     <color name="transaction_neutral">#000000</color>
     <color name="transactiondetails_label">#000000</color>
+
+    <color name="transaction_inlinestatus_complete">#9196aa</color>
+    <color name="transaction_inlinestatus_pending">#f89406</color>
 
     <style name="TransactionDetailsLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:textColor">@color/transactiondetails_label</item>

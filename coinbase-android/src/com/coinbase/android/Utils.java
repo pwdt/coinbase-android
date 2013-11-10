@@ -1,16 +1,5 @@
 package com.coinbase.android;
 
-import java.math.BigDecimal;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.NumberFormat;
-import java.util.Hashtable;
-import java.util.Locale;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,6 +11,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.text.Html;
 import android.widget.FilterQueryProvider;
 
 import com.coinbase.android.db.DatabaseObject;
@@ -31,6 +21,17 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.math.BigDecimal;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.NumberFormat;
+import java.util.Hashtable;
+import java.util.Locale;
 
 public class Utils {
 
@@ -52,7 +53,7 @@ public class Utils {
   }
 
   public static enum CurrencyType {
-    BTC(4, 1),
+    BTC(4, 2),
     TRADITIONAL(2, 2);
 
 
@@ -162,62 +163,42 @@ public class Utils {
     // No longer needed with new DatabaseObject
   }
 
-  public static String generateTransactionSummary(Context c, JSONObject t) throws JSONException {
+  public static CharSequence generateTransactionSummary(Context c, JSONObject t) throws JSONException {
 
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String category = t.getJSONObject("cache").getString("category");
+    String otherName = t.getJSONObject("cache").getJSONObject("other_user").getString("name");
+    boolean senderMe = t.getJSONObject("amount").getString("amount").startsWith("-");
 
-    String currentUserId = prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), null);
+    otherName = otherName.replace(" ", "\u00A0");
 
-    if(currentUserId != null &&
-        t.optJSONObject("sender") != null &&
-        currentUserId.equals(t.getJSONObject("sender").optString("id"))) {
-
-      JSONObject r = t.optJSONObject("recipient");
-      String recipientName = null;
-
-      if(r == null) {
-        recipientName = c.getString(R.string.transaction_user_external);
+    String html = null;
+    if("request".equals(category)) {
+      if(senderMe) {
+        html = String.format("<b>%1$s</b> requested money from you", otherName);
       } else {
-
-        if("transfers@coinbase.com".equals(r.optString("email"))) {
-          // This was a bitcoin sell
-          return c.getString(R.string.transaction_summary_sell);
-        }
-
-        recipientName = r.optString("name",
-          r.optString("email", c.getString(R.string.transaction_user_external)));
+        html = String.format("You requested money from <b>%1$s</b>", otherName);
       }
-
-      if(t.getBoolean("request")) {
-        return String.format(c.getString(R.string.transaction_summary_request_me), recipientName);
+    } else if("invoice".equals(category)) {
+      if(senderMe) {
+        html = String.format("<b>%1$s</b> sent you an invoice", otherName);
       } else {
-        return String.format(c.getString(R.string.transaction_summary_send_me), recipientName);
+        html = String.format("You sent an invoice to <b>%1$s</b>", otherName);
+      }
+    } else if("transfer".equals(category)) {
+      if(senderMe) {
+        html = "You sold bitcoins";
+      } else {
+        html = "You purchased bitcoins";
       }
     } else {
-
-      JSONObject r = t.optJSONObject("sender");
-      String senderName = null;
-
-      if(r == null) {
-        senderName = c.getString(R.string.transaction_user_external);
+      if(senderMe) {
+        html = String.format("You sent money to <b>%1$s</b>", otherName);
       } else {
-
-        if("transfers@coinbase.com".equals(r.optString("email"))) {
-          // This was a bitcoin buy
-          return c.getString(R.string.transaction_summary_buy);
-        }
-
-        senderName = r.optString("name",
-          r.optString("email", c.getString(R.string.transaction_user_external)));
-      }
-
-      if(t.getBoolean("request")) {
-        return String.format(c.getString(R.string.transaction_summary_request_them), senderName);
-      } else {
-        return String.format(c.getString(R.string.transaction_summary_send_them), senderName);
+        html = String.format("<b>%1$s</b> sent you money", otherName);
       }
     }
+
+    return Html.fromHtml(html);
   }
 
   public static String getErrorStringFromJson(JSONObject response, String delimiter) throws JSONException {

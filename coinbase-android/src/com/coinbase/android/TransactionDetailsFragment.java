@@ -1,14 +1,5 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-import org.acra.ACRA;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -20,11 +11,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -34,6 +23,15 @@ import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
+
+import org.acra.ACRA;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class TransactionDetailsFragment extends Fragment {
 
@@ -217,9 +215,7 @@ public class TransactionDetailsFragment extends Fragment {
       // Fetch transaction JSON from database
       final String transactionId = getArguments().getString(EXTRA_ID);
       Cursor c = DatabaseObject.getInstance().query(getActivity(), TransactionEntry.TABLE_NAME, new String[] {
-          TransactionEntry.COLUMN_NAME_JSON,
-          TransactionEntry.COLUMN_NAME_IS_TRANSFER,
-          TransactionEntry.COLUMN_NAME_TRANSFER_JSON, },
+          TransactionEntry.COLUMN_NAME_JSON },
           TransactionEntry._ID + " = ?", new String[] { transactionId }, null, null, null);
       if(!c.moveToFirst()) {
         // Transaction not found
@@ -228,15 +224,9 @@ public class TransactionDetailsFragment extends Fragment {
         return view;
       }
 
-      JSONObject data, transferData;
+      JSONObject data, transferData = null;
       try {
         data = new JSONObject(new JSONTokener(c.getString(c.getColumnIndex(TransactionEntry.COLUMN_NAME_JSON))));
-
-        if(c.getInt(c.getColumnIndex(TransactionEntry.COLUMN_NAME_IS_TRANSFER)) == 1) {
-          transferData = new JSONObject(new JSONTokener(c.getString(c.getColumnIndex(TransactionEntry.COLUMN_NAME_TRANSFER_JSON))));
-        } else {
-          transferData = null;
-        }
 
         c.close();
 

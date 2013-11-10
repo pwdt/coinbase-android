@@ -151,7 +151,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     protected Boolean doInBackground(Integer... params) {
 
       List<JSONObject> transactions = new ArrayList<JSONObject>();
-      Map<String, JSONObject> transfers = null;
       String currentUserId = null;
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
@@ -170,11 +169,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
           getParams.add(new BasicNameValuePair("page", Integer.toString(i)));
-          JSONObject response = RpcManager.getInstance().callGet(mParent, "transactions", getParams);
+          JSONObject response = RpcManager.getInstance().callGet(mParent, "account_changes", getParams);
 
           currentUserId = response.getJSONObject("current_user").getString("id");
 
-          JSONArray transactionsArray = response.optJSONArray("transactions");
+          JSONArray transactionsArray = response.optJSONArray("account_changes");
           numPages = response.getInt("num_pages");
 
           if(transactionsArray == null) {
@@ -184,7 +183,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           for(int j = 0; j < transactionsArray.length(); j++) {
 
-            JSONObject transaction = transactionsArray.getJSONObject(j).optJSONObject("transaction");
+            JSONObject transaction = transactionsArray.getJSONObject(j);
 
             if(transaction == null) {
               continue; // This transaction is empty
@@ -194,10 +193,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           }
 
           loadedPage++;
-        }
-
-        if(startPage == 0) {
-          transfers = fetchTransferData();
         }
 
         mMaxPage = numPages;
@@ -251,20 +246,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
               createdAt = -1;
             }
 
-            JSONObject transferData = null;
-
-            if(transfers != null) {
-
-              String id = transaction.optString("id");
-              transferData = transfers.get(id);
-            }
-
             values.put(TransactionEntry._ID, transaction.getString("id"));
             values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
             values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
             values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
-            values.put(TransactionEntry.COLUMN_NAME_TRANSFER_JSON, transferData == null ? null : transferData.toString());
-            values.put(TransactionEntry.COLUMN_NAME_IS_TRANSFER, transferData == null ? 0 : 1);
 
             db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
           }
@@ -294,46 +279,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           db.endTransaction(mParent);
         }
       }
-    }
-
-    private Map<String, JSONObject> fetchTransferData() {
-
-      try {
-
-        Map<String, JSONObject> transfers = new HashMap<String, JSONObject>();
-
-        int numTransferPages = 1;
-        for(int i = 1; i <= Math.min(numTransferPages, MAX_TRANSFER_SYNC_PAGES); i++) {
-
-          List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
-          getParams.add(new BasicNameValuePair("page", Integer.toString(i)));
-          JSONObject response = RpcManager.getInstance().callGet(mParent, "transfers", getParams);
-          JSONArray transfersArray = response.optJSONArray("transfers");
-
-          if(transfersArray == null || transfersArray.length() == 0) {
-            return null; // No transfers
-          }
-
-          numTransferPages = response.getInt("num_pages");
-
-          for(int j = 0; j < transfersArray.length(); j++) {
-
-            JSONObject transfer = transfersArray.getJSONObject(j).getJSONObject("transfer");
-            transfers.put(transfer.optString("transaction_id"), transfer);
-          }
-        }
-
-        return transfers;
-
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (JSONException e) {
-        ACRA.getErrorReporter().handleException(new RuntimeException("SyncTransactions:transfers", e));
-        e.printStackTrace();
-      }
-
-      Log.e("Coinbase", "Could not fetch transfer data");
-      return null;
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -392,12 +337,17 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           case R.id.transaction_title:
 
             ((TextView) arg0).setText(Utils.generateTransactionSummary(mParent, item));
+            ((TextView) arg0).setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
             return true;
 
           case R.id.transaction_amount:
 
             String amount = item.getJSONObject("amount").getString("amount");
             String balanceString = Utils.formatCurrencyAmount(amount);
+            if(balanceString.startsWith("-")) {
+              balanceString = balanceString.substring(1);
+            }
+            balanceString = "\u0E3F" + balanceString;
 
             int sign = new BigDecimal(amount).compareTo(BigDecimal.ZERO);
             int color = sign == -1 ? R.color.transaction_negative : (sign == 0 ? R.color.transaction_neutral : R.color.transaction_positive);
@@ -406,27 +356,23 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
             ((TextView) arg0).setTextColor(getResources().getColor(color));
             return true;
 
-          case R.id.transaction_currency:
-
-            ((TextView) arg0).setText(item.getJSONObject("amount").getString("currency"));
-            return true;
-
           case R.id.transaction_status:
 
-            String status = item.optString("status", getString(R.string.transaction_status_error));
+            boolean confirmed = item.optBoolean("confirmed");
 
-            String readable = status;
-            int background = R.drawable.transaction_unknown;
-            if("complete".equals(status)) {
+            String readable;
+            int scolor;
+            if(confirmed) {
               readable = getString(R.string.transaction_status_complete);
-              background = R.drawable.transaction_complete;
-            } else if("pending".equals(status)) {
+              scolor = R.color.transaction_inlinestatus_complete;
+            } else {
               readable = getString(R.string.transaction_status_pending);
-              background = R.drawable.transaction_pending;
+              scolor = R.color.transaction_inlinestatus_pending;
             }
 
             ((TextView) arg0).setText(readable);
-            ((TextView) arg0).setBackgroundResource(background);
+            ((TextView) arg0).setTextColor(getResources().getColor(scolor));
+            ((TextView) arg0).setTypeface(FontManager.getFont(mParent, "RobotoCondensed-Regular"));
             return true;
         }
 
