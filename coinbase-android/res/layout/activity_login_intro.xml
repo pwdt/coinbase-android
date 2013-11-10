@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/login_intro"
+    android:background="#348eda">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/home_globe"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true" />
+
+    <View
+        android:id="@+id/anchor"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerInParent="true" />
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/anchor"
+        android:layout_centerHorizontal="true"
+        android:padding="15dp">
+
+        <ImageView
+            android:id="@+id/login_intro_logo"
+            android:layout_width="190dp"
+            android:layout_height="39.5dp"
+            android:layout_alignParentLeft="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/coinbase_logo" />
+
+        <Button
+            android:id="@+id/login_intro_submit"
+            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/login_intro_logo"
+            android:text="@string/login_intro_submit"
+            android:textSize="8pt"
+            android:background="@drawable/login_button"
+            android:textColor="#ffffff"
+            android:padding="15dp" />
+
+    </RelativeLayout>
+</RelativeLayout>

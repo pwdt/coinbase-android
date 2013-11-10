@@ -1,18 +1,24 @@
 package com.coinbase.android;
 
-import java.util.List;
-
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
@@ -25,17 +31,39 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.api.LoginManager;
 
+import java.util.List;
+
 public class LoginActivity extends CoinbaseActivity {
 
   private static final String REDIRECT_URL = "urn:ietf:wg:oauth:2.0:oob";
   public static final String EXTRA_SHOW_INTRO = "show_intro";
 
   WebView mLoginWebView;
-  View mLoginIntro;
-
-  Button mLoginButton;
   MenuItem mRefreshItem;
   boolean mRefreshItemState = false;
+
+  private class IntroDialog extends Dialog {
+
+    public IntroDialog(Context c) {
+      super(c, android.R.style.Theme_Translucent_NoTitleBar);
+
+      requestWindowFeature(Window.FEATURE_NO_TITLE);
+      getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+      setCancelable(false);
+      getWindow().getAttributes().windowAnimations = R.style.LoginIntroDialogAnimation;
+
+      setContentView(R.layout.activity_login_intro);
+
+      Button dismiss = (Button) findViewById(R.id.login_intro_submit);
+      dismiss.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          dismiss();
+        }
+      });
+    }
+  }
 
   private class OAuthCodeTask extends AsyncTask<String, Void, String> {
 
@@ -82,17 +110,6 @@ public class LoginActivity extends CoinbaseActivity {
     getSupportActionBar().setTitle(R.string.login_title);
 
     mLoginWebView = (WebView) findViewById(R.id.login_webview);
-    mLoginIntro = findViewById(R.id.login_intro);
-
-    mLoginButton = (Button) findViewById(R.id.login_intro_submit);
-    mLoginButton.setOnClickListener(new View.OnClickListener() {
-
-      @Override
-      public void onClick(View v) {
-
-        changeMode(false);
-      }
-    });
 
     // Load authorization URL before user clicks on the sign in button so that it loads quicker
     mLoginWebView.getSettings().setJavaScriptEnabled(true);
@@ -187,10 +204,11 @@ public class LoginActivity extends CoinbaseActivity {
     if(getIntent().getData() != null) {
       // Load this URL in the web view
       mLoginWebView.loadUrl(getIntent().getDataString());
-      changeMode(false);
     } else {
       loadLoginUrl();
-      changeMode(getIntent().getBooleanExtra(EXTRA_SHOW_INTRO, true) ? true : false);
+      if(getIntent().getBooleanExtra(EXTRA_SHOW_INTRO, true)) {
+        showIntro();
+      }
     }
   }
 
@@ -219,24 +237,50 @@ public class LoginActivity extends CoinbaseActivity {
     return true;
   }
 
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+
+    if(item.getItemId() == R.id.menu_pos) {
+      showPosDialog();
+      return true;
+    }
+
+    return false;
+  }
+
+  private void showPosDialog() {
+
+    DialogFragment dialog = new DialogFragment() {
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+        return new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.pos_setup_title)
+                .setMessage(R.string.pos_setup_message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialogInterface, int i) {
+
+                    dialogInterface.dismiss();
+                  }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                  }
+                }).create();
+      }
+    };
+
+    dialog.show(getSupportFragmentManager(), "pos");
+  }
+
   private void loadLoginUrl() {
     mLoginWebView.loadUrl(LoginManager.getInstance().generateOAuthUrl(REDIRECT_URL));
   }
 
-  private void changeMode(boolean intro) {
+  private void showIntro() {
 
-    if(intro) {
-      getSupportActionBar().hide();
-    } else {
-      getSupportActionBar().show();
-    }
-
-    mLoginIntro.setVisibility(intro ? View.VISIBLE : View.GONE);
-    mLoginWebView.setVisibility(intro ? View.GONE : View.VISIBLE);
-    
-    if(!intro) {
-      // Fixes focus bug on Android 2.3
-      mLoginWebView.requestFocus();
-    }
+    new IntroDialog(this).show();
   }
 }

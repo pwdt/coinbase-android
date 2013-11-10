@@ -150,7 +150,7 @@
     <string name="transactions_refresh_error">Nelze synchronizovat transakce.</string>
     <string name="account_limits">Limity nákupů</string>
     <string name="account_limits_text">Nákup %1$s %2$s za den, prodej %3$s %4$s za den</string>
-    <string name="login_intro_submit">Přihlásit / Registrovat >></string>
+    <string name="login_intro_submit">Přihlásit / Registrovat</string>
     <string name="login_intro_desc">Coinbase je nejjednodušší způsob jak nakoupit, užívat a přijímat bitcoiny. Připojit váš účet Coinbase nebo vytvořit nový?</string>
     <string name="login_intro_title">Bitcoin snadno a rychle</string>
     <string name="account_receive_address">Bitcoinová adresa</string>
