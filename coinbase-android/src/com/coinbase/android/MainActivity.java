@@ -177,6 +177,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     if(!mPinSlidingMenu) {
       mSlidingMenu = (DrawerLayout) findViewById(R.id.main_layout);
+      mSlidingMenu.setDrawerShadow(R.drawable.drawer_shadow, Gravity.LEFT);
       mDrawerToggle = new ActionBarDrawerToggle(this, mSlidingMenu,
         R.drawable.ic_drawer_white, R.string.drawer_open, R.string.drawer_close) {
 
