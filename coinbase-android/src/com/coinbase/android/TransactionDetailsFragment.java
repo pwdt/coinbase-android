@@ -162,7 +162,7 @@ public class TransactionDetailsFragment extends Fragment {
 
         try {
           if(result != null) {
-            mView.setVisibility(View.VISIBLE);
+            mContainer.setVisibility(View.VISIBLE);
             fillViewsForJson(mView, result, currentUserId, mId);
           }
           return;
@@ -185,6 +185,7 @@ public class TransactionDetailsFragment extends Fragment {
   public void onDestroyView() {
     super.onDestroyView();
     mView = null;
+    mContainer = null;
   }
 
   @Override
@@ -209,7 +210,7 @@ public class TransactionDetailsFragment extends Fragment {
       Uri uri = args.getParcelable("data");
       String transactionId = uri.getPath().substring("/transactions/".length());
       new LoadTransactionFromInternetTask().execute(transactionId);
-      mView.setVisibility(View.GONE);
+      mContainer.setVisibility(View.GONE);
     } else {
 
       // Fetch transaction JSON from database
@@ -234,7 +235,7 @@ public class TransactionDetailsFragment extends Fragment {
       if(stringData == null) {
         // No data for this transaction
         new LoadTransactionFromInternetTask().execute(transactionId);
-        mView.setVisibility(View.GONE);
+        mContainer.setVisibility(View.GONE);
         return view;
       }
 

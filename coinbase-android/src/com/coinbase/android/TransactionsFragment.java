@@ -20,6 +20,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.FrameLayout;
@@ -45,8 +47,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
 import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
@@ -152,6 +156,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       String currentUserId = null;
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+      Map<String, JSONObject> extraInfo = new HashMap<String, JSONObject>();
 
       int startPage = (params.length == 0 || params[0] == null) ? 0 : params[0];
       int loadedPage;
@@ -194,6 +199,15 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         }
 
         mMaxPage = numPages;
+
+        // Also fetch extra info from /transactions call
+        // for first ~30 transactions
+        JSONObject extraJson = RpcManager.getInstance().callGet(mParent, "transactions");
+        JSONArray extras = extraJson.getJSONArray("transactions");
+        for(int i = 0; i < extras.length(); i++) {
+          JSONObject extra = extras.getJSONObject(i).getJSONObject("transaction");
+          extraInfo.put(extra.getString("id"), extra);
+        }
 
       } catch (IOException e) {
         Log.e("Coinbase", "I/O error refreshing transactions.");
@@ -244,7 +258,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
               createdAt = -1;
             }
 
-            values.put(TransactionEntry._ID, transaction.getString("transaction_id"));
+            String id = transaction.getString("transaction_id");
+            if(extraInfo.containsKey(id)) {
+              values.put(TransactionEntry.COLUMN_NAME_TRANSACTION_JSON, extraInfo.get(id).toString());
+            }
+
+            values.put(TransactionEntry._ID, id);
             values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
             values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
             values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
@@ -460,6 +479,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   TextView mBalanceText, mBalanceHome;
   TextView mSyncErrorView;
   PullToRefreshAttacher mPullToRefreshAttacher;
+  boolean mDetailsShowing = false;
 
   SyncTransactionsTask mSyncTask;
   int mLastLoadedPage = -1, mMaxPage = -1;
@@ -628,10 +648,73 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     TransactionDetailsFragment fragment = new TransactionDetailsFragment();
     fragment.setArguments(args);
 
-    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+    FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
     transaction.add(R.id.transaction_details_host, fragment);
     transaction.addToBackStack("details");
     transaction.commit();
+
+    showDetails();
+  }
+
+  private void showDetails() {
+
+    mDetailsShowing = true;
+
+    // 1. animate
+    getView().findViewById(R.id.transaction_details_background).setVisibility(View.VISIBLE);
+    getView().findViewById(R.id.transaction_details_background).startAnimation(
+            AnimationUtils.loadAnimation(mParent, R.anim.transactiondetails_bg_enter));
+    getView().findViewById(R.id.transaction_details_host).startAnimation(
+            AnimationUtils.loadAnimation(mParent, R.anim.transactiondetails_enter));
+
+    // 2. if necessary, change action bar
+    mParent.setInTransactionDetailsMode(true);
+  }
+
+  protected void hideDetails(boolean animated) {
+
+    mDetailsShowing = false;
+
+    if(animated) {
+      Animation bg = AnimationUtils.loadAnimation(mParent, R.anim.transactiondetails_bg_exit);
+      bg.setAnimationListener(new Animation.AnimationListener() {
+        @Override
+        public void onAnimationStart(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+          getView().findViewById(R.id.transaction_details_background).setVisibility(View.GONE);
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
+      });
+      getView().findViewById(R.id.transaction_details_background).startAnimation(bg);
+    } else {
+      getView().findViewById(R.id.transaction_details_background).setVisibility(View.GONE);
+    }
+
+    FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+    transaction.setCustomAnimations(0, animated ? R.anim.transactiondetails_exit : 0);
+    transaction.remove(getChildFragmentManager().findFragmentById(R.id.transaction_details_host));
+    transaction.commit();
+
+    // 2. action bar
+    mParent.setInTransactionDetailsMode(false);
+  }
+
+  public boolean onBackPressed() {
+
+    if(mDetailsShowing) {
+      hideDetails(true);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @Override

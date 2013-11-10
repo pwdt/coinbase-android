@@ -1,231 +1,246 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <RelativeLayout
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
+        android:background="@drawable/fragment_transactiondetails_bg"
         android:layout_margin="10dp"
-        android:id="@+id/transactiondetails_container"
-        android:background="@drawable/fragment_transactiondetails_bg" >
-
-        <!-- Header -->
+        android:id="@+id/transactiondetails_spinner">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <RelativeLayout
-            android:id="@+id/transactiondetails_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:padding="15dp" >
+            android:layout_margin="10dp"
+            android:id="@+id/transactiondetails_container"
+            android:background="@drawable/fragment_transactiondetails_bg" >
 
-            <TextView
-                android:id="@+id/transactiondetails_status"
-                style="@style/TransactionStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:background="@drawable/transaction_pending"
-                android:text="@string/transaction_status_pending" />
+            <!-- Header -->
 
-            <TextView
-                android:id="@+id/transactiondetails_date"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="20dp"
-                android:layout_toRightOf="@+id/transactiondetails_status"
-                android:gravity="right"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#777" />
-        </RelativeLayout>
-
-        <!-- Divider -->
-
-        <View
-            android:id="@+id/transactiondetails_divider_header"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@+id/transactiondetails_header"
-            android:background="#eee" />
-
-        <!-- Details -->
-
-        <RelativeLayout
-            android:id="@+id/transactiondetails_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/transactiondetails_divider_header"
-            android:padding="15dp" >
-
-            <TextView
-                android:id="@+id/transactiondetails_label_amount"
-                style="@style/TransactionDetailsLabel"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/transactiondetails_header"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
-                android:text="@string/transactiondetails_amountsent" />
+                android:padding="15dp" >
 
-            <TextView
-                android:id="@+id/transactiondetails_amount"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/transactiondetails_status"
+                    style="@style/TransactionStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/transaction_pending"
+                    android:text="@string/transaction_status_pending" />
+
+                <TextView
+                    android:id="@+id/transactiondetails_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/transactiondetails_status"
+                    android:gravity="right"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#777" />
+            </RelativeLayout>
+
+            <!-- Divider -->
+
+            <View
+                android:id="@+id/transactiondetails_divider_header"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/transactiondetails_header"
+                android:background="#eee" />
+
+            <!-- Details -->
+
+            <RelativeLayout
+                android:id="@+id/transactiondetails_details"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:layout_below="@+id/transactiondetails_label_amount"
-                android:layout_marginTop="5dp"
-                android:text="100.00"
-                android:textColor="#50bf82"
-                android:textSize="25sp"
-                android:textStyle="bold" />
+                android:layout_below="@+id/transactiondetails_divider_header"
+                android:padding="15dp" >
+
+                <TextView
+                    android:id="@+id/transactiondetails_label_amount"
+                    style="@style/TransactionDetailsLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:text="@string/transactiondetails_amountsent" />
+
+                <TextView
+                    android:id="@+id/transactiondetails_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/transactiondetails_label_amount"
+                    android:layout_marginTop="5dp"
+                    android:text="100.00"
+                    android:textColor="#50bf82"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/transactiondetails_amount_btc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/transactiondetails_amount"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@+id/transactiondetails_amount"
+                    android:text="@string/btc"
+                    android:textColor="#50bf82"
+                    android:textSize="25sp" />
+            </RelativeLayout>
+
+            <!-- Divider -->
+
+            <View
+                android:id="@+id/transactiondetails_details_header"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/transactiondetails_details"
+                android:background="#eee" />
+
+            <!--  -->
 
             <TextView
-                android:id="@+id/transactiondetails_amount_btc"
+                android:id="@+id/transactiondetails_label_from"
+                style="@style/TransactionDetailsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/transactiondetails_amount"
-                android:layout_marginLeft="5dp"
-                android:layout_toRightOf="@+id/transactiondetails_amount"
-                android:text="@string/btc"
-                android:textColor="#50bf82"
-                android:textSize="25sp" />
+                android:layout_alignBaseline="@+id/transactiondetails_from"
+                android:layout_alignRight="@+id/transactiondetails_label_notes"
+                android:layout_marginLeft="15dp"
+                android:text="@string/transactiondetails_from" />
+
+            <TextView
+                android:id="@+id/transactiondetails_label_to"
+                style="@style/TransactionDetailsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/transactiondetails_to"
+                android:layout_alignRight="@+id/transactiondetails_label_notes"
+                android:layout_marginLeft="15dp"
+                android:text="@string/transactiondetails_to" />
+
+            <TextView
+                android:id="@+id/transactiondetails_label_notes"
+                style="@style/TransactionDetailsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/transactiondetails_notes"
+                android:layout_alignRight="@+id/transactiondetails_label_notes"
+                android:layout_marginLeft="15dp"
+                android:text="@string/transactiondetails_notes" />
+
+            <TextView
+                android:id="@+id/transactiondetails_from"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/transactiondetails_details_header"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="15dp"
+                android:layout_toRightOf="@+id/transactiondetails_label_from"
+                android:paddingBottom="15dp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/transactiondetails_to"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/transactiondetails_from"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="15dp"
+                android:layout_toRightOf="@+id/transactiondetails_label_to"
+                android:paddingBottom="15dp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/transactiondetails_notes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/transactiondetails_to"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="15dp"
+                android:layout_toRightOf="@+id/transactiondetails_label_notes"
+                android:paddingBottom="15dp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/transactiondetails_request_resend"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/transactiondetails_notes"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="@string/transactiondetails_request_resend" />
+
+            <Button
+                android:id="@+id/transactiondetails_request_cancel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/transactiondetails_request_resend"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/transactiondetails_request_cancel" />
+
+            <Button
+                android:id="@+id/transactiondetails_request_send"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/transactiondetails_notes"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="@string/transactiondetails_request_send" />
+
+            <Button
+                android:id="@+id/transactiondetails_request_decline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/transactiondetails_request_send"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/transactiondetails_request_decline" />
+
+            <View
+                android:id="@+id/transactiondetails_request_decline_spacer"
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:layout_below="@+id/transactiondetails_request_decline" />
+
+            <View
+                android:id="@+id/transactiondetails_request_cancel_spacer"
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:layout_below="@+id/transactiondetails_request_cancel" />
         </RelativeLayout>
 
-        <!-- Divider -->
-
-        <View
-            android:id="@+id/transactiondetails_details_header"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@+id/transactiondetails_details"
-            android:background="#eee" />
-
-        <!--  -->
-
-        <TextView
-            android:id="@+id/transactiondetails_label_from"
-            style="@style/TransactionDetailsLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/transactiondetails_from"
-            android:layout_alignRight="@+id/transactiondetails_label_notes"
-            android:layout_marginLeft="15dp"
-            android:text="@string/transactiondetails_from" />
-
-        <TextView
-            android:id="@+id/transactiondetails_label_to"
-            style="@style/TransactionDetailsLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/transactiondetails_to"
-            android:layout_alignRight="@+id/transactiondetails_label_notes"
-            android:layout_marginLeft="15dp"
-            android:text="@string/transactiondetails_to" />
-
-        <TextView
-            android:id="@+id/transactiondetails_label_notes"
-            style="@style/TransactionDetailsLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/transactiondetails_notes"
-            android:layout_alignRight="@+id/transactiondetails_label_notes"
-            android:layout_marginLeft="15dp"
-            android:text="@string/transactiondetails_notes" />
-
-        <TextView
-            android:id="@+id/transactiondetails_from"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/transactiondetails_details_header"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
-            android:layout_toRightOf="@+id/transactiondetails_label_from"
-            android:paddingBottom="15dp"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/transactiondetails_to"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/transactiondetails_from"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="15dp"
-            android:layout_toRightOf="@+id/transactiondetails_label_to"
-            android:paddingBottom="15dp"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/transactiondetails_notes"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/transactiondetails_to"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="15dp"
-            android:layout_toRightOf="@+id/transactiondetails_label_notes"
-            android:paddingBottom="15dp"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <Button
-            android:id="@+id/transactiondetails_request_resend"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/transactiondetails_notes"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:text="@string/transactiondetails_request_resend" />
-
-        <Button
-            android:id="@+id/transactiondetails_request_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/transactiondetails_request_resend"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="10dp"
-            android:text="@string/transactiondetails_request_cancel" />
-
-        <Button
-            android:id="@+id/transactiondetails_request_send"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/transactiondetails_notes"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:text="@string/transactiondetails_request_send" />
-
-        <Button
-            android:id="@+id/transactiondetails_request_decline"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/transactiondetails_request_send"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="10dp"
-            android:text="@string/transactiondetails_request_decline" />
-
-        <View
-            android:id="@+id/transactiondetails_request_decline_spacer"
-            android:layout_width="match_parent"
-            android:layout_height="15dp"
-            android:layout_below="@+id/transactiondetails_request_decline" />
-
-        <View
-            android:id="@+id/transactiondetails_request_cancel_spacer"
-            android:layout_width="match_parent"
-            android:layout_height="15dp"
-            android:layout_below="@+id/transactiondetails_request_cancel" />
-    </RelativeLayout>
-
-</ScrollView>
+    </ScrollView>
+</FrameLayout>

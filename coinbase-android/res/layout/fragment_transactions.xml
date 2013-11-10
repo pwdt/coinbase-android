@@ -1,38 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#FFFFFF">
-    <uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/fragment_transactions_ptr"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <ListView
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#FFFFFF">
+        <uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/fragment_transactions_ptr"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@android:id/list"
-            android:background="#FFFFFF"
-            android:cacheColorHint="#FFFFFF">
-        </ListView>
-    </uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>
-	<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    android:orientation="vertical"
-    android:id="@android:id/empty">
-    <View
-      android:layout_width="match_parent"
-      android:layout_height="1dp"
-      android:background="#d7d7d7" />
-	  <TextView
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1"
-      android:text="@string/transactions_empty"
-      android:gravity="center"
-      android:textColor="#666666" />
-  </LinearLayout>
-</LinearLayout>
+            android:layout_height="wrap_content">
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@android:id/list"
+                android:background="#FFFFFF"
+                android:cacheColorHint="#FFFFFF">
+            </ListView>
+        </uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:id="@android:id/empty">
+        <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:background="#d7d7d7" />
+          <TextView
+          android:layout_width="match_parent"
+          android:layout_height="0dp"
+          android:layout_weight="1"
+          android:text="@string/transactions_empty"
+          android:gravity="center"
+          android:textColor="#666666" />
+      </LinearLayout>
+    </LinearLayout>
+    <FrameLayout android:id="@+id/transaction_details_background"
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:visibility="gone"
+                 android:background="#eeeeee"></FrameLayout>
+    <FrameLayout android:id="@+id/transaction_details_host"
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"></FrameLayout>
+</FrameLayout>

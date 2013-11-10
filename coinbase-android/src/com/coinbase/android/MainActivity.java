@@ -161,6 +161,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   boolean mRefreshItemState = false;
   boolean mPinSlidingMenu = false;
   long mLastRefreshTime = -1;
+  boolean mInTransactionDetailsMode = false;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -188,11 +189,13 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
           onSlidingMenuClosed(lastTimeIndex != mViewFlipper.getDisplayedChild());
           lastTimeIndex = mViewFlipper.getDisplayedChild();
           updateTitle();
+          updateBackButton();
         }
 
         @Override
         public void onDrawerOpened(View drawerView) {
           updateTitle();
+          updateBackButton();
         }
 
       };
@@ -439,6 +442,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     mFragments[index].onSwitchedTo();
 
     hideSlidingMenu(fragmentChanged);
+
+    if(mInTransactionDetailsMode) {
+      mTransactionsFragment.hideDetails(false);
+    }
   }
 
   /** Called when close animation is complete */
@@ -476,6 +483,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(isSlidingMenuShowing()) {
       hideSlidingMenu(false);
     } else {
+
+      if(mViewFlipper.getDisplayedChild() == FRAGMENT_INDEX_TRANSACTIONS &&
+              mTransactionsFragment.onBackPressed()) {
+        // Give transactions fragment an opportunity to handle back
+        return;
+      }
       super.onBackPressed();
     }
   }
@@ -499,10 +512,46 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   private void updateTitle() {
 
     if((mSlidingMenu != null && isSlidingMenuShowing()) || mPinSlidingMenu) {
+      // Sliding menu mode
       getSupportActionBar().setTitle(R.string.app_name);
+
+    } else if(mInTransactionDetailsMode) {
+      getSupportActionBar().setTitle(R.string.transactiondetails_title);
     } else {
       getSupportActionBar().setTitle(mFragmentTitles[mViewFlipper.getDisplayedChild()]);
     }
+
+    supportInvalidateOptionsMenu();
+  }
+
+  private void updateBackButton() {
+
+    if(mSlidingMenu != null) {
+      mDrawerToggle.setDrawerIndicatorEnabled(isSlidingMenuShowing() || !mInTransactionDetailsMode);
+    }
+  }
+
+  public void setInTransactionDetailsMode(boolean inTransactionDetailsMode) {
+    mInTransactionDetailsMode = inTransactionDetailsMode;
+    updateTitle();
+    updateBackButton();
+  }
+
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+
+    MenuItem[] toHide = new MenuItem[] {
+            menu.findItem(R.id.menu_refresh),
+            menu.findItem(R.id.menu_barcode)
+    };
+
+    boolean hide = mInTransactionDetailsMode || (mSlidingMenu != null && isSlidingMenuShowing()) || mPinSlidingMenu;
+
+    for(MenuItem item : toHide) {
+      item.setVisible(!hide);
+    }
+
+    return true;
   }
 
   @Override
@@ -614,7 +663,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         startActivity(helpIntent);
         return true;
       case android.R.id.home:
-        toggleSlidingMenu();
+        if(mInTransactionDetailsMode) {
+          mTransactionsFragment.onBackPressed();
+        } else {
+          toggleSlidingMenu();
+        }
         return true;
     }
 
