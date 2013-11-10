@@ -1,6 +1,7 @@
 package com.coinbase.android;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -44,6 +45,8 @@ public class LoginActivity extends CoinbaseActivity {
 
   private class IntroDialog extends Dialog {
 
+    protected Activity mParent;
+
     public IntroDialog(Context c) {
       super(c, android.R.style.Theme_Translucent_NoTitleBar);
 
@@ -62,6 +65,11 @@ public class LoginActivity extends CoinbaseActivity {
           dismiss();
         }
       });
+    }
+
+    @Override
+    public void onBackPressed() {
+      mParent.finish();
     }
   }
 
@@ -281,6 +289,8 @@ public class LoginActivity extends CoinbaseActivity {
 
   private void showIntro() {
 
-    new IntroDialog(this).show();
+    IntroDialog d = new IntroDialog(this);
+    d.mParent = this;
+    d.show();
   }
 }

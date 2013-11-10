@@ -82,7 +82,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         // Save balance in preferences
         Editor editor = prefs.edit();
         editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), result[0]);
-        editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_CURRENCY, activeAccount), result[1]);
         editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), result[2]);
         editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), result[3]);
         editor.commit();
@@ -125,8 +124,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       } else {
 
         mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
-        mBalanceText.setText(String.format(mParent.getString(R.string.wallet_balance), result[0]));
-        mBalanceCurrency.setText(String.format(mParent.getString(R.string.wallet_balance_currency), result[1]));
+        mBalanceText.setText(String.format(mParent.getString(R.string.wallet_balance), result[0] + " BTC"));
         mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), result[2], result[3]));
       }
     }
@@ -515,7 +513,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   FrameLayout mListHeaderContainer;
   ListView mListView;
   ViewGroup mListHeader, mMainView;
-  TextView mBalanceText, mBalanceCurrency, mBalanceHome, mAccount;
+  TextView mBalanceText, mBalanceHome;
   TextView mSyncErrorView;
   PullToRefreshAttacher mPullToRefreshAttacher;
 
@@ -542,7 +540,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     if(mBalanceText != null) {
       outState.putString("balance_text", mBalanceText.getText().toString());
-      outState.putString("balance_currency", mBalanceCurrency.getText().toString());
     }
   }
 
@@ -565,24 +562,23 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mListView.setOnScrollListener(new TransactionsInfiniteScrollListener());
 
     mBalanceText = (TextView) mListHeader.findViewById(R.id.wallet_balance);
-    mBalanceCurrency = (TextView) mListHeader.findViewById(R.id.wallet_balance_currency);
     mBalanceHome = (TextView) mListHeader.findViewById(R.id.wallet_balance_home);
-    mAccount = (TextView) mListHeader.findViewById(R.id.wallet_account);
     mSyncErrorView = (TextView) mListHeader.findViewById(R.id.wallet_error);
 
-    mAccount.setText(LoginManager.getInstance().getSelectedAccountName(mParent));
+    ((TextView) view.findViewById(R.id.wallet_balance_label)).setTypeface(
+            FontManager.getFont(mParent, "RobotoCondensed-Regular"));
+    //((TextView) view.findViewById(R.id.wallet_balance_home)).setTypeface(
+    //        FontManager.getFont(mParent, "RobotoCondensed-Regular"));
 
     // Load old balance
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String oldBalance = prefs.getString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), null);
-    String oldCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_BALANCE_CURRENCY, activeAccount), null);
     String oldHomeBalance = prefs.getString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), null);
     String oldHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), null);
 
     if(oldBalance != null) {
-      mBalanceText.setText(oldBalance);
-      mBalanceCurrency.setText(oldCurrency);
+      mBalanceText.setText(oldBalance + " BTC");
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
       mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), oldHomeBalance, oldHomeCurrency));
     }
@@ -598,15 +594,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       public void onClick(View v) {
 
         mParent.openTransferMenu(false);
-      }
-    });
-
-    view.findViewById(R.id.wallet_request).setOnClickListener(new View.OnClickListener() {
-
-      @Override
-      public void onClick(View v) {
-
-        mParent.openTransferMenu(true);
       }
     });
 

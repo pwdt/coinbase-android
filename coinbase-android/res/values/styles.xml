@@ -1,7 +1,7 @@
 <resources>
 
-    <color name="wallet_balance_color">#138000</color>
-    <color name="wallet_balance_color_invalid">#7D7D7D</color>
+    <color name="wallet_balance_color">#50bf82</color>
+    <color name="wallet_balance_color_invalid">#666666</color>
 
     <style name="wallet_balance_loaded">
         <item name="android:textColor">@color/wallet_balance_color</item>

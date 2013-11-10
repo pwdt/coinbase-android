@@ -29,7 +29,6 @@ public class Constants {
   public static final String KEY_ACCOUNT_PIN_VIEW_ALLOWED = "account_%d_pin_view_allowed";
 
   public static final String KEY_ACCOUNT_BALANCE = "account_%d_balance_amt";
-  public static final String KEY_ACCOUNT_BALANCE_CURRENCY = "account_%d_balance_amt_currency";
   public static final String KEY_ACCOUNT_BALANCE_HOME = "account_%d_balance_home_amt";
   public static final String KEY_ACCOUNT_BALANCE_HOME_CURRENCY = "account_%d_balance_home_currency";
   

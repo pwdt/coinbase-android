@@ -1,10 +1,5 @@
 package com.coinbase.android;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -55,6 +50,11 @@ import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
 import com.justinschultz.pusherclient.Pusher;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @RequiresAuthentication
 @RequiresPIN
@@ -690,7 +690,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       String name = getString(mFragmentTitles[fragment]);
       title.setText(name);
-      // title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-Light"));
+      title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-Light"));
 
       icon.setImageResource(mFragmentIcons[fragment]);
       icon.setColorFilter(getResources().getColor(R.color.drawer_item_color), Mode.MULTIPLY);

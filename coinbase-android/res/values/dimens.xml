@@ -2,5 +2,6 @@
 <resources>
     <dimen name="layout_padding">15dp</dimen>
     <dimen name="main_menu_width">250dp</dimen>
+    <dimen name="home_card_padding">13dp</dimen>
     
 </resources>

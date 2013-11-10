@@ -10,7 +10,8 @@
         android:layout_height="24dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/ic_action_transactions" />
+        android:src="@drawable/ic_action_transactions"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/main_menu_item_title"
@@ -21,6 +22,8 @@
         android:textColor="@color/drawer_item_color"
         android:layout_marginLeft="5dp"
         android:text="@string/title_transactions"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textSize="10pt"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"/>
 
 </RelativeLayout>

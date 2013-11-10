@@ -200,5 +200,6 @@
     <string name="transactions_empty">No transactions.</string>
     <string name="pos_setup_title">Set up point of sale</string>
     <string name="pos_setup_message">Set up the Coinbase app in point of sale mode to accept bitcoin payments in person.\n\nWhen set up in point of sale mode, the app will only be able to accept payments. This device will not have access to account history and will not be able to send bitcoin out of this account.</string>
+    <string name="wallet_balance_label">CURRENT BALANCE</string>
 
 </resources>
