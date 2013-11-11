@@ -240,4 +240,25 @@ public class Utils {
     }
     return sb.toString();
   }
+
+  public static int getActiveAccount(Context c) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return activeAccount;
+  }
+
+  public static String getPrefsString(Context c, String key, String def) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return prefs.getString(String.format(key, activeAccount), def);
+  }
+
+  public static boolean getPrefsBool(Context c, String key, boolean def) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return prefs.getBoolean(String.format(key, activeAccount), def);
+  }
 }

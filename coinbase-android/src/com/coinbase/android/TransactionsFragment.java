@@ -1,5 +1,6 @@
 package com.coinbase.android;
 
+import android.animation.LayoutTransition;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
@@ -522,6 +523,45 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mListHeaderContainer = new FrameLayout(mParent);
     setHeaderPinned(true);
     mListView.addHeaderView(mListHeaderContainer);
+
+    // Header card swipe
+    boolean showBalance = Utils.getPrefsBool(mParent, Constants.KEY_ACCOUNT_SHOW_BALANCE, true);
+    mListHeader.findViewById(R.id.wallet_layout).setVisibility(showBalance ? View.VISIBLE : View.GONE);
+    mListHeader.findViewById(R.id.wallet_hidden_notice).setVisibility(showBalance ? View.GONE : View.VISIBLE);
+    final BalanceTouchListener balanceTouchListener = new BalanceTouchListener(mListHeader.findViewById(R.id.wallet_layout),
+            null, new BalanceTouchListener.OnDismissCallback() {
+      @Override
+      public void onDismiss(View view, Object token) {
+
+        // Hide balance
+        mListHeader.findViewById(R.id.wallet_layout).setVisibility(View.GONE);
+        mListHeader.findViewById(R.id.wallet_hidden_notice).setVisibility(View.VISIBLE);
+
+        // Save in preferences
+        PreferenceManager.getDefaultSharedPreferences(mParent).edit()
+                .putBoolean(String.format(Constants.KEY_ACCOUNT_SHOW_BALANCE, Utils.getActiveAccount(mParent)), false)
+                .commit();
+      }
+    });
+    mListHeader.setOnTouchListener(balanceTouchListener);
+    LayoutTransition transition = new LayoutTransition();
+    transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
+    mListHeader.setLayoutTransition(transition);
+    mListHeader.findViewById(R.id.wallet_hidden_show).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+
+        // Show balance
+        mListHeader.findViewById(R.id.wallet_layout).setVisibility(View.VISIBLE);
+        mListHeader.findViewById(R.id.wallet_hidden_notice).setVisibility(View.GONE);
+        balanceTouchListener.reset();
+
+        // Save in preferences
+        PreferenceManager.getDefaultSharedPreferences(mParent).edit()
+                .putBoolean(String.format(Constants.KEY_ACCOUNT_SHOW_BALANCE, Utils.getActiveAccount(mParent)), true)
+                .commit();
+      }
+    });
 
     mListView.setOnScrollListener(new TransactionsInfiniteScrollListener());
 

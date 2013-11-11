@@ -9,11 +9,12 @@ dependencies {
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.7.+'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abs:0.7.+'
+    compile 'com.nineoldandroids:library:2.4.0'
 }
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    buildToolsVersion '19.0.0'
 
     defaultConfig {
         minSdkVersion 10

@@ -9,9 +9,7 @@
 	    android:layout_height="wrap_content"
 	    android:id="@+id/wallet_layout"
 	    android:padding="15dp"
-        android:layout_marginTop="@dimen/home_card_padding"
-        android:layout_marginLeft="@dimen/home_card_padding"
-        android:layout_marginRight="@dimen/home_card_padding"
+        android:layout_margin="@dimen/home_card_padding"
         android:background="@drawable/fragment_transactiondetails_bg">
 
 	    <TextView
@@ -69,13 +67,30 @@
                 android:gravity="center"/>
         </FrameLayout>
     </RelativeLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/wallet_hidden_notice"
+        android:padding="15dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/wallet_layout">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/wallet_hidden_notice"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:id="@+id/wallet_hidden_show"
+            android:text="@string/wallet_hidden_show"/>
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:id="@+id/spacer"
-        android:layout_below="@+id/wallet_layout"
-        android:layout_marginTop="@dimen/home_card_padding"/>
+        android:layout_below="@+id/wallet_hidden_notice"/>
 	    
     <TextView
         android:id="@+id/wallet_error"
