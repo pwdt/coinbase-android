@@ -1,30 +1,15 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.acra.ACRA;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -50,6 +35,16 @@ import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
+
+import org.acra.ACRA;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AccountSettingsFragment extends ListFragment implements CoinbaseFragment {
 
@@ -144,7 +139,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
       } else if("enable_merchant_tools".equals(item[2])) {
         desc = getString(prefs.getBoolean(
-          String.format((String) item[1], mActiveAccount), true) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
+          String.format((String) item[1], mActiveAccount), false) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
       } else if("pin".equals(item[2])) {
         boolean enabled = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, mActiveAccount), null) != null;
         boolean editOnly = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, mActiveAccount), false);

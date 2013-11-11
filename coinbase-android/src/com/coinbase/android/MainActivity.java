@@ -374,7 +374,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String key = String.format(Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, activeAccount);
     mFragmentVisible[FRAGMENT_INDEX_MERCHANT_TOOLS] = false; //prefs.getBoolean(key, true);
-    mFragmentVisible[FRAGMENT_INDEX_POINT_OF_SALE] = prefs.getBoolean(key, true);
+    mFragmentVisible[FRAGMENT_INDEX_POINT_OF_SALE] = prefs.getBoolean(key, false);
     getAdapter().notifyDataSetChanged();
   }
 
