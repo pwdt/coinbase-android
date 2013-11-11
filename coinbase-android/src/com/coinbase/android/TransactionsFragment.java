@@ -531,8 +531,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     ((TextView) view.findViewById(R.id.wallet_balance_label)).setTypeface(
             FontManager.getFont(mParent, "RobotoCondensed-Regular"));
-    //((TextView) view.findViewById(R.id.wallet_balance_home)).setTypeface(
-    //        FontManager.getFont(mParent, "RobotoCondensed-Regular"));
+    ((TextView) view.findViewById(R.id.wallet_send_label)).setTypeface(
+           FontManager.getFont(mParent, "RobotoCondensed-Regular"));
 
     // Load old balance
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);

@@ -30,8 +30,8 @@
     <string name="wallet_balance_def">-.----</string>
     <string name="wallet_balance_currency_def">BTC</string>
     <string name="wallet_balance_top">Current balance:</string>
-    <string name="wallet_balance_send">Send</string>
-    <string name="wallet_balance_request">Request</string>
+    <string name="wallet_balance_send">SEND</string>
+    <string name="wallet_balance_request">REQUEST</string>
     <string name="transfer_button_send">Send</string><string name="transfer_button_email">Email</string>
     <string name="transfer_button_qrcode">QR Code</string>
     <string name="transfer_button_nfc">NFC</string>

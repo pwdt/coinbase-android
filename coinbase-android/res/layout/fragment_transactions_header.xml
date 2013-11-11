@@ -42,13 +42,32 @@
 	        android:textColor="#666666"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	
-	    <Button
+	    <FrameLayout
 	        android:id="@+id/wallet_send"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+	        android:layout_width="46dp"
+	        android:layout_height="58dp"
 	        android:layout_alignParentRight="true"
 	        android:layout_centerVertical="true"
-	        android:text="@string/wallet_balance_send" />
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:scaleType="center"
+                android:src="@drawable/send_icon_button"
+                android:layout_gravity="top|center_horizontal"
+                android:duplicateParentState="true"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wallet_balance_send"
+                android:id="@+id/wallet_send_label"
+                android:textSize="7pt"
+                android:layout_gravity="bottom|center_horizontal"
+                android:textColor="@color/wallet_button"
+                android:duplicateParentState="true"
+                android:gravity="center"/>
+        </FrameLayout>
     </RelativeLayout>
 
     <View

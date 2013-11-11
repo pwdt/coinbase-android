@@ -30,8 +30,8 @@
     <string name="wallet_balance_def">-.----</string>
     <string name="wallet_balance_currency_def">BTC</string>
     <string name="wallet_balance_top">Aktuální zůstatek:</string>
-    <string name="wallet_balance_send">Poslat</string>
-    <string name="wallet_balance_request">Vyžádat</string>
+    <string name="wallet_balance_send">POSLAT</string>
+    <string name="wallet_balance_request">VYŽÁDAT</string>
     <string name="transfer_button_send">Poslat</string><string name="transfer_button_email">Email</string>
     <string name="transfer_button_qrcode">QR kód</string>
     <string name="transfer_button_nfc">NFC</string>
