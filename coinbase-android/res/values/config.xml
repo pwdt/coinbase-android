@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item type="bool" format="boolean" name="pin_sliding_menu">false</item>
+    <item type="integer" format="integer" name="transactiondetails_anim_duration">300</item>
     
 </resources>
