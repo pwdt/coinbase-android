@@ -6,20 +6,15 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.ListFragment;
-import android.support.v4.widget.CursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,14 +25,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.Utils.CurrencyType;
-import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
 
@@ -46,7 +39,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -56,7 +48,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-public class BuySellFragment extends ListFragment implements CoinbaseFragment {
+public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
   private enum BuySellType {
     BUY(R.string.buysell_type_buy, "buy"),
@@ -337,86 +329,6 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     }
   }
 
-  private class LoadTransferHistoryTask extends AsyncTask<Void, Void, Cursor> {
-
-    @Override
-    protected Cursor doInBackground(Void... params) {
-
-      return null;
-    }
-
-    @Override
-    protected void onPostExecute(Cursor result) {
-
-    }
-  }
-
-  private class TransferViewBinder implements SimpleCursorAdapter.ViewBinder {
-
-    @Override
-    public boolean setViewValue(View arg0, Cursor arg1, int arg2) {
-
-      try {
-        JSONObject item = new JSONObject(new JSONTokener(arg1.getString(arg2)));
-        BuySellType type = BuySellType.fromApiType(item.optString("_type"));
-
-        switch(arg0.getId()) {
-
-        case R.id.buysell_history_title:
-
-          String btcAmount = item.getJSONObject("btc").optString("amount");
-          int format = type == BuySellType.SELL ? R.string.buysell_history_sell : R.string.buysell_history_buy;
-          String text = String.format(mParent.getString(format), Utils.formatCurrencyAmount(btcAmount));
-
-          ((TextView) arg0).setText(text);
-          return true;
-
-        case R.id.buysell_history_amount:
-
-          String total = item.getJSONObject("total").getString("amount");
-          String totalString = Utils.formatCurrencyAmount(new BigDecimal(total), true, CurrencyType.TRADITIONAL);
-
-          int color = type == BuySellType.BUY ? R.color.transaction_negative : R.color.transaction_positive;
-
-          ((TextView) arg0).setText(totalString);
-          ((TextView) arg0).setTextColor(getResources().getColor(color));
-          return true;
-
-        case R.id.buysell_history_currency:
-
-          ((TextView) arg0).setText(item.getJSONObject("total").getString("currency"));
-          return true;
-
-        case R.id.buysell_history_status:
-
-          String status = item.optString("status", getString(R.string.transaction_status_error));
-
-          String readable = status;
-          int background = R.drawable.transaction_unknown;
-          if("complete".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
-            readable = getString(R.string.transaction_status_complete);
-            background = R.drawable.transaction_complete;
-          } else if("pending".equalsIgnoreCase(status)) {
-            readable = getString(R.string.transaction_status_pending);
-            background = R.drawable.transaction_pending;
-          }
-
-          ((TextView) arg0).setText(readable);
-          ((TextView) arg0).setBackgroundResource(background);
-          return true;
-        }
-
-        return false;
-      } catch (JSONException e) {
-        // Malformed transaction JSON.
-        Log.e("Coinbase", "Corrupted database entry! " + arg1.getInt(arg1.getColumnIndex(TransactionEntry._ID)));
-        e.printStackTrace();
-
-        return true;
-      }
-    }
-  }
-
   private MainActivity mParent;
 
   private UpdatePriceTask mUpdatePriceTask, mUpdateSinglePriceTask;
@@ -522,12 +434,6 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
       }
     });
 
-    mListHeaderContainer = new FrameLayout(mParent);
-    ((ListView) view.findViewById(android.R.id.list)).addHeaderView(mListHeaderContainer);
-
-    // Load list adapter
-    Utils.runAsyncTaskConcurrently(new LoadTransferHistoryTask());
-
     return view;
   }
 
@@ -546,6 +452,12 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     }
 
     mText2.setText(R.string.buysell_text2_blank);
+    updateAllPrices();
+  }
+
+  private void updateAllPrices() {
+
+    BuySellType type = BuySellType.values()[mBuySellSpinner.getSelectedItemPosition()];
     mUpdateSinglePriceTask = new UpdatePriceTask();
     Utils.runAsyncTaskConcurrently(mUpdateSinglePriceTask, null, type.getRequestType());
 
@@ -629,52 +541,12 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
     return new Object[] { false, getString(R.string.buysell_error_exception), type, amount };
   }
 
-  private void setHeaderPinned(boolean pinned) {
-
-    boolean isPinned = mListHeaderContainer.getChildCount() == 0;
-
-    if(isPinned == pinned) {
-      return;
-    }
-
-    if(pinned) {
-
-      mListHeaderContainer.removeAllViews();
-      mRootView.addView(mHeader);
-    } else {
-
-      mRootView.removeView(mHeader);
-      mListHeaderContainer.addView(mHeader);
-    }
-  }
-
-  @Override
-  public void onListItemClick(ListView l, View v, int position, long id) {
-
-    if(position == 0) {
-      return; // Header view
-    }
-
-    // Compensate for header
-    position--;
-
-    Cursor c = ((CursorAdapter) getListAdapter()).getCursor();
-    c.moveToPosition(position);
-
-    String transactionId = c.getString(c.getColumnIndex(TransactionEntry._ID));
-    Intent intent = new Intent(mParent, TransactionDetailsActivity.class);
-    intent.putExtra(TransactionDetailsFragment.EXTRA_ID, transactionId);
-    mParent.startActivityForResult(intent, 1);
-  }
-
   public void onTransactionsSynced() {
 
-    // Refresh the history view
-    Utils.runAsyncTaskConcurrently(new LoadTransferHistoryTask());
   }
 
   public void refresh() {
-    // Nothing to refresh in this fragment
+    // Refresh buy price
   }
 
   @Override
@@ -682,5 +554,7 @@ public class BuySellFragment extends ListFragment implements CoinbaseFragment {
 
     // Focus text field
     mAmount.requestFocus();
+
+    updateAllPrices();
   }
 }

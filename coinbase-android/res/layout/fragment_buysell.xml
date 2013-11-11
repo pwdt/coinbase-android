@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
@@ -61,7 +61,7 @@
             android:id="@+id/buysell_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/buysell_total"
+            android:layout_alignParentRight="true"
             android:layout_below="@+id/buysell_total"
             android:enabled="false"
             android:text="@string/buysell_submit_buy" />
@@ -81,12 +81,4 @@
             android:linksClickable="true" />
     </RelativeLayout>
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:id="@android:id/list"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true">
-    </ListView>
-
-</RelativeLayout>
+</ScrollView>
