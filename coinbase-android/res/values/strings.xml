@@ -203,5 +203,8 @@
     <string name="wallet_balance_label">CURRENT BALANCE</string>
     <string name="wallet_hidden_notice">Balance hidden.</string>
     <string name="wallet_hidden_show"><u>Show balance</u></string>
+    <string name="transactiondetails_action_success_resend">Request re-sent.</string>
+    <string name="transactiondetails_action_success_cancel">Request cancelled.</string>
+    <string name="transactiondetails_action_success_complete">Request completed.</string>
 
 </resources>

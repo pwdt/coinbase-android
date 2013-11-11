@@ -29,6 +29,7 @@
             android:layout_height="wrap_content"
             android:text="\u0E3F1.1186"
             android:textSize="20sp"
+            android:textStyle="bold"
             android:layout_gravity="right"/>
 
         <TextView

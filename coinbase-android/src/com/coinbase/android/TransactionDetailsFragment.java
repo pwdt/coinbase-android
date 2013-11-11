@@ -1,7 +1,6 @@
 package com.coinbase.android;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -14,8 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +43,7 @@ public class TransactionDetailsFragment extends Fragment {
   private class TakeActionTask extends AsyncTask<Object, Void, String> {
 
     ProgressDialog mDialog;
+    ActionType type;
 
     @Override
     protected void onPreExecute() {
@@ -62,7 +60,7 @@ public class TransactionDetailsFragment extends Fragment {
     @Override
     protected String doInBackground(Object... params) {
 
-      ActionType type = (ActionType) params[0];
+      type = (ActionType) params[0];
       String transactionID = (String) params[1];
 
       String url = String.format("transactions/%s/", transactionID);
@@ -122,9 +120,26 @@ public class TransactionDetailsFragment extends Fragment {
             String.format(getActivity().getString(R.string.transactiondetails_action_error), result), Toast.LENGTH_LONG).show();
       } else {
 
-        // Return to main activity and refresh
-        getActivity().setResult(Activity.RESULT_OK);
-        getActivity().finish();
+        int msg = 0;
+
+        switch(type) {
+          case RESEND:
+            msg = R.string.transactiondetails_action_success_resend;
+            break;
+          case COMPLETE:
+            msg = R.string.transactiondetails_action_success_complete;
+            break;
+          case CANCEL:
+            msg = R.string.transactiondetails_action_success_cancel;
+            break;
+        }
+
+        Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+
+        if(type != ActionType.RESEND) {
+          ((MainActivity) getActivity()).refresh();
+          ((TransactionsFragment) getParentFragment()).hideDetails(true);
+        }
       }
     }
 
@@ -172,7 +187,7 @@ public class TransactionDetailsFragment extends Fragment {
 
         // Error
         Toast.makeText(getActivity(), R.string.transactiondetails_error, Toast.LENGTH_SHORT).show();
-        getActivity().finish();
+        ((TransactionsFragment) getParentFragment()).hideDetails(true);
       }
     }
 
@@ -272,12 +287,9 @@ public class TransactionDetailsFragment extends Fragment {
         date = (TextView) view.findViewById(R.id.transactiondetails_date),
         status = (TextView) view.findViewById(R.id.transactiondetails_status),
         notes = (TextView) view.findViewById(R.id.transactiondetails_notes);
-    Button resend = (Button) view.findViewById(R.id.transactiondetails_request_resend),
-        cancel = (Button) view.findViewById(R.id.transactiondetails_request_cancel),
-        send = (Button) view.findViewById(R.id.transactiondetails_request_send),
-        decline = (Button) view.findViewById(R.id.transactiondetails_request_decline);
-    View cancelSpacer = view.findViewById(R.id.transactiondetails_request_cancel_spacer),
-        declineSpacer = view.findViewById(R.id.transactiondetails_request_decline_spacer);
+    TextView positive = (TextView) view.findViewById(R.id.transactiondetails_action_positive),
+        negative = (TextView) view.findViewById(R.id.transactiondetails_action_negative);
+    View actions = view.findViewById(R.id.transactiondetails_actions);
 
     boolean sentToMe = data.optJSONObject("sender") == null || !currentUserId.equals(data.getJSONObject("sender").optString("id"));
     boolean isRequest = data.getBoolean("request");
@@ -306,6 +318,7 @@ public class TransactionDetailsFragment extends Fragment {
     } catch (ParseException e) {
       date.setText(null);
     }
+    date.setTypeface(FontManager.getFont(getActivity(), "Roboto-Light"));
 
     // Status
     String transactionStatus = data.optString("status", getString(R.string.transaction_status_error));
@@ -328,72 +341,50 @@ public class TransactionDetailsFragment extends Fragment {
     notes.setText(noNotes ? null : notesText);
     notes.setVisibility(noNotes ? View.GONE : View.VISIBLE);
 
-    if(noNotes) {
-      // We need to update the layout_below parameter of the resend and send buttons
-      RelativeLayout.LayoutParams p1 = (RelativeLayout.LayoutParams) resend.getLayoutParams();
-      p1.addRule(RelativeLayout.BELOW, to.getId());
-      RelativeLayout.LayoutParams p2 = (RelativeLayout.LayoutParams) send.getLayoutParams();
-      p2.addRule(RelativeLayout.BELOW, to.getId());
-    }
-
     view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.INVISIBLE : View.VISIBLE);
 
     // Buttons
     boolean senderOrRecipientIsExternal = data.optJSONObject("sender") == null || data.optJSONObject("recipient") == null;
     if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
-      cancel.setVisibility(View.GONE);
-      cancelSpacer.setVisibility(View.GONE);
-      resend.setVisibility(View.GONE);
-      send.setVisibility(View.GONE);
-      decline.setVisibility(View.GONE);
-      declineSpacer.setVisibility(View.GONE);
+      // No actions
+      actions.setVisibility(View.GONE);
     } else if(sentToMe) {
 
-      cancel.setVisibility(View.VISIBLE);
-      cancelSpacer.setVisibility(View.VISIBLE);
-      resend.setVisibility(View.VISIBLE);
-      send.setVisibility(View.GONE);
-      decline.setVisibility(View.GONE);
-      declineSpacer.setVisibility(View.GONE);
+      positive.setText(R.string.transactiondetails_request_resend);
+      negative.setText(R.string.transactiondetails_request_cancel);
+
+      negative.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          new TakeActionTask().execute(ActionType.CANCEL, transactionId);
+        }
+      });
+
+      positive.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          new TakeActionTask().execute(ActionType.RESEND, transactionId);
+        }
+      });
     } else {
 
-      cancel.setVisibility(View.GONE);
-      cancelSpacer.setVisibility(View.GONE);
-      resend.setVisibility(View.GONE);
-      send.setVisibility(View.VISIBLE);
-      decline.setVisibility(View.VISIBLE);
-      declineSpacer.setVisibility(View.VISIBLE);
+      positive.setText(String.format(getString(R.string.transactiondetails_request_send), amountText, recipient));
+      negative.setText(R.string.transactiondetails_request_decline);
 
-      send.setText(String.format(getString(R.string.transactiondetails_request_send), amountText, recipient));
+      positive.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          new TakeActionTask().execute(ActionType.COMPLETE, transactionId);
+        }
+      });
+
+      negative.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          new TakeActionTask().execute(ActionType.CANCEL, transactionId);
+        }
+      });
     }
-
-    cancel.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        new TakeActionTask().execute(ActionType.CANCEL, transactionId);
-      }
-    });
-
-    resend.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        new TakeActionTask().execute(ActionType.RESEND, transactionId);
-      }
-    });
-
-    send.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        new TakeActionTask().execute(ActionType.COMPLETE, transactionId);
-      }
-    });
-
-    decline.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        new TakeActionTask().execute(ActionType.CANCEL, transactionId);
-      }
-    });
   }
 
   private String getName(JSONObject person, String address, String currentUserId) {
