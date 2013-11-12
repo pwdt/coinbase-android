@@ -362,6 +362,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     mSubmitNfc = (Button) view.findViewById(R.id.transfer_money_button_nfc);
     mClearButton = (Button) view.findViewById(R.id.transfer_money_button_clear);
 
+    for(Button b : new Button[] { mSubmitSend, mSubmitEmail, mSubmitNfc, mSubmitQr }) {
+      b.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    }
+
     mAmountView = (EditText) view.findViewById(R.id.transfer_money_amt);
     mNotesView = (EditText) view.findViewById(R.id.transfer_money_notes);
     mRecipientView = (AutoCompleteTextView) view.findViewById(R.id.transfer_money_recipient);

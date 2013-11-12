@@ -2,64 +2,81 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="30dp">
+    android:background="#eeeeee">
 
-    <TextView
-        android:id="@+id/pin_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/pin_text"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <EditText
-        android:id="@+id/pin_number"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/pin_text"
-        android:ems="10"
-        android:gravity="center"
-        android:inputType="numberPassword"
-        android:textSize="30sp"
-        android:layout_marginTop="10dp"
-        android:imeOptions="actionGo"
-        android:textStyle="bold" />
+        android:layout_centerInParent="true">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/pin_header"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/ic_launcher"
+            android:scaleType="center"
+            android:background="#348eda"
+            android:padding="10dp"
+            />
+
+        <TextView
+            android:id="@+id/pin_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/pin_header"
+            android:layout_centerHorizontal="true"
+            android:text="@string/pin_text"
+            android:layout_marginTop="15dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/pin_account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/pin_text"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:text="isaac@siriusapplications.com"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <EditText
+            android:id="@+id/pin_number"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/pin_account"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="numberPassword"
+            android:textSize="30sp"
+            android:layout_marginTop="10dp"
+            android:enabled="false"
+            android:focusable="false"
+            android:textColor="#000000"
+            android:textStyle="bold" />
+
+        <GridView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/pin_number"
+            android:id="@+id/pin_keyboard"
+            android:numColumns="3"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="10dp"
+            android:layout_margin="25dp"></GridView>
+
+    </RelativeLayout>
 
     <TextView
-        android:id="@+id/pin_account"
+        android:id="@+id/pin_switch_accounts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/pin_number"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:text="isaac@siriusapplications.com"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <View android:id="@+id/center_anchor"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_centerHorizontal="true"/>
-
-    <Button
-        android:id="@+id/pin_switch_accounts"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/pin_account"
-        android:layout_alignParentLeft="true"
-        android:layout_alignRight="@+id/center_anchor"
-        android:layout_marginTop="10dp"
-        android:text="@string/pin_switch_accounts" />
-
-    <Button
-        android:id="@+id/pin_submit"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/pin_account"
         android:layout_alignParentRight="true"
-        android:layout_alignLeft="@+id/center_anchor"
-        android:layout_marginTop="10dp"
-        android:text="@string/pin_submit" />
+        android:layout_alignParentTop="true"
+        android:layout_margin="10dp"
+        android:textSize="8pt"
+        android:textColor="#333333"
+        android:text="@string/pin_switch_accounts"/>
 
 </RelativeLayout>

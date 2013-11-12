@@ -161,7 +161,7 @@
     <string name="buysell_history_buy">You purchased %1$s BTC</string>
     <string name="transactiondetails_transfer_buy_notes">Your bitcoins will arrive on %1$s.</string>
     <string name="pin_title">Unlock Wallet</string>
-    <string name="pin_text">Enter wallet passcode:</string>
+    <string name="pin_text">Enter wallet passcode</string>
     <string name="pin_switch_accounts">Accounts</string>
     <string name="pin_incorrect">Incorrect passcode.</string>
     <string name="settings_pin_change_title">Change passcode</string>
@@ -188,7 +188,7 @@
     <string name="account_android_pin_edit">Require passcode only when transferring money</string>
     <string name="account_android_pin_none">Passcode not enabled</string>
     <string name="exchange_rate_error">Could not load exchange rate.</string>
-    <string name="pin_submit">Submit</string>
+    <string name="pin_submit">SUBMIT</string>
     <string name="account_invalid_title">Authorization failed</string>
     <string name="account_invalid">This device is no longer authorized to access your Coinbase account. Please sign in again.</string>
     <string name="buysell_confirm_message_buy_varies">Due to higher than normal buy volumes, we are unable to provide exact price quotes right now.<![CDATA[<br><br>]]>Instead of pausing buys entirely, we decided to give people the option to purchase bitcoin at the market price in a few days. Once your USD funds arrive, we will exchange them to bitcoin at the market price.<![CDATA[<br><br><a href="https://coinbase.com/buys">More information</a>]]></string>

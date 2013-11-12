@@ -160,7 +160,7 @@
     <string name="buysell_history_buy">Koupil jste %1$s BTC</string>
     <string name="transactiondetails_transfer_buy_notes">Vaše bitcoiny dorazí na %1$s.</string>
     <string name="pin_title">Odemknout peněženku</string>
-    <string name="pin_text">Zadejte pin peněženky:</string>
+    <string name="pin_text">Zadejte pin peněženky</string>
     <string name="pin_switch_accounts">Účty</string>
     <string name="pin_incorrect">Špatný pin.</string>
     <string name="settings_pin_change_title">Změna pinu</string>
@@ -187,7 +187,7 @@
     <string name="account_android_pin_edit">Vyžadovat pin jen pro převody peněz</string>
     <string name="account_android_pin_none">Nevyžadovat pin</string>
     <string name="exchange_rate_error">Nelze načíst směnný kurz.</string>
-    <string name="pin_submit">Odeslat</string>
+    <string name="pin_submit">ODESLAT</string>
     <string name="account_invalid_title">Autorizace selhala</string>
     <string name="account_invalid">Toto zařízení již není autorizováno pro používání. Prosím přihlašte se znovu.</string>
     <string name="buysell_confirm_message_buy_varies">Due to higher than normal buy volumes, we are unable to provide exact price quotes right now.<![CDATA[<br><br>]]>Instead of pausing buys entirely, we decided to give people the option to purchase bitcoin at the market price in a few days. Once your USD funds arrive, we will exchange them to bitcoin at the market price.<![CDATA[<br><br><a href="https://coinbase.com/buys">More information</a>]]></string>

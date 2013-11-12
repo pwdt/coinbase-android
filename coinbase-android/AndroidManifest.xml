@@ -93,7 +93,8 @@
 			    </intent-filter>
         </activity>
         <activity android:name=".pin.PINPromptActivity"
-            android:windowSoftInputMode="stateVisible"></activity>
+                  android:windowSoftInputMode="stateHidden"
+            android:theme="@style/Theme.Sherlock.Light.NoActionBar"></activity>
     </application>
 
 </manifest>
