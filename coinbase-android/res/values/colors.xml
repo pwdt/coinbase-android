@@ -8,4 +8,8 @@
   <color name="main_menu_background">#eeeeee</color>
   <color name="drawer_profile_background">#EDEDED</color>
   <color name="drawer_item_color">#000000</color>
+  <color name="button_primary_neutral">#5371c5</color>
+  <color name="button_primary_pressed">#2F4994</color>
+  <color name="button_secondary_neutral">#ffffff</color>
+  <color name="button_secondary_pressed">#dddddd</color>
 </resources>

@@ -345,6 +345,8 @@ public class TransactionDetailsFragment extends Fragment {
 
     // Buttons
     boolean senderOrRecipientIsExternal = data.optJSONObject("sender") == null || data.optJSONObject("recipient") == null;
+    negative.setTypeface(FontManager.getFont(getActivity(), "Roboto-Light"));
+    positive.setTypeface(FontManager.getFont(getActivity(), "Roboto-Light"));
     if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
       // No actions
       actions.setVisibility(View.GONE);

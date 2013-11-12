@@ -17,6 +17,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -127,7 +128,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       } else {
 
         mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
-        mBalanceText.setText(String.format(mParent.getString(R.string.wallet_balance), result[0] + " BTC"));
+        setBalance(result[0]);
         mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), result[2], result[3]));
       }
     }
@@ -582,7 +583,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     String oldHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), null);
 
     if(oldBalance != null) {
-      mBalanceText.setText(oldBalance + " BTC");
+      setBalance(oldBalance);
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
       mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), oldHomeBalance, oldHomeCurrency));
     }
@@ -621,6 +622,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     loadTransactionsList();
 
     return view;
+  }
+
+  private void setBalance(String balance) {
+    mBalanceText.setText(Html.fromHtml(String.format("<b>%1$s</b> BTC", balance)));
   }
 
   public void refresh() {

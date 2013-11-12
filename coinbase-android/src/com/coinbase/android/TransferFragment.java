@@ -1,20 +1,5 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-
-import org.acra.ACRA;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -54,6 +39,21 @@ import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
+
+import org.acra.ACRA;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 public class TransferFragment extends Fragment implements CoinbaseFragment {
 
@@ -276,6 +276,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   private Button mSubmitSend, mSubmitEmail, mSubmitQr, mSubmitNfc, mClearButton;
   private EditText mAmountView, mNotesView;
   private AutoCompleteTextView mRecipientView;
+  private View mRequestDivider;
 
   private SimpleCursorAdapter mAutocompleteAdapter;
 
@@ -364,6 +365,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     mAmountView = (EditText) view.findViewById(R.id.transfer_money_amt);
     mNotesView = (EditText) view.findViewById(R.id.transfer_money_notes);
     mRecipientView = (AutoCompleteTextView) view.findViewById(R.id.transfer_money_recipient);
+    mRequestDivider = view.findViewById(R.id.transfer_divider_3);
 
     mAutocompleteAdapter = Utils.getEmailAutocompleteAdapter(mParent);
     mRecipientView.setAdapter(mAutocompleteAdapter);
@@ -609,9 +611,15 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   private void doNativeCurrencyUpdate() {
 
-    if(mAmount == null || "".equals(mAmount) || ".".equals(mAmount)) {
+    if(mTransferCurrency == null) {
       mNativeAmount.setText(null);
       return;
+    }
+
+    String amountS = mAmount;
+
+    if(mAmount == null || "".equals(mAmount) || ".".equals(mAmount)) {
+      amountS = "0.00";
     }
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
@@ -624,7 +632,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     String key = String.format(format, mTransferCurrency.toLowerCase(Locale.CANADA));
     String resultCurrency = fromBitcoin ? nativeCurrency : "BTC";
 
-    BigDecimal amount = new BigDecimal(mAmount);
+    BigDecimal amount = new BigDecimal(amountS);
     BigDecimal result = amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
     mNativeAmount.setText(String.format(mParent.getString(R.string.transfer_amt_native), Utils.formatCurrencyAmount(result, false, CurrencyType.TRADITIONAL),
       resultCurrency.toUpperCase(Locale.CANADA)));
@@ -808,6 +816,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     mSubmitQr.setVisibility(isSend ? View.GONE : View.VISIBLE);
     mSubmitNfc.setVisibility(isSend ? View.GONE : View.VISIBLE);
     mRecipientView.setVisibility(isSend ? View.VISIBLE : View.GONE);
+    mRequestDivider.setVisibility(isSend ? View.GONE : View.VISIBLE);
 
     RelativeLayout.LayoutParams clearParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
     clearParams.addRule(RelativeLayout.BELOW, isSend ? R.id.transfer_money_recipient : R.id.transfer_money_notes);

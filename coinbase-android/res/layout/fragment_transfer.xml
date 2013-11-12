@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="#eeeeee">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -13,57 +14,80 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:id="@+id/transfer_send_money"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@drawable/fragment_transactiondetails_bg">
     
             <Spinner
                 android:id="@+id/transfer_money_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/transfer_send_money"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-    
-    
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_margin="10dp"/>
+
+            <View
+                android:id="@+id/transfer_divider_1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/transfer_money_type"
+                android:background="#eee" />
     
             <EditText
                 android:id="@+id/transfer_money_amt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/transfer_money_type"
+                android:layout_marginLeft="10dp"
                 android:layout_toLeftOf="@+id/transfer_money_currency"
-                android:layout_below="@+id/transfer_money_type"
+                android:layout_below="@+id/transfer_divider_1"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="5dp"
                 android:ems="10"
                 android:hint="@string/transfer_amt"
-                android:inputType="numberDecimal" />
+                android:textColor="#50bf82"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:inputType="numberDecimal"/>
 
             <Spinner
                 android:id="@+id/transfer_money_currency"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@+id/transfer_money_native"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="15dp"
                 android:layout_alignBaseline="@+id/transfer_money_amt" />
 
             <TextView
                 android:id="@+id/transfer_money_native"
                 android:layout_width="120dp"
                 android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/transfer_money_amt"
-                android:layout_alignBottom="@+id/transfer_money_amt"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/transfer_money_amt"
                 android:layout_alignParentRight="true"
                 android:text="@string/wallet_balance_home"
-                android:gravity="right"
+                android:gravity="left"
                 android:textColor="#666666"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:textSize="7pt" />
+
+            <View
+                android:id="@+id/transfer_divider_2"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/transfer_money_native"
+                android:background="#eee" />
     
     
             <EditText
                 android:id="@+id/transfer_money_notes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/transfer_money_amt"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentLeft="true"
                 android:layout_alignParentRight="true"
-                android:layout_below="@+id/transfer_money_amt"
+                android:layout_below="@+id/transfer_divider_2"
                 android:layout_marginTop="10dp"
                 android:ems="10"
                 android:hint="@string/transfer_notes"
@@ -76,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/transfer_money_notes"
-                android:layout_alignParentRight="true"
+                android:layout_alignRight="@+id/transfer_money_notes"
                 android:layout_below="@+id/transfer_money_notes"
                 android:layout_marginTop="10dp"
                 android:ems="10"
@@ -96,39 +120,55 @@
     
             <Button
                 android:id="@+id/transfer_money_button_send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignRight="@+id/transfer_money_recipient"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
                 android:layout_below="@+id/transfer_money_recipient"
-                android:layout_marginTop="10dp"
-                android:text="@string/transfer_button_send" />
-    
-            <Button
-                android:id="@+id/transfer_money_button_email"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignRight="@+id/transfer_money_notes"
+                android:layout_marginTop="15dp"
+                android:textColor="#ffffff"
+                android:text="@string/transfer_button_send"
+                android:background="@drawable/button_primary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:orientation="horizontal"
                 android:layout_below="@+id/transfer_money_notes"
-                android:layout_marginTop="10dp"
-                android:text="@string/transfer_button_email" />
-    
-            <Button
-                android:id="@+id/transfer_money_button_qrcode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/transfer_money_button_email"
-                android:layout_toLeftOf="@+id/transfer_money_button_email"
-                android:layout_marginTop="5dp"
-                android:text="@string/transfer_button_qrcode" />
-    
-            <Button
-                android:id="@+id/transfer_money_button_nfc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/transfer_money_button_qrcode"
-                android:layout_toLeftOf="@+id/transfer_money_button_qrcode"
-                android:layout_marginTop="5dp"
-                android:text="@string/transfer_button_nfc" />
+                android:layout_marginTop="15dp">
+
+                <Button
+                    android:id="@+id/transfer_money_button_nfc"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/transfer_button_nfc"
+                    android:background="@drawable/button_secondary" />
+                <Button
+                    android:id="@+id/transfer_money_button_qrcode"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/transfer_button_qrcode"
+                    android:background="@drawable/button_secondary" />
+
+                <Button
+                    android:id="@+id/transfer_money_button_email"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/transfer_button_email"
+                    android:background="@drawable/button_primary"
+                    android:textColor="#ffffff" />
+            </LinearLayout>
+
+            <View
+                android:id="@+id/transfer_divider_3"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/transfer_money_notes"
+                android:background="#eee"
+                android:layout_marginTop="15dp" />
             
         </RelativeLayout>
 

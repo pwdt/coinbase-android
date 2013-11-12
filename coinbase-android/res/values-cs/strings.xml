@@ -23,7 +23,6 @@
     <string name="login_error_auth">Nelze autorizovat.</string>
     <string name="transfer_send_money">Poslat peníze</string>
     <string name="transfer_send_money_button">Poslat</string>
-    <string name="transfer_amt">Částka</string>
     <string name="transfer_notes">Poznámky</string>
     <string name="wallet_balance">%1$s</string>
     <string name="wallet_balance_currency">%1$s</string>
