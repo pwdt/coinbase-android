@@ -12,7 +12,7 @@ import com.coinbase.android.Constants;
 
 public class PINManager {
 
-  public static final long PIN_REPROMPT_TIME = 1 * 60 * 1000; // One minute
+  public static final long PIN_REPROMPT_TIME = 5 * 1000; // Five seconds
 
   private static PINManager INSTANCE = null;
 
@@ -71,6 +71,12 @@ public class PINManager {
     // Does the user have a PIN?
     boolean hasPin = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), null) != null;
     if(!hasPin) {
+      return true;
+    }
+
+    // Is the PIN edit-only?
+    boolean pinViewAllowed = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount), false);
+    if(!pinViewAllowed) {
       return true;
     }
 

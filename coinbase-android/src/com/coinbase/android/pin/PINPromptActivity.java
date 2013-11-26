@@ -176,6 +176,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
 
     if(mIsSetMode) {
       PINManager.getInstance().setPin(this, pin);
+      PINManager.getInstance().resetPinClock(this);
     } else {
       PINManager.getInstance().resetPinClock(this);
     }
