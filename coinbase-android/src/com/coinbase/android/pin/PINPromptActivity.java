@@ -181,6 +181,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
       PINManager.getInstance().resetPinClock(this);
     }
 
+    setResult(RESULT_OK);
     finish();
   }
 

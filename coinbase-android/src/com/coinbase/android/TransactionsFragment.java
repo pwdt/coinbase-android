@@ -766,4 +766,14 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   public void onSwitchedTo() {
     // Not used
   }
+
+  @Override
+  public void onPINPromptSuccessfulReturn() {
+    if (mDetailsShowing) {
+
+      ((TransactionDetailsFragment ) getChildFragmentManager().findFragmentById(R.id.transaction_details_host)).onPINPromptSuccessfulReturn();
+    } else {
+      // Not used
+    }
+  }
 }

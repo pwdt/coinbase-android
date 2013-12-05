@@ -458,6 +458,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
   };
 
   MainActivity mParent;
+  int mPinItem = -1;
   SharedPreferences.OnSharedPreferenceChangeListener mChangeListener;
 
   @Override
@@ -508,12 +509,17 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
   @Override
   public void onListItemClick(ListView l, View v, int position, long id) {
+    editItem(position);
+  }
 
-    Object[] data = (Object[]) l.getItemAtPosition(position);
+  private void editItem(int position) {
+
+    Object[] data = (Object[]) getListView().getItemAtPosition(position);
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     final int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
     if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      mPinItem = position;
       return;
     }
 
@@ -532,8 +538,8 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
       // Show list of currencies
       Utils.runAsyncTaskConcurrently(new ShowNetworkListTask(), "currencies",
-          String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-          "native_currency");
+              String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
+              "native_currency");
     } else if("refresh_token".equals(data[2])) {
 
       // Refresh token
@@ -610,5 +616,13 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
   @Override
   public void onSwitchedTo() {
     // Not used
+  }
+
+  @Override
+  public void onPINPromptSuccessfulReturn() {
+    if (mPinItem != -1) {
+      editItem(mPinItem);
+      mPinItem = -1;
+    }
   }
 }

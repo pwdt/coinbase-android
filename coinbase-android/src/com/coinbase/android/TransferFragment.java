@@ -81,6 +81,10 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
   }
 
+  private enum TransferButton {
+    SEND, EMAIL, QR, NFC;
+  }
+
   private class DoTransferTask extends AsyncTask<Object, Void, Object[]> {
 
     private ProgressDialog mDialog;
@@ -282,6 +286,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   private int mTransferType;
   private String mAmount, mNotes, mRecipient, mTransferCurrency;
+  private TransferButton mLastPressedButton = null;
 
   private TextView mNativeAmount;
   private long mNativeExchangeRateTime;
@@ -445,40 +450,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        if("".equals(mAmount) || ".".equals(mAmount)) {
-
-          // No amount entered
-          Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
-          return;
-        } else if("".equals(mRecipient)) {
-
-          // No recipient entered
-          Toast.makeText(mParent, R.string.transfer_recipient_empty, Toast.LENGTH_SHORT).show();
-          return;
-        }
-
-        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
-          return;
-        }
-
-        Object btcAmount = getBtcAmount();
-        if(btcAmount == null || btcAmount == Boolean.FALSE) {
-          return;
-        }
-
-        ConfirmTransferFragment dialog = new ConfirmTransferFragment();
-
-        Bundle b = new Bundle();
-
-        b.putSerializable("type", TransferType.values()[mTransferType]);
-        b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
-        b.putString("notes", mNotes);
-        b.putString("toFrom", mRecipient);
-        b.putBoolean("isFeePrompt", ((BigDecimal) btcAmount).compareTo(new BigDecimal("0.001")) == -1);
-
-        dialog.setArguments(b);
-
-        dialog.show(getFragmentManager(), "confirm");
+        mLastPressedButton = TransferButton.SEND;
+        submitSend();
       }
     });
 
@@ -487,33 +460,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        if("".equals(mAmount) || ".".equals(mAmount)) {
-
-          // No amount entered
-          Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
-          return;
-        }
-
-        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
-          return;
-        }
-
-        Object btcAmount = getBtcAmount();
-        if(btcAmount == null || btcAmount == Boolean.FALSE) {
-          return;
-        }
-
-        TransferEmailPromptFragment dialog = new TransferEmailPromptFragment();
-
-        Bundle b = new Bundle();
-
-        b.putSerializable("type", TransferType.values()[mTransferType]);
-        b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
-        b.putString("notes", mNotes);
-
-        dialog.setArguments(b);
-
-        dialog.show(getFragmentManager(), "requestEmail");
+        mLastPressedButton = TransferButton.EMAIL;
+        submitEmail();
       }
     });
 
@@ -522,22 +470,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        String requestUri = generateRequestUri();
-        Object btcAmount = getBtcAmount();
-        if(btcAmount == Boolean.FALSE) {
-          return;
-        }
-
-        DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
-        Bundle args = new Bundle();
-        args.putString("data", requestUri);
-        args.putBoolean("isNfc", false);
-        args.putString("desiredAmount", btcAmount == null ? null : btcAmount.toString());
-        f.setArguments(args);
-        f.show(getFragmentManager(), "qrrequest");
-
-        // After using a receive address, generate a new one for next time.
-        mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+        mLastPressedButton = TransferButton.QR;
+        submitQr();
       }
     });
 
@@ -546,22 +480,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        String requestUri = generateRequestUri();
-        Object btcAmount = getBtcAmount();
-        if(btcAmount == Boolean.FALSE) {
-          return;
-        }
-
-        DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
-        Bundle args = new Bundle();
-        args.putString("data", requestUri);
-        args.putBoolean("isNfc", true);
-        args.putString("desiredAmount", btcAmount == null ? null : btcAmount.toString());
-        f.setArguments(args);
-        f.show(getFragmentManager(), "nfcrequest");
-
-        // After using a receive address, generate a new one for next time.
-        mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+        mLastPressedButton = TransferButton.NFC;
+        submitNfc();
       }
     });
 
@@ -595,6 +515,127 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     prefs.registerOnSharedPreferenceChangeListener(mPreferenceChangeListener);
 
     return view;
+  }
+
+  private void submitSend() {
+
+    if("".equals(mAmount) || ".".equals(mAmount)) {
+
+      // No amount entered
+      Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
+      return;
+    } else if("".equals(mRecipient)) {
+
+      // No recipient entered
+      Toast.makeText(mParent, R.string.transfer_recipient_empty, Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+    mLastPressedButton = null;
+
+    Object btcAmount = getBtcAmount();
+    if(btcAmount == null || btcAmount == Boolean.FALSE) {
+      return;
+    }
+
+    ConfirmTransferFragment dialog = new ConfirmTransferFragment();
+
+    Bundle b = new Bundle();
+
+    b.putSerializable("type", TransferType.values()[mTransferType]);
+    b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
+    b.putString("notes", mNotes);
+    b.putString("toFrom", mRecipient);
+    b.putBoolean("isFeePrompt", ((BigDecimal) btcAmount).compareTo(new BigDecimal("0.001")) == -1);
+
+    dialog.setArguments(b);
+
+    dialog.show(getFragmentManager(), "confirm");
+  }
+
+  private void submitEmail() {
+
+    if("".equals(mAmount) || ".".equals(mAmount)) {
+
+      // No amount entered
+      Toast.makeText(mParent, R.string.transfer_amt_empty, Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+    mLastPressedButton = null;
+
+    Object btcAmount = getBtcAmount();
+    if(btcAmount == null || btcAmount == Boolean.FALSE) {
+      return;
+    }
+
+    TransferEmailPromptFragment dialog = new TransferEmailPromptFragment();
+
+    Bundle b = new Bundle();
+
+    b.putSerializable("type", TransferType.values()[mTransferType]);
+    b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
+    b.putString("notes", mNotes);
+
+    dialog.setArguments(b);
+
+    dialog.show(getFragmentManager(), "requestEmail");
+  }
+
+  private void submitQr() {
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+    mLastPressedButton = null;
+
+    String requestUri = generateRequestUri();
+    Object btcAmount = getBtcAmount();
+    if(btcAmount == Boolean.FALSE) {
+      return;
+    }
+
+    DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
+    Bundle args = new Bundle();
+    args.putString("data", requestUri);
+    args.putBoolean("isNfc", false);
+    args.putString("desiredAmount", btcAmount == null ? null : btcAmount.toString());
+    f.setArguments(args);
+    f.show(getFragmentManager(), "qrrequest");
+
+    // After using a receive address, generate a new one for next time.
+    mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+  }
+
+  private void submitNfc() {
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+    mLastPressedButton = null;
+
+    String requestUri = generateRequestUri();
+    Object btcAmount = getBtcAmount();
+    if(btcAmount == Boolean.FALSE) {
+      return;
+    }
+
+    DisplayQrOrNfcFragment f = new DisplayQrOrNfcFragment();
+    Bundle args = new Bundle();
+    args.putString("data", requestUri);
+    args.putBoolean("isNfc", true);
+    args.putString("desiredAmount", btcAmount == null ? null : btcAmount.toString());
+    f.setArguments(args);
+    f.show(getFragmentManager(), "nfcrequest");
+
+    // After using a receive address, generate a new one for next time.
+    mParent.getAccountSettingsFragment().regenerateReceiveAddress();
   }
 
   private void updateNativeCurrency() {
@@ -974,5 +1015,27 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     // Focus text field
     mAmountView.requestFocus();
+  }
+
+  @Override
+  public void onPINPromptSuccessfulReturn() {
+
+    if (mLastPressedButton != null) {
+
+      switch (mLastPressedButton) {
+        case QR:
+          submitQr();
+          break;
+        case NFC:
+          submitNfc();
+          break;
+        case EMAIL:
+          submitEmail();
+          break;
+        case SEND:
+          submitSend();
+          break;
+      }
+    }
   }
 }

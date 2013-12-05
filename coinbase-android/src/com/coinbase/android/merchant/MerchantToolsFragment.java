@@ -16,6 +16,11 @@ public class MerchantToolsFragment extends Fragment implements CoinbaseFragment 
   }
 
   @Override
+  public void onPINPromptSuccessfulReturn() {
+
+  }
+
+  @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     return new View(getActivity());
   }

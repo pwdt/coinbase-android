@@ -66,6 +66,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   private static final String KEY_VISIBLE_FRAGMENT = "KEY_VISIBLE_FRAGMENT";
 
+  public static final int REQUEST_CODE_PIN = 2;
+
   private static final long RESUME_REFRESH_INTERVAL = 1 * 60 * 1000;
 
   public static class SignOutFragment extends DialogFragment {
@@ -162,6 +164,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   boolean mPinSlidingMenu = false;
   long mLastRefreshTime = -1;
   boolean mInTransactionDetailsMode = false;
+  boolean mPendingPinReturn = false;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -621,6 +624,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mPusher = null;
     }
 
+    mPendingPinReturn = false;
+
     // Since we manually opened the keyboard, we must close it when switching
     // away from the app
     InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -814,6 +819,19 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         // Refresh needed
         refresh();
       }
+    } else if (requestCode == REQUEST_CODE_PIN && resultCode == RESULT_OK) {
+      // PIN was successfully entered
+      mPendingPinReturn = true;
+    }
+  }
+
+  @Override
+  public void onPostResume() {
+    super.onPostResume();
+
+    if (mPendingPinReturn) {
+      mFragments[mViewFlipper.getDisplayedChild()].onPINPromptSuccessfulReturn();
+      mPendingPinReturn = false;
     }
   }
 

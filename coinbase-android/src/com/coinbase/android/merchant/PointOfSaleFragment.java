@@ -1,14 +1,5 @@
 package com.coinbase.android.merchant;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Locale;
-
-import org.acra.ACRA;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -36,6 +27,15 @@ import com.coinbase.android.TransferFragment;
 import com.coinbase.android.Utils;
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.api.RpcManager;
+
+import org.acra.ACRA;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
@@ -85,6 +85,11 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   @Override
   public void onSwitchedTo() {
+
+  }
+
+  @Override
+  public void onPINPromptSuccessfulReturn() {
 
   }
 

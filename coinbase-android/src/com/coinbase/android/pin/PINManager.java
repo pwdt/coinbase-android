@@ -8,6 +8,7 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 import com.coinbase.android.Constants;
+import com.coinbase.android.MainActivity;
 
 
 public class PINManager {
@@ -77,7 +78,8 @@ public class PINManager {
     // Is the PIN edit-only?
     boolean pinViewAllowed = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount), false);
     if(!pinViewAllowed) {
-      return true;
+      // Still prompt for edits even if view is protected...
+      // return true;
     }
 
     // Is a reprompt required?
@@ -88,7 +90,7 @@ public class PINManager {
 
       Intent intent = new Intent(activity, PINPromptActivity.class);
       intent.setAction(PINPromptActivity.ACTION_PROMPT);
-      activity.startActivity(intent);
+      activity.startActivityForResult(intent, MainActivity.REQUEST_CODE_PIN);
       return false;
     } else {
       return true;

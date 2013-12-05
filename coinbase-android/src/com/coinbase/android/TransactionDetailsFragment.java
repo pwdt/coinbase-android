@@ -40,6 +40,9 @@ public class TransactionDetailsFragment extends Fragment {
     CANCEL;
   }
 
+  private String mPinReturnTransactionId;
+  private ActionType mPinReturnActionType;
+
   private class TakeActionTask extends AsyncTask<Object, Void, String> {
 
     ProgressDialog mDialog;
@@ -48,11 +51,6 @@ public class TransactionDetailsFragment extends Fragment {
     @Override
     protected void onPreExecute() {
       super.onPreExecute();
-
-      if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
-        cancel(true);
-        return;
-      }
 
       mDialog = ProgressDialog.show(getActivity(), null, getString(R.string.transactiondetails_progress));
     }
@@ -358,14 +356,14 @@ public class TransactionDetailsFragment extends Fragment {
       negative.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          new TakeActionTask().execute(ActionType.CANCEL, transactionId);
+          takeAction(ActionType.CANCEL, transactionId);
         }
       });
 
       positive.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          new TakeActionTask().execute(ActionType.RESEND, transactionId);
+          takeAction(ActionType.RESEND, transactionId);
         }
       });
     } else {
@@ -376,16 +374,36 @@ public class TransactionDetailsFragment extends Fragment {
       positive.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          new TakeActionTask().execute(ActionType.COMPLETE, transactionId);
+          takeAction(ActionType.COMPLETE, transactionId);
         }
       });
 
       negative.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          new TakeActionTask().execute(ActionType.CANCEL, transactionId);
+          takeAction(ActionType.CANCEL, transactionId);
         }
       });
+    }
+  }
+
+  private void takeAction(ActionType type, String transactionId) {
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      mPinReturnTransactionId = transactionId;
+      mPinReturnActionType = type;
+      return;
+    }
+
+    new TakeActionTask().execute(type, transactionId);
+  }
+
+  public void onPINPromptSuccessfulReturn() {
+
+    if (mPinReturnActionType != null) {
+
+      takeAction(mPinReturnActionType, mPinReturnTransactionId);
+      mPinReturnActionType = null;
     }
   }
 

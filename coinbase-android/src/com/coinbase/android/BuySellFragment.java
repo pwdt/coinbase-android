@@ -393,24 +393,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
-          return;
-        }
-
-        ConfirmBuySellDialogFragment dialog = new ConfirmBuySellDialogFragment();
-
-        Bundle b = new Bundle();
-
-        BuySellType type = mBuySellType;
-        b.putSerializable("type", type);
-
-        b.putString("amount1", mAmount.getText().toString());
-        b.putString("amount2", mCurrentPrice);
-        b.putString("amount2currency", mCurrentPriceCurrency);
-
-        dialog.setArguments(b);
-
-        dialog.show(getFragmentManager(), "confirm");
+        submit();
       }
     });
 
@@ -573,6 +556,28 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     updateAllPrices();
   }
 
+  private void submit() {
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+
+    ConfirmBuySellDialogFragment dialog = new ConfirmBuySellDialogFragment();
+
+    Bundle b = new Bundle();
+
+    BuySellType type = mBuySellType;
+    b.putSerializable("type", type);
+
+    b.putString("amount1", mAmount.getText().toString());
+    b.putString("amount2", mCurrentPrice);
+    b.putString("amount2currency", mCurrentPriceCurrency);
+
+    dialog.setArguments(b);
+
+    dialog.show(getFragmentManager(), "confirm");
+  }
+
   @Override
   public void onSwitchedTo() {
 
@@ -580,5 +585,10 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     mAmount.requestFocus();
 
     updateAllPrices();
+  }
+
+  @Override
+  public void onPINPromptSuccessfulReturn() {
+    submit();
   }
 }
