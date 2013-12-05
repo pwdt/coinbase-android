@@ -7,12 +7,15 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
@@ -20,13 +23,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +44,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -261,9 +261,10 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
     protected void onPostExecute(Object result) {
 
-      TextView target = mIsSingleUpdate ? mText2 : mTotal;
-      int format = mIsSingleUpdate ? R.string.buysell_text2 : R.string.buysell_total;
-      int error = mIsSingleUpdate ? R.string.buysell_text2_blank : R.string.buysell_total_error;
+      TextView target = mTotal;
+
+      int format = mIsSingleUpdate ? R.string.buysell_type_price : R.string.buysell_total;
+      int error = mIsSingleUpdate ? R.string.buysell_type_price_error : R.string.buysell_total_error;
 
       if(target != null) {
 
@@ -277,17 +278,16 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
             target.setVisibility(View.GONE);
           }
         } else {
-
-          target.setVisibility(View.VISIBLE);
           JSONObject json = (JSONObject) result;
           String subtotalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("subtotal").optString("amount")), false, CurrencyType.TRADITIONAL);
           String subtotalCurrency = json.optJSONObject("subtotal").optString("currency");
 
           if(mIsSingleUpdate) {
 
-            target.setText(String.format(mParent.getString(format), subtotalAmount, subtotalCurrency));
+            updateLabelText(String.format(mParent.getString(format), subtotalAmount));
           } else {
 
+            target.setVisibility(View.VISIBLE);
             String totalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("total").optString("amount")), false, CurrencyType.TRADITIONAL);
             String totalCurrency = json.optJSONObject("total").optString("currency");
 
@@ -334,14 +334,14 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
   private UpdatePriceTask mUpdatePriceTask, mUpdateSinglePriceTask;
   private String mCurrentPrice, mCurrentPriceCurrency;
 
-  private Spinner mBuySellSpinner;
-  private TextView mTypeText, mTotal, mText2;
+  private TextView mTotal, mText2, mTypeBuy, mTypeSell;
   private Button mSubmitButton;
   private EditText mAmount;
 
   private ViewGroup mRootView;
   private RelativeLayout mHeader;
   private FrameLayout mListHeaderContainer;
+  private BuySellType mBuySellType = BuySellType.BUY;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -366,29 +366,28 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     mRootView = (ViewGroup) view;
     mHeader = (RelativeLayout) view.findViewById(R.id.buysell_header);
 
-    mBuySellSpinner = (Spinner) view.findViewById(R.id.buysell_type);
-    mBuySellSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-      @Override
-      public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
-          long arg3) {
-
-        onTypeChanged();
-      }
-
-      @Override
-      public void onNothingSelected(AdapterView<?> arg0) {
-        // Will never happen.
-        throw new RuntimeException("onNothingSelected triggered on buy / sell spinner");
-      }
-    });
-    initializeTypeSpinner();
-
-    mTypeText = (TextView) view.findViewById(R.id.buysell_type_text);
     mTotal = (TextView) view.findViewById(R.id.buysell_total);
     mText2 = (TextView) view.findViewById(R.id.buysell_text2);
+    mTypeBuy = (TextView) view.findViewById(R.id.buysell_type_buy);
+    mTypeSell = (TextView) view.findViewById(R.id.buysell_type_sell);
+
+    //mTotal.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+
+    mTypeBuy.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        switchType(BuySellType.BUY);
+      }
+    });
+    mTypeSell.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        switchType(BuySellType.SELL);
+      }
+    });
 
     mSubmitButton = (Button) view.findViewById(R.id.buysell_submit);
+    mSubmitButton.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
     mSubmitButton.setOnClickListener(new View.OnClickListener() {
 
       @Override
@@ -402,7 +401,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
         Bundle b = new Bundle();
 
-        BuySellType type = BuySellType.values()[mBuySellSpinner.getSelectedItemPosition()];
+        BuySellType type = mBuySellType;
         b.putSerializable("type", type);
 
         b.putString("amount1", mAmount.getText().toString());
@@ -434,15 +433,59 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
       }
     });
 
+    switchType(BuySellType.BUY);
+
     return view;
+  }
+
+  private void updateLabelText(String price) {
+
+    TextView target = mBuySellType == BuySellType.BUY ? mTypeBuy : mTypeSell;
+    TextView disableTarget = mBuySellType == BuySellType.BUY ? mTypeSell : mTypeBuy;
+
+    String base = getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_buy : R.string.buysell_type_sell);
+    String disableBase = getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_sell : R.string.buysell_type_buy);
+
+    Typeface normal = Typeface.DEFAULT;
+    Typeface light = FontManager.getFont(mParent, "Roboto-Light");
+
+    // Target text
+    SpannableStringBuilder targetText = new SpannableStringBuilder(base);
+
+    if(price != null) {
+      targetText.append(' ').append(price);
+      targetText.setSpan(new CustomTypefaceSpan("sans-serift", light), base.length(), base.length() + price.length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    target.setText(targetText);
+
+    // Disable text
+    disableTarget.setText(disableBase);
   }
 
   private void onTypeChanged() {
 
-    BuySellType type = BuySellType.values()[mBuySellSpinner.getSelectedItemPosition()];
+    BuySellType type = mBuySellType;
 
-    int typeText = type == BuySellType.BUY ? R.string.buysell_type_buy_text : R.string.buysell_type_sell_text;
-    mTypeText.setText(typeText);
+    float buyWeight = type == BuySellType.BUY ? 1 : 0;
+    float sellWeight = type == BuySellType.SELL ? 1 : 0;
+    ((LinearLayout.LayoutParams) mTypeBuy.getLayoutParams()).weight = buyWeight;
+    ((LinearLayout.LayoutParams) mTypeSell.getLayoutParams()).weight = sellWeight;
+
+    // Remove prices from labels
+    updateLabelText(null);
+
+    // Swap views
+    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mTypeBuy.getLayoutParams();
+    LinearLayout parent = (LinearLayout) mTypeBuy.getParent();
+    parent.removeView(mTypeBuy);
+    parent.addView(mTypeBuy, type == BuySellType.BUY ? 0 : 1, params);
+
+    // Text color
+    TextView active = type == BuySellType.BUY ? mTypeBuy : mTypeSell;
+    TextView inactive = type == BuySellType.BUY ? mTypeSell : mTypeBuy;
+    active.setTextColor(getResources().getColor(R.color.buysell_type_active));
+    inactive.setTextColor(getResources().getColor(R.color.buysell_type_inactive));
 
     int submitLabel = type == BuySellType.BUY ? R.string.buysell_submit_buy : R.string.buysell_submit_sell;
     mSubmitButton.setText(submitLabel);
@@ -451,13 +494,12 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
       mUpdateSinglePriceTask.cancel(true);
     }
 
-    mText2.setText(R.string.buysell_text2_blank);
     updateAllPrices();
   }
 
   private void updateAllPrices() {
 
-    BuySellType type = BuySellType.values()[mBuySellSpinner.getSelectedItemPosition()];
+    BuySellType type = mBuySellType;
     mUpdateSinglePriceTask = new UpdatePriceTask();
     Utils.runAsyncTaskConcurrently(mUpdateSinglePriceTask, null, type.getRequestType());
 
@@ -466,7 +508,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
   private void updatePrice() {
 
-    BuySellType type = BuySellType.values()[mBuySellSpinner.getSelectedItemPosition()];
+    BuySellType type = mBuySellType;
 
     if(mUpdatePriceTask != null) {
 
@@ -478,29 +520,10 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     Utils.runAsyncTaskConcurrently(mUpdatePriceTask, mAmount.getText().toString(), type.getRequestType());
   }
 
-  private void initializeTypeSpinner() {
+  private void switchType(BuySellType newType) {
 
-    ArrayAdapter<BuySellType> arrayAdapter = new ArrayAdapter<BuySellType>(
-        mParent, R.layout.fragment_transfer_type, Arrays.asList(BuySellType.values())) {
-
-      @Override
-      public View getView(int position, View convertView, ViewGroup parent) {
-
-        TextView view = (TextView) super.getView(position, convertView, parent);
-        view.setText(mParent.getString(BuySellType.values()[position].getName()));
-        return view;
-      }
-
-      @Override
-      public View getDropDownView(int position, View convertView, ViewGroup parent) {
-
-        TextView view = (TextView) super.getDropDownView(position, convertView, parent);
-        view.setText(mParent.getString(BuySellType.values()[position].getName()));
-        return view;
-      }
-    };
-    arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    mBuySellSpinner.setAdapter(arrayAdapter);
+    mBuySellType = newType;
+    onTypeChanged();
   }
 
   protected void startBuySellTask(BuySellType type, String amount, boolean agreeBtcAmountVaries) {
@@ -547,6 +570,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
   public void refresh() {
     // Refresh buy price
+    updateAllPrices();
   }
 
   @Override

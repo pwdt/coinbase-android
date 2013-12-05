@@ -7,6 +7,10 @@
     <!-- The navigation drawer -->
     <include layout="@layout/activity_main_drawer" />
 
+    <View android:layout_width="1dp"
+          android:layout_height="match_parent"
+          android:background="#dddddd" />
+
     <!-- The main content view -->
     <include layout="@layout/activity_main_content" />
 

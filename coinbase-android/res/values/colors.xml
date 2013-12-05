@@ -12,4 +12,6 @@
   <color name="button_primary_pressed">#2F4994</color>
   <color name="button_secondary_neutral">#00ffffff</color>
   <color name="button_secondary_pressed">#dddddd</color>
+  <color name="buysell_type_active">#000000</color>
+  <color name="buysell_type_inactive">#aaaaaa</color>
 </resources>

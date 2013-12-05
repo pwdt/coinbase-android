@@ -43,12 +43,14 @@
     <string name="transfer_buy_button">Visit the Coinbase website</string>
     <string name="menu_accounts">Accounts</string>
     <string name="menu_barcode">Scan barcode</string>
-    <string name="buysell_type_buy">Buy Bitcoin</string>
-    <string name="buysell_type_sell">Sell Bitcoin</string>
+    <string name="buysell_type_buy">Buy</string>
+    <string name="buysell_type_sell">Sell</string>
+    <string name="buysell_type_price">for $%1$s each</string>
+    <string name="buysell_type_price_error">(could not load price)</string>
     <string name="buysell_type_buy_text">Buy</string>
     <string name="buysell_type_sell_text">Sell</string>
     <string name="btc">BTC</string>
-    <string name="buysell_amount_hint"></string>
+    <string name="buysell_amount_hint">0.00</string>
     <string name="buysell_total">%1$s: %2$s %3$s</string>
     <string name="buysell_submit_buy">Buy Bitcoins</string>
     <string name="buysell_submit_sell">Sell Bitcoins</string>
@@ -155,8 +157,7 @@
     <string name="login_intro_title">Bitcoin Made Easy</string>
     <string name="account_receive_address">Bitcoin address</string>
     <string name="account_receive_address_generate">Generate new address</string>
-    <string name="buysell_text2">BTC at $%1$s each.</string>
-    <string name="buysell_text2_blank">BTC.</string>
+    <string name="buysell_text2">BTC</string>
     <string name="buysell_history_sell">You sold %1$s BTC</string>
     <string name="buysell_history_buy">You purchased %1$s BTC</string>
     <string name="transactiondetails_transfer_buy_notes">Your bitcoins will arrive on %1$s.</string>
