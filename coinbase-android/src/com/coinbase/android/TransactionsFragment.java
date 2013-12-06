@@ -678,8 +678,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   @Override
   public void onListItemClick(ListView l, View v, int position, long id) {
 
-    if(position == 0) {
+    if (position == 0) {
       return; // Header view
+    }
+    if (mDetailsShowing) {
+      return;
     }
 
     position--;
