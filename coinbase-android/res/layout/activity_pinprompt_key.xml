@@ -6,7 +6,7 @@
     android:background="@drawable/button_secondary">
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="70dp"
+        android:layout_width="77dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:id="@+id/key">
