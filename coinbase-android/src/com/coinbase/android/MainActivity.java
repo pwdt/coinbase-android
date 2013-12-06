@@ -497,12 +497,18 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       hideSlidingMenu(false);
     } else {
 
-      if(mViewFlipper.getDisplayedChild() == FRAGMENT_INDEX_TRANSACTIONS &&
-              mTransactionsFragment.onBackPressed()) {
-        // Give transactions fragment an opportunity to handle back
-        return;
+      if (mViewFlipper.getDisplayedChild() == FRAGMENT_INDEX_TRANSACTIONS) {
+        if (mTransactionsFragment.onBackPressed()) {
+          // Give transactions fragment an opportunity to handle back
+          return;
+        } else {
+          // Quit app
+          super.onBackPressed();
+        }
+      } else {
+        // Switch to transactions
+        switchTo(FRAGMENT_INDEX_TRANSACTIONS);
       }
-      super.onBackPressed();
     }
   }
 
