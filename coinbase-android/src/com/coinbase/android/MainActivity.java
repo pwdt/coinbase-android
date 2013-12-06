@@ -444,7 +444,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     updateTitle();
     mFragments[index].onSwitchedTo();
 
-    hideSlidingMenu(fragmentChanged);
+    if (mSlidingMenu == null || mPinSlidingMenu || !mSlidingMenu.isDrawerOpen(Gravity.LEFT)) {
+      makeKeyboardObeyVisibleFragment();
+    } else {
+      // keyboard will be forced to obey after sliding menu closes
+      hideSlidingMenu(fragmentChanged);
+    }
 
     if(mInTransactionDetailsMode) {
       mTransactionsFragment.hideDetails(false);
@@ -456,14 +461,19 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     if(fragmentChanged) {
 
-      boolean keyboardPreferredStatus = mFragmentKeyboardPreferredStatus[mViewFlipper.getDisplayedChild()];
-      InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+      makeKeyboardObeyVisibleFragment();
+    }
+  }
 
-      if(keyboardPreferredStatus) {
-        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-      } else {
-        inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
-      }
+  private void makeKeyboardObeyVisibleFragment() {
+
+    boolean keyboardPreferredStatus = mFragmentKeyboardPreferredStatus[mViewFlipper.getDisplayedChild()];
+    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+    if(keyboardPreferredStatus) {
+      inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+    } else {
+      inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
     }
   }
 
