@@ -6,6 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:id="@+id/inner_view"
         android:background="#FFFFFF">
         <uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,24 +21,34 @@
                 android:cacheColorHint="#FFFFFF">
             </ListView>
         </uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>
-        <LinearLayout
+        <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical"
         android:id="@android:id/empty">
         <View
           android:layout_width="match_parent"
           android:layout_height="1dp"
-          android:background="#d7d7d7" />
+          android:background="#dddddd"
+            android:layout_alignParentTop="true"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/transactions_empty_title"
+            android:layout_centerInParent="true"
+            android:id="@+id/title"
+            android:gravity="center"
+            android:textColor="#666666"
+            android:textSize="8pt"/>
           <TextView
           android:layout_width="match_parent"
-          android:layout_height="0dp"
-          android:layout_weight="1"
-          android:text="@string/transactions_empty"
+          android:layout_height="wrap_content"
+          android:text="@string/transactions_empty_subtitle"
           android:gravity="center"
+          android:padding="10dp"
+          android:layout_below="@+id/title"
           android:textColor="#666666" />
-      </LinearLayout>
+      </RelativeLayout>
     </LinearLayout>
     <FrameLayout android:id="@+id/transaction_details_background"
                  android:layout_width="match_parent"

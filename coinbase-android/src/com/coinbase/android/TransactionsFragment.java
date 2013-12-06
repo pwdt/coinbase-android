@@ -515,7 +515,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Inflate base layout
     ViewGroup view = (ViewGroup) inflater.inflate(R.layout.fragment_transactions, container, false);
-    mMainView = view;
+    mMainView = (ViewGroup) view.findViewById(R.id.inner_view);
 
     mListView = (ListView) view.findViewById(android.R.id.list);
 
@@ -651,6 +651,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     if(pinned) {
       mMainView.addView(mListHeader, 0);
+      System.out.println("Main view has " + mMainView.getChildCount());
     } else {
       mListHeaderContainer.addView(mListHeader);
     }
