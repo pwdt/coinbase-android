@@ -441,7 +441,6 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     }
 
     target.setText(targetText);
-    target.setText();
 
     // Disable text
     disableTarget.setText(disableBase);
