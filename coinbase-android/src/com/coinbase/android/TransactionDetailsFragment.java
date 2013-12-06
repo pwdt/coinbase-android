@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -336,7 +337,7 @@ public class TransactionDetailsFragment extends Fragment {
     String notesText = data.optString("notes");
 
     boolean noNotes = "null".equals(notesText) || notesText == null || "".equals(notesText);
-    notes.setText(noNotes ? null : notesText);
+    notes.setText(noNotes ? null : Html.fromHtml(notesText.replace("\n", "<br>")));
     notes.setVisibility(noNotes ? View.GONE : View.VISIBLE);
 
     view.findViewById(R.id.transactiondetails_label_notes).setVisibility(noNotes ? View.INVISIBLE : View.VISIBLE);
