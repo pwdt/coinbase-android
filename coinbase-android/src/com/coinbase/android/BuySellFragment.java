@@ -426,8 +426,8 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     TextView target = mBuySellType == BuySellType.BUY ? mTypeBuy : mTypeSell;
     TextView disableTarget = mBuySellType == BuySellType.BUY ? mTypeSell : mTypeBuy;
 
-    String base = getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_buy : R.string.buysell_type_sell);
-    String disableBase = getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_sell : R.string.buysell_type_buy);
+    String base = mParent.getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_buy : R.string.buysell_type_sell);
+    String disableBase = mParent.getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_sell : R.string.buysell_type_buy);
 
     Typeface normal = Typeface.DEFAULT;
     Typeface light = FontManager.getFont(mParent, "Roboto-Light");
@@ -441,6 +441,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     }
 
     target.setText(targetText);
+    target.setText();
 
     // Disable text
     disableTarget.setText(disableBase);

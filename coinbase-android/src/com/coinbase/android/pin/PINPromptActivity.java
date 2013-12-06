@@ -167,6 +167,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
         // Correct PIN has been entered.
         onPinEntered(pin);
       } else {
+        mPinNumberField.setText(null);
         Toast.makeText(PINPromptActivity.this, R.string.pin_incorrect, Toast.LENGTH_SHORT).show();
       }
     }
