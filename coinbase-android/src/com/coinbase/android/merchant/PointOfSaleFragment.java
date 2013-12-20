@@ -3,12 +3,11 @@ package com.coinbase.android.merchant;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,72 +15,115 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import com.coinbase.android.CoinbaseFragment;
 import com.coinbase.android.Constants;
 import com.coinbase.android.MainActivity;
 import com.coinbase.android.R;
-import com.coinbase.android.TransferFragment;
 import com.coinbase.android.Utils;
-import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.api.RpcManager;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
 
-import org.acra.ACRA;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
-  private class RefreshExchangeRatesTask extends AsyncTask<Void, Void, JSONObject> {
+  private class CreateButtonTask extends AsyncTask<String, Void, Object> {
 
     @Override
-    protected JSONObject doInBackground(Void... params) {
+    protected Object doInBackground(String... strings) {
+
+      String amount = strings[0];
+      String currency = strings[1];
+      String title = strings[2];
+
+      if (title == null || title.trim().equals("")) {
+        title = "Merchant did not enter a title for this transaction (Android point of sale)";
+      }
+
+      List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
+
+      params.add(new BasicNameValuePair("button[name]", title));
+      params.add(new BasicNameValuePair("button[description]", title));
+      params.add(new BasicNameValuePair("button[price_string]", amount));
+      params.add(new BasicNameValuePair("button[price_currency_iso]", currency));
+      params.add(new BasicNameValuePair("button[custom]", "coinbase_android_point_of_sale"));
 
       try {
+        JSONObject response = RpcManager.getInstance().callPost(mParent, "buttons", params).optJSONObject("button");
+        String button = response.optString("code");
 
-        JSONObject exchangeRates = RpcManager.getInstance().callGet(mParent, "currencies/exchange_rates");
-        return exchangeRates;
-      } catch (IOException e) {
+        System.out.println(response.toString(5));
+
+        JSONObject orderResponse = RpcManager.getInstance().callPost(mParent,
+                "buttons/" + button + "/create_order", new ArrayList<BasicNameValuePair>());
+
+        return orderResponse;
+
+      } catch (Exception e) {
+
         e.printStackTrace();
-      } catch (JSONException e) {
-        ACRA.getErrorReporter().handleException(new RuntimeException("RefreshExchangeRate", e));
-        e.printStackTrace();
+        return e;
       }
-
-      return null;
     }
 
     @Override
-    protected void onPostExecute(JSONObject result) {
+    protected void onPostExecute(Object o) {
 
-      mExchangeRates = null;
+      if (o == null) {
 
-      if(result != null) {
-        mExchangeRates = result;
-        mExchangeRatesUpdateTime = System.currentTimeMillis();
-        updateBtcDisplay();
+        showResult(false, R.string.pos_result_failure_creation);
+      } else if (o instanceof Exception) {
+
+        showResult(false, mParent.getString(R.string.pos_result_failure_creation_exception, ((Exception) o).getMessage()));
+      } else {
+
+        JSONObject result = (JSONObject) o;
+
+        if (!result.optBoolean("success")) {
+
+          showResult(false, mParent.getString(R.string.pos_result_failure_creation_exception, result.toString()));
+        } else {
+
+          try {
+            populateAccept(result.getJSONObject("order"));
+          } catch (JSONException e) {
+
+            showResult(false, mParent.getString(R.string.pos_result_failure_creation_exception, e.getMessage()));
+          }
+        }
       }
     }
-
   }
 
-  private MainActivity mParent;
-  private JSONObject mExchangeRates;
-  private long mExchangeRatesUpdateTime = -1;
-  private RefreshExchangeRatesTask mExchangeRatesTask = null;
+  private static final int INDEX_MAIN = 0;
+  private static final int INDEX_LOADING = 1;
+  private static final int INDEX_ACCEPT = 2;
+  private static final int INDEX_RESULT = 3;
 
-  private TextView mBtcDisplay;
+  private MainActivity mParent;
+
   private EditText mAmount, mNotes;
-  private Button mSubmitEmail, mSubmitQr, mSubmitNfc;
+  private Button mSubmit;
   private Spinner mCurrency;
   private String[] mCurrenciesArray;
+  private ViewFlipper mFlipper;
+
+  private ImageView mAcceptQr;
+  private TextView mAcceptDesc;
+  private Button mAcceptCancel;
 
   @Override
   public void onSwitchedTo() {
@@ -99,55 +141,24 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     // Inflate the layout for this fragment
     View view = inflater.inflate(R.layout.fragment_point_of_sale, container, false);
 
-    mBtcDisplay = (TextView) view.findViewById(R.id.pos_btc);
     mAmount = (EditText) view.findViewById(R.id.pos_amt);
     mNotes = (EditText) view.findViewById(R.id.pos_notes);
-    mSubmitEmail = (Button) view.findViewById(R.id.pos_request_email);
-    mSubmitQr = (Button) view.findViewById(R.id.pos_request_qr);
-    mSubmitNfc = (Button) view.findViewById(R.id.pos_request_nfc);
+    mSubmit = (Button) view.findViewById(R.id.pos_submit);
     mCurrency = (Spinner) view.findViewById(R.id.pos_currency);
+    mFlipper = (ViewFlipper) view.findViewById(R.id.pos_flipper);
 
-    mAmount.addTextChangedListener(new TextWatcher() {
+    mAcceptCancel = (Button) view.findViewById(R.id.pos_accept_cancel);
+    mAcceptQr = (ImageView) view.findViewById(R.id.pos_accept_qr);
+    mAcceptDesc = (TextView) view.findViewById(R.id.pos_accept_desc);
 
-      @Override
-      public void afterTextChanged(Editable arg0) {
-      }
-
-      @Override
-      public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-      }
-
-      @Override
-      public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-
-        updateBtcDisplay();
-      }
-    });
-
-    mSubmitEmail.setOnClickListener(new View.OnClickListener() {
+    mSubmit.setOnClickListener(new View.OnClickListener() {
 
       @Override
       public void onClick(View v) {
 
-        mParent.getTransferFragment().startEmailRequest(getBtcAmount(), mNotes.getText().toString());
-      }
-    });
-
-    mSubmitQr.setOnClickListener(new View.OnClickListener() {
-
-      @Override
-      public void onClick(View v) {
-
-        mParent.getTransferFragment().startQrNfcRequest(false, getBtcAmount(), mNotes.getText().toString());
-      }
-    });
-
-    mSubmitNfc.setOnClickListener(new View.OnClickListener() {
-
-      @Override
-      public void onClick(View v) {
-
-        mParent.getTransferFragment().startQrNfcRequest(true, getBtcAmount(), mNotes.getText().toString());
+        mFlipper.setDisplayedChild(INDEX_LOADING);
+        new CreateButtonTask().execute(mAmount.getText().toString(),
+                (String) mCurrency.getSelectedItem(), mNotes.getText().toString());
       }
     });
     
@@ -158,7 +169,6 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 
         updateAmountHint();
-        updateBtcDisplay();
       }
 
       @Override
@@ -211,115 +221,32 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mParent = (MainActivity) activity;
   }
 
-  private void updateBtcDisplay() {
+  private void populateAccept(JSONObject order) throws JSONException {
 
-    if(mBtcDisplay == null) {
-      return;
+    String receiveAddress = order.getString("receive_address");
+    String amount = Double.toString(order.getJSONObject("total_btc").getDouble("cents") / 100d);
+    String bitcoinUri = String.format("bitcoin:%1$s?amount=%2$s", receiveAddress, amount);
+
+    Bitmap bitmap;
+    try {
+      bitmap = Utils.createBarcode(bitcoinUri, BarcodeFormat.QR_CODE, 512, 512);
+    } catch (WriterException e) {
+      e.printStackTrace();
+      bitmap = null;
     }
+    mAcceptQr.setImageBitmap(bitmap);
 
-    if((System.currentTimeMillis() - mExchangeRatesUpdateTime) > TransferFragment.EXCHANGE_RATE_EXPIRE_TIME) {
-
-      mBtcDisplay.setText(null);
-      setButtonsEnabled(false);
-
-      // Need to fetch exchange rates again
-      if(mExchangeRatesTask != null) {
-        return;
-      }
-
-      Utils.runAsyncTaskConcurrently(new RefreshExchangeRatesTask());
-      return;
-    }
-
-    String displayAmount;
-    CurrencyType currencyType;
-    int string;
-    if(mCurrency.getSelectedItemPosition() == 0) {
-      displayAmount = getNativeAmount();
-      currencyType = CurrencyType.TRADITIONAL;
-      string = R.string.pos_traditional;
-    } else {
-      displayAmount = getBtcAmount();
-      currencyType = CurrencyType.BTC;
-      string = R.string.pos_btc;
-    }
-
-    if(displayAmount == null) {
-
-      mBtcDisplay.setText(null);
-      setButtonsEnabled(false);
-      return;
-    }
-
-    setButtonsEnabled(true);
-    mBtcDisplay.setText(String.format(getString(string), Utils.formatCurrencyAmount(
-      new BigDecimal(displayAmount),
-      false,
-      currencyType), mCurrenciesArray[1]));
+    mFlipper.setDisplayedChild(INDEX_ACCEPT);
   }
 
-  private void setButtonsEnabled(boolean enabled) {
-
-    mSubmitEmail.setEnabled(enabled);
-    mSubmitQr.setEnabled(enabled);
-    mSubmitNfc.setEnabled(enabled);
+  private void showResult(boolean success, int message) {
+    showResult(success, mParent.getString(message));
   }
 
-  private String getBtcAmount() {
+  private void showResult(boolean success, String message) {
 
-    if(mExchangeRates == null) {
-      return null;
-    }
- 
-    String enteredAmount = mAmount.getText().toString();
-
-    if("".equals(enteredAmount) || ".".equals(enteredAmount)) {
-      return null;
-    }
-
-    if(mCurrency.getSelectedItemPosition() == 0) {
-      // Prices are entered in BTC
-      return mAmount.getText().toString();
-    }
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-        "usd").toLowerCase(Locale.CANADA);
-    String nativeToBtc = mExchangeRates.optString(nativeCurrency + "_to_btc");
-
-    if(nativeToBtc == null) {
-      return null;
-    }
-
-    String btcAmount = new BigDecimal(enteredAmount).multiply(new BigDecimal(nativeToBtc)).toString();
-    return btcAmount;
-  }
-
-  private String getNativeAmount() {
-
-    if(mExchangeRates == null) {
-      return null;
-    }
- 
-    String enteredAmount = mAmount.getText().toString();
-
-    if("".equals(enteredAmount) || ".".equals(enteredAmount)) {
-      return null;
-    }
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-        "usd").toLowerCase(Locale.CANADA);
-    String rate = mExchangeRates.optString("btc_to_" + nativeCurrency);
-
-    if(rate == null) {
-      return null;
-    }
-
-    String amount = new BigDecimal(enteredAmount).multiply(new BigDecimal(rate)).toString();
-    return amount;
+    // TODO
+    mFlipper.setDisplayedChild(INDEX_RESULT);
   }
 
   @Override
@@ -355,7 +282,5 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   public void refresh() {
 
-    updateAmountHint();
-    updateBtcDisplay();
   }
 }

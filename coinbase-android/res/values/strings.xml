@@ -1,6 +1,7 @@
 <resources>
 
     <string name="app_name">Coinbase</string>
+    <string name="app_name_merchant">Point of Sale</string>
     <string name="title_account">Account Settings</string>
     <string name="title_transfer">Send / Request</string>
     <string name="title_buysell">Buy / Sell Bitcoin</string>
@@ -97,7 +98,7 @@
         <item >Isaac Waller (isaac@siriusapplications.com)</item>
         <item>Julian Langschaedel (meta.rb@gmail.com)</item>
     </string-array>
-    <string name="version_name">1.1.1</string>
+    <string name="version_name">2.0</string>
     <string name="menu_about">About</string>
     <string name="menu_help">Help</string>
     <string name="transfer_recipient">Recipient email or bitcoin address</string>
@@ -172,14 +173,18 @@
     <string name="settings_pin_view_allowed_desc_on">Passcode is not required to view transactions</string>
     <string name="settings_pin_view_allowed_desc_off">Passcode is required to view transactions</string>
     <string name="widget_transactions_compat">Sorry, this widget is not compatible with your device.</string>
-    <string name="pos_title">Request money</string>
+    <string name="pos_amt_title">Order amount</string>
     <string name="pos_amt">Amount in %1$s</string>
-    <string name="pos_request_qr">QR Code</string>
-    <string name="pos_request_nfc">NFC</string>
-    <string name="pos_request_email">Email</string>
+    <string name="pos_submit">Create order</string>
     <string name="pos_btc">= %1$s BTC</string>
     <string name="pos_traditional">≈ %1$s %2$s</string>
-    <string name="pos_notes">Notes</string>
+    <string name="pos_notes">Order name</string>
+    <string name="pos_accept_cancel">Cancel</string>
+    <string name="pos_accept_message">Send <b>$1%s</b> to the above address</string>
+    <string name="pos_accept_message_nfc">(NFC is active)</string>
+    <string name="pos_accept_waiting">Waiting for payment...</string>
+    <string name="pos_result_failure_creation">Could not create order.</string>
+    <string name="pos_result_failure_creation_exception">Could not create order (%1$s).</string>
     <string name="waiting_for_payment">Waiting for payment...</string>
     <string name="payment_received">Received %1$s BTC (%2$s %3$s).</string>
     <string name="payment_received_short">Received %1$s BTC (%2$s %3$s), but you requested %4$s BTC.</string>

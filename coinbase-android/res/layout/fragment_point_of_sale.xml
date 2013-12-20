@@ -1,96 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="#eeeeee" >
 
-    <RelativeLayout
-        android:id="@+id/transfer_send_money"
+    <ViewFlipper
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/layout_padding" >
+        android:id="@+id/pos_flipper">
 
-        <TextView
-            android:id="@+id/pos_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:text="@string/pos_title"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <EditText
-            android:id="@+id/pos_amt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/pos_title"
-            android:layout_below="@+id/pos_title"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_toLeftOf="@+id/pos_currency"
-            android:ems="10"
-            android:hint="@string/pos_amt"
-            android:inputType="numberDecimal" />
-
-        <Spinner
-            android:id="@+id/pos_currency"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/pos_btc"
-            android:layout_alignBaseline="@+id/pos_amt" />
-
-        <TextView
-            android:id="@+id/pos_btc"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/pos_amt"
-            android:layout_alignBottom="@+id/pos_amt"
-            android:layout_alignParentRight="true"
-            android:gravity="right"
-            android:text="@string/pos_btc"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#666666" />
-
-        <EditText
-            android:id="@+id/pos_notes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/pos_amt"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/pos_amt"
-            android:layout_marginTop="10dp"
-            android:ems="10"
-            android:hint="@string/pos_notes"
-            android:inputType="textMultiLine" >
-        </EditText>
-
-        <LinearLayout
+        <RelativeLayout
+            android:id="@+id/pos_main"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/pos_notes"
-            android:layout_marginTop="10dp"
-            android:id="@+id/pos_buttons">
+            android:layout_margin="@dimen/layout_padding"
+            android:background="@drawable/fragment_transactiondetails_bg">
+
+            <TextView
+                android:id="@+id/pos_amt_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/pos_amt_title"
+                android:textSize="17sp"
+                android:layout_margin="@dimen/layout_padding"/>
+
+            <EditText
+                android:id="@+id/pos_amt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/pos_amt_title"
+                android:layout_below="@+id/pos_amt_title"
+                android:layout_marginRight="5dp"
+                android:layout_toLeftOf="@+id/pos_currency"
+                android:ems="10"
+                android:textColor="#50bf82"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:hint="@string/pos_amt"
+                android:inputType="numberDecimal" />
+
+            <Spinner
+                android:id="@+id/pos_currency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/layout_padding"
+                android:layout_alignBaseline="@+id/pos_amt" />
+
+            <EditText
+                android:id="@+id/pos_notes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/pos_amt"
+                android:layout_margin="@dimen/layout_padding"
+                android:ems="10"
+                android:hint="@string/pos_notes"
+                android:inputType="textMultiLine" >
+            </EditText>
 
             <Button
-                android:id="@+id/pos_request_email"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/pos_request_email" />
+                android:layout_below="@+id/pos_notes"
+                android:id="@+id/pos_submit"
+                android:textColor="#ffffff"
+                android:text="@string/pos_submit"
+                android:background="@drawable/button_primary">
+            </Button>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/pos_loading"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="@dimen/layout_padding"
+            android:background="@drawable/fragment_transactiondetails_bg">
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:layout_centerInParent="true"/>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/pos_accept"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/layout_padding"
+            android:orientation="vertical"
+            android:background="@drawable/fragment_transactiondetails_bg">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pos_accept_waiting"
+                android:background="#dddddd"
+                android:id="@+id/pos_accept_waiting"
+                android:padding="@dimen/layout_padding"/>
+
+            <ImageView
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:id="@+id/pos_accept_qr"
+                android:scaleType="fitXY"
+                android:layout_gravity="center"
+                android:padding="@dimen/layout_padding"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/pos_accept_desc"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#eee"
+                android:layout_marginTop="15dp" />
 
             <Button
-                android:id="@+id/pos_request_qr"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/pos_request_qr" />
-
-            <Button
-                android:id="@+id/pos_request_nfc"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/pos_request_nfc" />
+                android:layout_below="@+id/pos_notes"
+                android:id="@+id/pos_accept_cancel"
+                android:textColor="#000000"
+                android:text="@string/pos_accept_cancel"
+                android:background="@drawable/button_secondary">
+            </Button>
         </LinearLayout>
-
-    </RelativeLayout>
+    </ViewFlipper>
 
 </ScrollView>
