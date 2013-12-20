@@ -317,7 +317,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     protected Bitmap doInBackground(String... arg0) {
 
       try {
-        return BitmapFactory.decodeStream(new URL(String.format("http://www.gravatar.com/avatar/%1$s?s=100&d=https://coinbase.com/assets/avatar.png",
+        return BitmapFactory.decodeStream(new URL(String.format("https://secure.gravatar.com/avatar/%1$s?s=100&d=https://coinbase.com/assets/avatar.png",
           Utils.md5(arg0[0].toLowerCase(Locale.CANADA).trim()))).openStream());
       } catch (Exception e) {
         return null;
