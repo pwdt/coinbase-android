@@ -2,9 +2,9 @@
     <item
         android:id="@+id/menu_refresh"
         android:showAsAction="always"
-        android:icon="@drawable/ic_action_refresh"></item>
+        android:icon="@drawable/ic_action_refresh"/>
     <item
         android:id="@+id/menu_pos"
         android:showAsAction="never"
-        android:title="Set up point of sale"></item>
+        android:title="@string/menu_set_up_point_of_sale"/>
 </menu>

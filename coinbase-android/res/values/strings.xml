@@ -9,6 +9,7 @@
     <string name="title_merchant_tools">Merchant Tools</string>
     <string name="title_point_of_sale">Point Of Sale</string>
     <string name="hello_world">Hello world!</string>
+    <string name="menu_set_up_point_of_sale">Set up point of sale</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">Coinbase</string>
     <string name="title_activity_login">Coinbase</string>
