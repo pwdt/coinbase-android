@@ -5,7 +5,6 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.coinbase.android.R;
 
 public class AboutActivity extends SherlockActivity {
 
@@ -21,12 +20,11 @@ public class AboutActivity extends SherlockActivity {
     String contributorsLabel = getString(R.string.about_contributors);
     
     StringBuffer contributorsText = new StringBuffer();
-    contributorsText.append(contributors[0]);
     
-    for(int i = 1; i < contributors.length; i++) {
+    for(int i = 0; i < contributors.length; i++) {
 
-      contributorsText.append('\n');
       contributorsText.append(contributors[i]);
+      contributorsText.append('\n');
     }
     
     contributorsView.setText(String.format(contributorsLabel, contributorsText.toString()));

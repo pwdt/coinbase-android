@@ -90,12 +90,6 @@
     <string name="transactiondetails_notes">Poznámky</string>
     <string name="transactiondetails_error">Nelze načíst detail transakce.</string>
     <string name="transaction_user_you">Vy</string>
-    <string-array name="contributors">
-        <item >Isaac Waller (isaac@siriusapplications.com)</item>
-        <item>Julian Langschaedel (meta.rb@gmail.com)</item>
-        <item>Aleš Najmann (ales.najmann@gmail.com)</item>
-    </string-array>
-    <string name="version_name">1.1.1</string>
     <string name="menu_about">O aplikaci</string>
     <string name="menu_help">Nápověda</string>
     <string name="transfer_recipient">Email nebo bitcoinová adresa</string>

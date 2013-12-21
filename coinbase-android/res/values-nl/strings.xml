@@ -94,12 +94,6 @@
     <string name="transactiondetails_notes">Notities</string>
     <string name="transactiondetails_error">Kan de transactie details niet laden</string>
     <string name="transaction_user_you">Jij</string>
-    <string-array name="contributors">
-        <item >Isaac Waller (isaac@siriusapplications.com)</item>
-        <item>Julian Langschaedel (meta.rb@gmail.com)</item>
-        <item>Karim Osman (im@kar.im)
-    </string-array>
-    <string name="version_name">2.0</string>
     <string name="menu_about">Over</string>
     <string name="menu_help">Help</string>
     <string name="transfer_recipient">Ontvanger email of bitcoin adres</string>

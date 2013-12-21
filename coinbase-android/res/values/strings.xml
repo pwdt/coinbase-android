@@ -96,8 +96,13 @@
     <string name="transactiondetails_error">Could not load transaction details.</string>
     <string name="transaction_user_you">You</string>
     <string-array name="contributors">
-        <item >Isaac Waller (isaac@siriusapplications.com)</item>
+        <item>Isaac Waller (isaac@siriusapplications.com)</item>
         <item>Julian Langschaedel (meta.rb@gmail.com)</item>
+        <item>Karim Osman (im@kar.im)</item>
+        <item>Aleš Najmann (ales.najmann@gmail.com)</item>
+        <item>Carlos Sessa (https://github.com/Macarse)</item>
+        <item>Vince Mi (https://github.com/vinc3m1)</item>
+        <item>dck28 (https://github.com/dck28)</item>
     </string-array>
     <string name="version_name">2.0</string>
     <string name="menu_about">About</string>
