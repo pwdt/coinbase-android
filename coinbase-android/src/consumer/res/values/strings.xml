@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Coinbase</string>
-    <string name="title_activity_main">Coinbase</string>
-    <string name="title_activity_login">Coinbase</string>
+    <string name="app_name">@string/app_name_consumer</string>
+    <string name="title_activity_main">@string/app_name_consumer</string>
+    <string name="title_activity_login">@string/app_name_consumer</string>
 </resources>

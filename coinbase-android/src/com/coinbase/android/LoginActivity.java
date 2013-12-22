@@ -2,11 +2,9 @@ package com.coinbase.android;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -15,7 +13,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -57,6 +54,8 @@ public class LoginActivity extends CoinbaseActivity {
       getWindow().getAttributes().windowAnimations = R.style.LoginIntroDialogAnimation;
 
       setContentView(R.layout.activity_login_intro);
+
+      findViewById(R.id.login_pos_warning).setVisibility(BuildConfig.type == BuildType.MERCHANT ? View.VISIBLE : View.GONE);
 
       Button dismiss = (Button) findViewById(R.id.login_intro_submit);
       dismiss.setOnClickListener(new View.OnClickListener() {
@@ -116,6 +115,7 @@ public class LoginActivity extends CoinbaseActivity {
     setContentView(R.layout.activity_login);
     setProgressBarIndeterminateVisibility(false); 
     getSupportActionBar().setTitle(R.string.login_title);
+    findViewById(R.id.login_pos_notice).setVisibility(BuildConfig.type == BuildType.MERCHANT ? View.VISIBLE : View.GONE);
 
     mLoginWebView = (WebView) findViewById(R.id.login_webview);
 
@@ -248,39 +248,7 @@ public class LoginActivity extends CoinbaseActivity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
 
-    if(item.getItemId() == R.id.menu_pos) {
-      showPosDialog();
-      return true;
-    }
-
     return false;
-  }
-
-  private void showPosDialog() {
-
-    DialogFragment dialog = new DialogFragment() {
-      @Override
-      public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.pos_setup_title)
-                .setMessage(R.string.pos_setup_message)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialogInterface, int i) {
-
-                    dialogInterface.dismiss();
-                  }
-                })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                  }
-                }).create();
-      }
-    };
-
-    dialog.show(getSupportFragmentManager(), "pos");
   }
 
   private void loadLoginUrl() {

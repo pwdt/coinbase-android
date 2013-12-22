@@ -24,10 +24,12 @@ android {
     productFlavors {
         consumer {
             packageName "com.coinbase.android"
+            buildConfigField "com.coinbase.android.BuildType", "type", "com.coinbase.android.BuildType.CONSUMER"
         }
 
         merchant {
             packageName "com.coinbase.android.merchant"
+            buildConfigField "com.coinbase.android.BuildType", "type", "com.coinbase.android.BuildType.MERCHANT"
         }
     }
 

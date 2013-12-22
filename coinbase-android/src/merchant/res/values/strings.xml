@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Coinbase Point of Sale</string>
-    <string name="title_activity_main">Point of Sale</string>
-    <string name="title_activity_login">Point of Sale</string>
+    <string name="app_name">@string/app_name_merchant_long</string>
+    <string name="title_activity_main">@string/app_name_merchant</string>
+    <string name="title_activity_login">@string/app_name_merchant</string>
+
+    <string name="login_title">@string/login_title_merchant</string>
 </resources>

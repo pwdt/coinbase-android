@@ -48,4 +48,15 @@
             android:padding="15dp" />
 
     </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/login_pos_warning"
+        android:id="@+id/login_pos_warning"
+        android:gravity="center"
+        android:background="#0F9100"
+        android:textColor="#ffffff"
+        android:padding="15dp"
+        android:layout_alignParentBottom="true"/>
 </RelativeLayout>

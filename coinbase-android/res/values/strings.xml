@@ -1,4 +1,7 @@
 <resources>
+    <string name="app_name_consumer">Coinbase</string>
+    <string name="app_name_merchant">Point of Sale</string>
+    <string name="app_name_merchant_long">Coinbase Point of Sale</string>
     <string name="title_account">Account Settings</string>
     <string name="title_transfer">Send / Request</string>
     <string name="title_buysell">Buy / Sell Bitcoin</string>
@@ -215,5 +218,7 @@
     <string name="transactiondetails_action_success_resend">Request re-sent.</string>
     <string name="transactiondetails_action_success_cancel">Request cancelled.</string>
     <string name="transactiondetails_action_success_complete">Request completed.</string>
-
+    <string name="login_pos_warning"><b>Warning: this is the Coinbase Point of Sale, not Coinbase for Android.</b>\n\nUnless you are a merchant interested in accepting bitcoin payments at a point of sale, you should uninstall this app and install Coinbase for Android from the Play Store.</string>
+    <string name="login_title_merchant">Set up merchant account</string>
+    <string name="login_pos_notice">Sign in with your Coinbase merchant account. The Coinbase Point of Sale application will only have access to merchant functions and will not have access to the funds in your account.</string>
 </resources>
