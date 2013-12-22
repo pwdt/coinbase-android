@@ -21,6 +21,16 @@ android {
         targetSdkVersion 18
     }
 
+    productFlavors {
+        consumer {
+            packageName "com.coinbase.android"
+        }
+
+        merchant {
+            packageName "com.coinbase.android.merchant"
+        }
+    }
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
