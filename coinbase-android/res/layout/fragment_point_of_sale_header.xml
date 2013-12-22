@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <ImageView
+        android:id="@+id/pos_header_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="55dp"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:layout_gravity="left"
+        android:padding="@dimen/layout_padding"/>
+    <TextView
+        android:id="@+id/pos_header_name"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="Acme Widgets, Inc."
+        android:gravity="center_vertical|right"
+        android:layout_gravity="right"
+        android:padding="@dimen/layout_padding"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#eee"
+        android:layout_gravity="bottom"/>
+</FrameLayout>

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -25,6 +26,7 @@ import com.coinbase.android.Constants;
 import com.coinbase.android.MainActivity;
 import com.coinbase.android.R;
 import com.coinbase.android.Utils;
+import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -33,6 +35,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,6 +111,71 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     }
   }
 
+  private class LoadMerchantInfoTask extends AsyncTask<Void, Void, Object[]> {
+
+    @Override
+    protected Object[] doInBackground(Void... arg0) {
+
+      try {
+        // 1. Load merchant info
+        JSONObject response = RpcManager.getInstance().callGet(mParent, "users");
+        JSONObject userInfo = response.getJSONArray("users").getJSONObject(0).getJSONObject("user");
+        JSONObject merchantInfo = userInfo.getJSONObject("merchant");
+
+        // 2. if possible, load logo
+        if (merchantInfo.optJSONObject("logo") != null) {
+         try {
+
+           String logoUrlString = merchantInfo.getJSONObject("logo").getString("small");
+           URL logoUrl = logoUrlString.startsWith("/") ? new URL(new URL(LoginManager.CLIENT_BASEURL), logoUrlString) : new URL(logoUrlString);
+           Bitmap logo = BitmapFactory.decodeStream(logoUrl.openStream());
+           return new Object[] { merchantInfo, logo };
+         } catch (Exception e) {
+           // Could not load logo
+           e.printStackTrace();
+           return new Object[] { merchantInfo, null };
+         }
+        } else {
+          // No logo
+          return new Object[] { merchantInfo, null };
+        }
+
+      } catch (Exception e) {
+        // Could not load merchant info
+        e.printStackTrace();
+        return null;
+      }
+    }
+
+    @Override
+    protected void onPostExecute(Object[] result) {
+
+      if (result == null) {
+
+        // Data could not be loaded.
+        for (View header : mHeaders) {
+          header.setVisibility(View.GONE);
+        }
+      } else {
+
+        for (View header : mHeaders) {
+          header.setVisibility(View.VISIBLE);
+        }
+
+        String title = ((JSONObject) result[0]).optString("company_name");
+        for (TextView titleView : mHeaderTitles) {
+          titleView.setText(title);
+        }
+
+        if (result[1] != null) {
+          for (ImageView logoView : mHeaderLogos) {
+            logoView.setImageBitmap((Bitmap) result[1]);
+          }
+        }
+      }
+    }
+  }
+
   private static final int INDEX_MAIN = 0;
   private static final int INDEX_LOADING = 1;
   private static final int INDEX_ACCEPT = 2;
@@ -124,6 +192,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private ImageView mAcceptQr;
   private TextView mAcceptDesc;
   private Button mAcceptCancel;
+
+  private View[] mHeaders;
+  private TextView[] mHeaderTitles;
+  private ImageView[] mHeaderLogos;
 
   @Override
   public void onSwitchedTo() {
@@ -175,6 +247,22 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       public void onNothingSelected(AdapterView<?> arg0) {
         // Ignore
       }});
+
+    // Headers
+    int[] headers = { R.id.pos_accept_header, R.id.pos_main_header };
+
+    mHeaders = new View[headers.length];
+    mHeaderTitles = new TextView[headers.length];
+    mHeaderLogos = new ImageView[headers.length];
+    for (int i = 0; i < headers.length; i++) {
+
+      mHeaders[i] = view.findViewById(headers[i]);
+      mHeaderTitles[i] = (TextView) mHeaders[i].findViewById(R.id.pos_header_name);
+      mHeaderLogos[i] = (ImageView) mHeaders[i].findViewById(R.id.pos_header_logo);
+
+      mHeaderTitles[i].setText(null);
+      mHeaderLogos[i].setImageDrawable(null);
+    }
 
     return view;
   }
@@ -282,5 +370,6 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   public void refresh() {
 
+    new LoadMerchantInfoTask().execute();
   }
 }

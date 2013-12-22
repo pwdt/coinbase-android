@@ -530,11 +530,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   private void updateTitle() {
 
-    if((mSlidingMenu != null && isSlidingMenuShowing()) || mPinSlidingMenu) {
+    if ((mSlidingMenu != null && isSlidingMenuShowing()) || mPinSlidingMenu) {
       // Sliding menu mode
       getSupportActionBar().setTitle(R.string.app_name);
 
-    } else if(mInTransactionDetailsMode) {
+    } else if (mInTransactionDetailsMode) {
       getSupportActionBar().setTitle(R.string.transactiondetails_title);
     } else {
       getSupportActionBar().setTitle(mFragmentTitles[mViewFlipper.getDisplayedChild()]);
@@ -564,7 +564,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
             menu.findItem(R.id.menu_barcode)
     };
 
-    boolean hide = mInTransactionDetailsMode || (mSlidingMenu != null && isSlidingMenuShowing()) || mPinSlidingMenu;
+    boolean hide = mInTransactionDetailsMode || // Transaction details showing
+            (mSlidingMenu != null && isSlidingMenuShowing()) || // Sliding menu showing
+            mPinSlidingMenu || // Tablet mode
+            mViewFlipper.getDisplayedChild() == FRAGMENT_INDEX_POINT_OF_SALE; // Point of sale
 
     for(MenuItem item : toHide) {
       item.setVisible(!hide);

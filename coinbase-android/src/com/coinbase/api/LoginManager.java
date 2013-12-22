@@ -1,12 +1,14 @@
 package com.coinbase.api;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.net.ParseException;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
+import com.coinbase.android.Constants;
+import com.coinbase.android.R;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -19,15 +21,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.net.ParseException;
-import android.preference.PreferenceManager;
-import android.util.Log;
-
-import com.coinbase.android.Constants;
-import com.coinbase.android.R;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class LoginManager {
 
@@ -43,14 +43,14 @@ public class LoginManager {
   }
 
   // production
-  protected static final String CLIENT_ID = "34183b03a3e1f0b74ee6aa8a6150e90125de2d6c1ee4ff7880c2b7e6e98b11f5";
-  protected static final String CLIENT_SECRET = "2c481f46f9dc046b4b9a67e630041b9906c023d139fbc77a47053328b9d3122d";
-  protected static final String CLIENT_BASEURL = "https://coinbase.com:443";
+  //protected static final String CLIENT_ID = "34183b03a3e1f0b74ee6aa8a6150e90125de2d6c1ee4ff7880c2b7e6e98b11f5";
+  //protected static final String CLIENT_SECRET = "2c481f46f9dc046b4b9a67e630041b9906c023d139fbc77a47053328b9d3122d";
+  //public static final String CLIENT_BASEURL = "https://coinbase.com:443";
 
   // development (adjust to your setup)
-  //protected static final String CLIENT_ID = "b93a59f74763e8fd109c6f895ae8a74b495828d797e48a3e8cd276c6a6dab028";
-  //protected static final String CLIENT_SECRET = "72a59bb02e2602232e0d217e4c537bcd4abba3be39ac67298f89bac01f91f2ec";
-  //protected static final String CLIENT_BASEURL = "http://192.168.105.20:3000";
+  protected static final String CLIENT_ID = "b6753e48f7eff4ca287dd081a251c3801037fcda51bb52181d06947d1fb4cb08";
+  protected static final String CLIENT_SECRET = "da853dce0fcc753501e6fe7972ad64c8525f552e708b585c46e65c12e0a5ef44";
+  public static final String CLIENT_BASEURL = "http://192.168.1.10:3001";
 
   private LoginManager() {
 

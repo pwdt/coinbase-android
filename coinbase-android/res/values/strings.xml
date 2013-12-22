@@ -180,7 +180,7 @@
     <string name="settings_pin_view_allowed_desc_off">Passcode is required to view transactions</string>
     <string name="widget_transactions_compat">Sorry, this widget is not compatible with your device.</string>
     <string name="pos_amt_title">Order amount</string>
-    <string name="pos_amt">Amount in %1$s</string>
+    <string name="pos_amt">Order amount in %1$s</string>
     <string name="pos_submit">Create order</string>
     <string name="pos_btc">= %1$s BTC</string>
     <string name="pos_traditional">≈ %1$s %2$s</string>
