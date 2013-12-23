@@ -472,7 +472,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   @Override
   public void onBackPressed() {
 
-    if(isSlidingMenuShowing()) {
+    if(isSlidingMenuShowing() && !mPinSlidingMenu) {
       hideSlidingMenu(false);
     } else {
 
