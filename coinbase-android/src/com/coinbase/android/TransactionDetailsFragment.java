@@ -136,8 +136,12 @@ public class TransactionDetailsFragment extends Fragment {
         Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
         if(type != ActionType.RESEND) {
-          ((MainActivity) getActivity()).refresh();
-          ((TransactionsFragment) getParentFragment()).hideDetails(true);
+          if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).refresh();
+            ((TransactionsFragment) getParentFragment()).hideDetails(true);
+          } else {
+            getActivity().finish();
+          }
         }
       }
     }

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.AsyncTask;
@@ -18,6 +19,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -200,6 +202,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     private Handler mHandler;
     private String mOrderId;
 
+    private int mTimesExecuted = 0;
     private JSONObject mOrder = null;
 
     public CheckStatusTask(Context context, TextView statusView, String orderId) {
@@ -212,6 +215,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     public void run() {
 
+      mTimesExecuted++;
       final CheckStatusState state = doCheck();
       if(state == CheckStatusState.DONE) {
 
@@ -224,7 +228,24 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
           public void run() {
 
-            mStatus.setText(state.toString());
+            int textColor, bgColor;
+            String text;
+            if (state == CheckStatusState.SUCCESS) {
+              textColor = Color.BLACK;
+              bgColor = getResources().getColor(R.color.pos_waiting_good);
+              text = getString(R.string.pos_accept_waiting);
+
+              int index = (mTimesExecuted % 3) + 1;
+              text = text.substring(0, text.length() - index) + " " + text.substring(text.length() - index);
+            } else {
+              textColor = Color.WHITE;
+              bgColor = getResources().getColor(R.color.pos_waiting_bad);
+              text = getString(R.string.pos_accept_waiting_error);
+            }
+
+            mStatus.setTextColor(textColor);
+            mStatus.setBackgroundColor(bgColor);
+            mStatus.setText(text);
           }
         });
       }
@@ -326,6 +347,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
         mFlipper.setDisplayedChild(INDEX_LOADING);
         new CreateButtonTask().execute(mAmount.getText().toString(),
                 (String) mCurrency.getSelectedItem(), mNotes.getText().toString());
+        mAmount.setText(null);
       }
     });
     mAcceptCancel.setOnClickListener(new View.OnClickListener() {
@@ -338,6 +360,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View view) {
         mFlipper.setDisplayedChild(INDEX_MAIN);
+        setKeyboardVisible(true);
       }
     });
     
@@ -423,6 +446,14 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     String bitcoinUri = String.format("bitcoin:%1$s?amount=%2$s", receiveAddress, amount);
     String orderId = order.getString("id");
 
+    String amountString = Utils.formatCurrencyAmount(amount) + " BTC";
+    if (!order.getJSONObject("total_native").getString("currency_iso").equals("BTC")) {
+      amountString += String.format(" (%1$s %2$s)", Utils.formatCurrencyAmount(
+              moneyToValue(order.getJSONObject("total_native")),
+              false,
+              Utils.CurrencyType.TRADITIONAL), order.getJSONObject("total_native").getString("currency_iso"));
+    }
+
     Bitmap bitmap;
     try {
       bitmap = Utils.createBarcode(bitcoinUri, BarcodeFormat.QR_CODE, 512, 512);
@@ -431,19 +462,20 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       bitmap = null;
     }
     mAcceptQr.setImageBitmap(bitmap);
-    mAcceptDesc.setText("asdf");
+    mAcceptDesc.setText(getString(R.string.pos_accept_message, amountString));
 
     mCheckStatusTimer = new Timer();
     mCheckStatusTimer.schedule(new CheckStatusTask(mParent, mAcceptStatus, orderId), CHECK_PERIOD, CHECK_PERIOD);
 
     mFlipper.setDisplayedChild(INDEX_ACCEPT);
+    setKeyboardVisible(false);
   }
 
   private void stopAccepting() {
 
     mCheckStatusTimer.cancel();
     mCheckStatusTimer = null;
-    showResult("cancelled", null, null);
+    showResult("cancelled", R.string.pos_result_failure_cancel, null);
   }
 
   private void paymentAccepted(final JSONObject order) {
@@ -495,6 +527,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mResultStatus.setText(status);
     mResultMessage.setText(message);
     mFlipper.setDisplayedChild(INDEX_RESULT);
+    setKeyboardVisible(false);
   }
 
   private BigDecimal moneyToValue(JSONObject money) {
@@ -508,6 +541,17 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       result = cents.multiply(new BigDecimal(0.01), MathContext.DECIMAL128);
     }
     return result.setScale(10, BigDecimal.ROUND_HALF_UP).stripTrailingZeros();
+  }
+
+  private void setKeyboardVisible(boolean visible) {
+
+    InputMethodManager inputMethodManager = (InputMethodManager) mParent.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+    if(visible) {
+      inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+    } else {
+      inputMethodManager.hideSoftInputFromWindow(mParent.findViewById(android.R.id.content).getWindowToken(), 0);
+    }
   }
 
   @Override

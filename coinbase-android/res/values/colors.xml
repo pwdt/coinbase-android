@@ -18,4 +18,6 @@
   <color name="pos_result_completed">#50bf82</color>
   <color name="pos_result_mispaid">#f89406</color>
   <color name="pos_result_error">#b94a48</color>
+  <color name="pos_waiting_good">#DBFFC9</color>
+  <color name="pos_waiting_bad">#C90000</color>
 </resources>

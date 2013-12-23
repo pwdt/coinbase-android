@@ -99,7 +99,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/pos_accept_waiting"
-                android:background="#dddddd"
+                android:background="@color/pos_waiting_good"
                 android:id="@+id/pos_accept_waiting"
                 android:gravity="center"
                 android:padding="@dimen/layout_padding"/>
@@ -113,8 +113,11 @@
                 android:padding="@dimen/layout_padding"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
                 android:id="@+id/pos_accept_desc"/>
 
             <View

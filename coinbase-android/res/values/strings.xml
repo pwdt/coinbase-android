@@ -183,9 +183,10 @@
     <string name="pos_traditional">≈ %1$s %2$s</string>
     <string name="pos_notes">Order name</string>
     <string name="pos_accept_cancel">Cancel</string>
-    <string name="pos_accept_message">Send <b>$1%s</b> to the above address</string>
+    <string name="pos_accept_message">Please send <b>%1$s</b> to the above address</string>
     <string name="pos_accept_message_nfc">(NFC is active)</string>
     <string name="pos_accept_waiting">Waiting for payment...</string>
+    <string name="pos_accept_waiting_error">We\'re having trouble verifying payment...\nCheck your internet connection.</string>
     <string name="pos_result_failure_creation">Could not create order.</string>
     <string name="pos_result_failure_creation_exception">Could not create order (%1$s).</string>
     <string name="pos_result_completed">Received payment of %1$s %2$s.</string>
