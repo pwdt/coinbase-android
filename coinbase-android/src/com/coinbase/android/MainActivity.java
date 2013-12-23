@@ -607,6 +607,15 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if((System.currentTimeMillis() - mLastRefreshTime) > RESUME_REFRESH_INTERVAL) {
       refresh();
     }
+
+    // Legacy support:
+    // If the old Point of Sale is enabled, show a dialog directing them to the Play Store
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String key = String.format(Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, activeAccount);
+    if (prefs.getBoolean(key, false)) {
+      new MerchantToolsMovedDialogFragment().show(getSupportFragmentManager(), "poslegacy");
+    }
   }
 
   @Override
