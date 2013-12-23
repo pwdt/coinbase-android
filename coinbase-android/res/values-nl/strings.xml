@@ -135,8 +135,6 @@
     <string name="account_time_zone">Tijdzone</string>
     <string name="account_native_currency">Natuurlijke valuta</string>
     <string name="account_enable_merchant_tools">Handelaarstools</string>
-    <string name="account_merchant_tools_enabled">Inschakelen (toegang vanuit het zijmenu)</string>
-    <string name="account_merchant_tools_disabled">Uitschakelen</string>
     <string name="account_refresh_token">Ververs token</string>
     <string name="account_progress">Bezig...</string>
     <string name="account_list_error">Kan de lijst niet laden not load list.</string>

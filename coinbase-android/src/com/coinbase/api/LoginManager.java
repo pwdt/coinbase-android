@@ -4,9 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.ParseException;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.coinbase.android.BuildConfig;
+import com.coinbase.android.BuildType;
 import com.coinbase.android.Constants;
 import com.coinbase.android.R;
 
@@ -43,14 +46,14 @@ public class LoginManager {
   }
 
   // production
-  //protected static final String CLIENT_ID = "34183b03a3e1f0b74ee6aa8a6150e90125de2d6c1ee4ff7880c2b7e6e98b11f5";
-  //protected static final String CLIENT_SECRET = "2c481f46f9dc046b4b9a67e630041b9906c023d139fbc77a47053328b9d3122d";
-  //public static final String CLIENT_BASEURL = "https://coinbase.com:443";
+  protected static final String CLIENT_ID = BuildConfig.type == BuildType.CONSUMER ? "34183b03a3e1f0b74ee6aa8a6150e90125de2d6c1ee4ff7880c2b7e6e98b11f5" : "82f3e52bb25da3688066a45ec740a1efa686646bcdb89a054b2264bc362d9332";
+  protected static final String CLIENT_SECRET = BuildConfig.type == BuildType.CONSUMER ? "2c481f46f9dc046b4b9a67e630041b9906c023d139fbc77a47053328b9d3122d" : "f8d57dceb5a4e36b30318e6f035ad3c846cb4dea18ff4f353a35608f1acb12cf";
+  public static final String CLIENT_BASEURL = "https://coinbase.com:443";
 
   // development (adjust to your setup)
-  protected static final String CLIENT_ID = "b6753e48f7eff4ca287dd081a251c3801037fcda51bb52181d06947d1fb4cb08";
-  protected static final String CLIENT_SECRET = "da853dce0fcc753501e6fe7972ad64c8525f552e708b585c46e65c12e0a5ef44";
-  public static final String CLIENT_BASEURL = "http://192.168.1.10:3001";
+  //protected static final String CLIENT_ID = "b6753e48f7eff4ca287dd081a251c3801037fcda51bb52181d06947d1fb4cb08";
+  //protected static final String CLIENT_SECRET = "da853dce0fcc753501e6fe7972ad64c8525f552e708b585c46e65c12e0a5ef44";
+  //public static final String CLIENT_BASEURL = "http://192.168.1.10:3001";
 
   private LoginManager() {
 
@@ -227,7 +230,9 @@ public class LoginManager {
       throw new RuntimeException(e);
     }
 
-    String authorizeUrl = baseUrl + "?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + redirectUrl;
+    String scope = BuildConfig.type == BuildType.CONSUMER ? "all" : "merchant";
+
+    String authorizeUrl = baseUrl + "?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + redirectUrl + "&scope=" + scope;
     return authorizeUrl;
   }
 

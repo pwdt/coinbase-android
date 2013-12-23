@@ -130,8 +130,6 @@
     <string name="account_time_zone">Časová zóna</string>
     <string name="account_native_currency">Národní měna</string>
     <string name="account_enable_merchant_tools">Nástroje pro obchodníky</string>
-    <string name="account_merchant_tools_enabled">Povoleno (přístup z postranního menu)</string>
-    <string name="account_merchant_tools_disabled">Nepovoleno</string>
     <string name="account_refresh_token">Obnovit token</string>
     <string name="account_progress">Pracuji...</string>
     <string name="account_list_error">Nelze načíst seznam.</string>

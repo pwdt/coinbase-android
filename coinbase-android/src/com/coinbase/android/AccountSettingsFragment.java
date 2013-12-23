@@ -138,8 +138,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
             prefs.getString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY, mActiveAccount, "sell"), "BTC"));
 
       } else if("enable_merchant_tools".equals(item[2])) {
-        desc = getString(prefs.getBoolean(
-          String.format((String) item[1], mActiveAccount), false) ? R.string.account_merchant_tools_enabled : R.string.account_merchant_tools_disabled);
+        desc = getString(R.string.account_merchant_tools_notice);
       } else if("pin".equals(item[2])) {
         boolean enabled = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, mActiveAccount), null) != null;
         boolean editOnly = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, mActiveAccount), false);
@@ -561,10 +560,9 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       startActivity(new Intent(mParent, ReceiveAddressesActivity.class));
     } else if("enable_merchant_tools".equals(data[2])) {
 
-      String key = String.format((String) data[1], activeAccount);
-      Editor e = prefs.edit();
-      e.putBoolean(key, !prefs.getBoolean(key, false));
-      e.commit();
+      Intent intent = new Intent(Intent.ACTION_VIEW);
+      intent.setData(Uri.parse("http://play.google.com/store/apps/details?id=com.coinbase.android.merchant"));
+      startActivity(intent);
     } else if("pin".equals(data[2])) {
 
       new PINSettingDialogFragment().show(getFragmentManager(), "pin");

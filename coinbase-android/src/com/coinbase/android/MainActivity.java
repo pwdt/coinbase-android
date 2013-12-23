@@ -22,6 +22,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -137,12 +138,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
                                                                       true,
   };
   private boolean[] mFragmentVisible = new boolean[] {
-                                                      true,
-                                                      true,
-                                                      true,
-                                                      true,
-                                                      true,
-                                                      true,
+          BuildConfig.type == BuildType.CONSUMER,
+          BuildConfig.type == BuildType.CONSUMER,
+          BuildConfig.type == BuildType.CONSUMER,
+          BuildConfig.type == BuildType.CONSUMER,
+          false,
+          BuildConfig.type == BuildType.MERCHANT,
   };
   private CoinbaseFragment[] mFragments = new CoinbaseFragment[NUM_FRAGMENTS];
 
@@ -176,7 +177,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     // Configure the DrawerLayout
     mPinSlidingMenu = getResources().getBoolean(R.bool.pin_sliding_menu);
-    getSupportActionBar().setDisplayHomeAsUpEnabled(!mPinSlidingMenu);
     getSupportActionBar().setHomeButtonEnabled(!mPinSlidingMenu);
 
     if(!mPinSlidingMenu) {
@@ -240,23 +240,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       }
     }).start();
 
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    mSharedPreferenceChangeListener = new OnSharedPreferenceChangeListener() {
-
-      @Override
-      public void onSharedPreferenceChanged(SharedPreferences arg0, String arg1) {
-
-        if(arg1.endsWith("enable_merchant_tools")) {
-          // Update merchant tools visibility
-          updateMerchantToolsVisibility();
-        }
-      }
-    };
-    prefs.registerOnSharedPreferenceChangeListener(mSharedPreferenceChangeListener);
-    updateMerchantToolsVisibility();
-
-    switchTo(0);
+    switchTo(BuildConfig.type == BuildType.CONSUMER ? FRAGMENT_INDEX_TRANSACTIONS : FRAGMENT_INDEX_POINT_OF_SALE);
 
     onNewIntent(getIntent());
   }
@@ -371,16 +355,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
   }
 
-  private void updateMerchantToolsVisibility() {
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String key = String.format(Constants.KEY_ACCOUNT_ENABLE_MERCHANT_TOOLS, activeAccount);
-    mFragmentVisible[FRAGMENT_INDEX_MERCHANT_TOOLS] = false; //prefs.getBoolean(key, true);
-    mFragmentVisible[FRAGMENT_INDEX_POINT_OF_SALE] = prefs.getBoolean(key, false);
-    getAdapter().notifyDataSetChanged();
-  }
-
   private BaseAdapter getAdapter() {
 
     Adapter adapter = mMenuListView.getAdapter();
@@ -442,7 +416,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     mViewFlipper.setDisplayedChild(index);
     updateTitle();
-    mFragments[index].onSwitchedTo();
+
+    if(mFragments[index] != null) {
+      mFragments[index].onSwitchedTo();
+    }
 
     if (mSlidingMenu == null || mPinSlidingMenu || !mSlidingMenu.isDrawerOpen(Gravity.LEFT)) {
       makeKeyboardObeyVisibleFragment();
@@ -454,6 +431,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(mInTransactionDetailsMode) {
       mTransactionsFragment.hideDetails(false);
     }
+    updateBackButton();
   }
 
   /** Called when close animation is complete */
@@ -546,7 +524,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   private void updateBackButton() {
 
     if(mSlidingMenu != null) {
-      mDrawerToggle.setDrawerIndicatorEnabled(isSlidingMenuShowing() || !mInTransactionDetailsMode);
+      mDrawerToggle.setDrawerIndicatorEnabled(isSlidingMenuShowing() ||
+              !(mInTransactionDetailsMode || mViewFlipper.getDisplayedChild() == FRAGMENT_INDEX_POINT_OF_SALE));
+      getSupportActionBar().setDisplayHomeAsUpEnabled(isSlidingMenuShowing() ||
+              mViewFlipper.getDisplayedChild() != FRAGMENT_INDEX_POINT_OF_SALE);
+    } else {
+      getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
   }
 
@@ -880,7 +863,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     } else {
       mRefreshItem.setEnabled(true);
       mRefreshItem.setActionView(null);
-      mTransactionsFragment.refreshComplete();
+
+      if (mTransactionsFragment != null) {
+        mTransactionsFragment.refreshComplete();
+      }
     }
   }
 
@@ -888,10 +874,13 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     mLastRefreshTime = System.currentTimeMillis();
 
-    mTransactionsFragment.refresh();
-    mBuySellFragment.refresh();
-    mTransferFragment.refresh();
-    mSettingsFragment.refresh();
-    mPointOfSaleFragment.refresh();
+    if (BuildConfig.type == BuildType.CONSUMER) {
+      mTransactionsFragment.refresh();
+      mBuySellFragment.refresh();
+      mTransferFragment.refresh();
+      mSettingsFragment.refresh();
+    } else {
+      mPointOfSaleFragment.refresh();
+    }
   }
 }

@@ -124,8 +124,6 @@
     <string name="account_time_zone">Zona horaria</string>
     <string name="account_native_currency">Moneda nativa</string>
     <string name="account_enable_merchant_tools">Herramientas de comerciante</string>
-    <string name="account_merchant_tools_enabled">Habilitado (acceso del menu lateral)</string>
-    <string name="account_merchant_tools_disabled">Deshabilitado</string>
     <string name="account_refresh_token">Actualizar token</string>
     <string name="account_progress">Trabajando...</string>
     <string name="account_list_error">No se pudo cargar la lista.</string>
