@@ -7,7 +7,8 @@
     <ViewFlipper
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/pos_flipper">
+        android:id="@+id/pos_flipper"
+        android:measureAllChildren="false">
 
         <RelativeLayout
             android:id="@+id/pos_main"
@@ -100,6 +101,7 @@
                 android:text="@string/pos_accept_waiting"
                 android:background="#dddddd"
                 android:id="@+id/pos_accept_waiting"
+                android:gravity="center"
                 android:padding="@dimen/layout_padding"/>
 
             <ImageView
@@ -124,10 +126,60 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/pos_notes"
                 android:id="@+id/pos_accept_cancel"
                 android:textColor="#000000"
                 android:text="@string/pos_accept_cancel"
+                android:background="@drawable/button_secondary">
+            </Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/pos_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/layout_padding"
+            android:orientation="vertical"
+            android:background="@drawable/fragment_transactiondetails_bg">
+
+            <include layout="@layout/fragment_point_of_sale_header"
+                     android:id="@+id/pos_result_header" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#dddddd"
+                android:id="@+id/pos_result_status"
+                android:layout_gravity="center"
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="30dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textColor="#ffffff"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/pos_result_msg"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#eee"
+                android:layout_marginTop="15dp" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/pos_result_ok"
+                android:textColor="#000000"
+                android:text="@string/pos_result_ok"
                 android:background="@drawable/button_secondary">
             </Button>
         </LinearLayout>

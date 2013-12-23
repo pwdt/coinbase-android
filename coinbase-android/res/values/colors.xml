@@ -14,4 +14,8 @@
   <color name="button_secondary_pressed">#dddddd</color>
   <color name="buysell_type_active">#000000</color>
   <color name="buysell_type_inactive">#aaaaaa</color>
+
+  <color name="pos_result_completed">#50bf82</color>
+  <color name="pos_result_mispaid">#f89406</color>
+  <color name="pos_result_error">#b94a48</color>
 </resources>

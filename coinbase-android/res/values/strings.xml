@@ -188,6 +188,10 @@
     <string name="pos_accept_waiting">Waiting for payment...</string>
     <string name="pos_result_failure_creation">Could not create order.</string>
     <string name="pos_result_failure_creation_exception">Could not create order (%1$s).</string>
+    <string name="pos_result_completed">Received payment of %1$s %2$s.</string>
+    <string name="pos_result_mispaid">Wrong amount sent for this order. Order is not complete. Manual refund may be required.</string>
+    <string name="pos_result_failure_cancel">Order cancelled.</string>
+    <string name="pos_result_ok">OK</string>
     <string name="waiting_for_payment">Waiting for payment...</string>
     <string name="payment_received">Received %1$s BTC (%2$s %3$s).</string>
     <string name="payment_received_short">Received %1$s BTC (%2$s %3$s), but you requested %4$s BTC.</string>
@@ -209,8 +213,6 @@
     <string name="drawer_close">Close menu</string>
     <string name="transactions_empty_title">Welcome to Coinbase!</string>
     <string name="transactions_empty_subtitle">Your transactions will appear here.\nTap the icon in the top left corner of the screen to open the app menu.</string>
-    <string name="pos_setup_title">Set up point of sale</string>
-    <string name="pos_setup_message">Set up the Coinbase app in point of sale mode to accept bitcoin payments in person.\n\nWhen set up in point of sale mode, the app will only be able to accept payments. This device will not have access to account history and will not be able to send bitcoin out of this account.</string>
     <string name="wallet_balance_label">CURRENT BALANCE</string>
     <string name="wallet_hidden_notice">Balance hidden.</string>
     <string name="wallet_hidden_show"><u>Show balance</u></string>
