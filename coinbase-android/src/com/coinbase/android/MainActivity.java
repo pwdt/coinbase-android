@@ -175,8 +175,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     // Set up the ViewFlipper
     mViewFlipper = (ViewFlipper) findViewById(R.id.flipper);
 
-    // Configure the DrawerLayout
-    mPinSlidingMenu = getResources().getBoolean(R.bool.pin_sliding_menu);
+    // Configure the DrawerLayout (never pin menu on POS app)
+    mPinSlidingMenu = getResources().getBoolean(R.bool.pin_sliding_menu) && BuildConfig.type == BuildType.CONSUMER;
     getSupportActionBar().setHomeButtonEnabled(!mPinSlidingMenu);
 
     if(!mPinSlidingMenu) {
@@ -203,6 +203,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
       };
       mSlidingMenu.setDrawerListener(mDrawerToggle);
+      mSlidingMenu.setDrawerLockMode(BuildConfig.type == BuildType.CONSUMER ? DrawerLayout.LOCK_MODE_UNLOCKED : DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
 
     // Set up Sliding Menu list
@@ -681,7 +682,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       case android.R.id.home:
         if(mInTransactionDetailsMode) {
           mTransactionsFragment.onBackPressed();
-        } else {
+        } else if (BuildConfig.type == BuildType.CONSUMER) {
           toggleSlidingMenu();
         }
         return true;
