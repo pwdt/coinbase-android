@@ -1,7 +1,8 @@
 package com.coinbase.android;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -15,21 +16,8 @@ public class AboutActivity extends SherlockActivity {
     setContentView(R.layout.activity_about);
     setTitle(String.format(getString(R.string.about_title), getString(R.string.app_name)));
     
-    TextView contributorsView = (TextView) findViewById(R.id.about_contributors);
-    String[] contributors = getResources().getStringArray(R.array.contributors);
-    String contributorsLabel = getString(R.string.about_contributors);
-    
-    StringBuffer contributorsText = new StringBuffer();
-    
-    for(int i = 0; i < contributors.length; i++) {
-
-      contributorsText.append(contributors[i]);
-      contributorsText.append('\n');
-    }
-    
-    contributorsView.setText(String.format(contributorsLabel, contributorsText.toString()));
-    
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.rgb(52, 142, 218)));
   }
 
   @Override

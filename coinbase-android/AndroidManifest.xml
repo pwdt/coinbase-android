@@ -58,7 +58,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <activity android:name="com.coinbase.android.AboutActivity"></activity>
+        <activity android:name="com.coinbase.android.AboutActivity"
+            android:theme="@style/Theme.Coinbase.NoWindowContentOverlay"></activity>
         <receiver android:name="com.coinbase.android.BalanceAppWidgetProvider"
             android:label="@string/widget_balance_label">
 				    <intent-filter>
