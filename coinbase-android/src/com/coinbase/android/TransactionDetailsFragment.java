@@ -182,15 +182,20 @@ public class TransactionDetailsFragment extends Fragment {
           if(result != null) {
             mContainer.setVisibility(View.VISIBLE);
             fillViewsForJson(mView, result, currentUserId, mId);
+            return;
           }
-          return;
         } catch (JSONException e) {
           e.printStackTrace();
         }
 
         // Error
         Toast.makeText(getActivity(), R.string.transactiondetails_error, Toast.LENGTH_SHORT).show();
-        ((TransactionsFragment) getParentFragment()).hideDetails(true);
+        if (getActivity() instanceof MainActivity) {
+          ((TransactionsFragment) getParentFragment()).hideDetails(true);
+        } else {
+          // Transaction details activity
+          getActivity().finish();
+        }
       }
     }
 
