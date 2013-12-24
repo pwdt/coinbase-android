@@ -236,7 +236,10 @@ public class Utils {
     byte[] digest = md.digest();
     StringBuffer sb = new StringBuffer();
     for (byte b : digest) {
-      sb.append(Integer.toHexString((int) (b & 0xff)));
+      int unsigned = b & 0xff;
+      if (unsigned < 0x10)
+        sb.append("0");
+      sb.append(Integer.toHexString((unsigned)));
     }
     return sb.toString();
   }

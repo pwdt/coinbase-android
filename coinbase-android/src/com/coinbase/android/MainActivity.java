@@ -22,13 +22,13 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -302,9 +302,13 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     protected Bitmap doInBackground(String... arg0) {
 
       try {
-        return BitmapFactory.decodeStream(new URL(String.format("https://secure.gravatar.com/avatar/%1$s?s=100&d=https://coinbase.com/assets/avatar.png",
-          Utils.md5(arg0[0].toLowerCase(Locale.CANADA).trim()))).openStream());
+        String url = String.format("https://secure.gravatar.com/avatar/%1$s?s=100&d=https://coinbase.com/assets/avatar.png",
+                Utils.md5(arg0[0].toLowerCase(Locale.CANADA).trim()));
+        Log.i("Coinbase", "Loading avatar " + url);
+        return BitmapFactory.decodeStream(new URL(url).openStream());
       } catch (Exception e) {
+        Log.i("Coinbase", "Could not load avatar!");
+        e.printStackTrace();
         return null;
       }
     }
