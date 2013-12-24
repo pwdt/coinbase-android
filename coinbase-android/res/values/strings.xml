@@ -227,4 +227,5 @@
     <string name="merchant_tools_moved">Point of Sale has been moved into a separate app. The new Coinbase Point of Sale app only has access to merchant tools and does not have access to your account funds, improving security.\n\nDownload Coinbase Point of Sale from the Play Store or use the Send / Request tab.</string>
     <string name="merchant_tools_moved_title">Looking for Point of Sale?</string>
     <string name="merchant_tools_moved_play_store">Go to Play Store</string>
+    <string name="transactions_loading_more">Loading...</string>
 </resources>

@@ -60,44 +60,25 @@ import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 
 public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
-  private class LoadBalanceTask extends AsyncTask<Void, Void, String[]> {
+  private class LoadExchangeRatesTask extends AsyncTask<Void, Void, JSONObject> {
 
     @Override
-    protected String[] doInBackground(Void... params) {
+    protected void onPreExecute() {
+      mExchangeRates = null;
+    }
+
+    @Override
+    protected JSONObject doInBackground(Void... params) {
 
       try {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-        int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-
-        JSONObject balance = RpcManager.getInstance().callGet(mParent, "account/balance");
         JSONObject exchangeRates = RpcManager.getInstance().callGet(mParent, "currencies/exchange_rates");
-
-        String userHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-            "usd").toLowerCase(Locale.CANADA);
-        BigDecimal homeAmount = new BigDecimal(balance.getString("amount")).multiply(
-          new BigDecimal(exchangeRates.getString("btc_to_" + userHomeCurrency)));
-
-        String balanceString = Utils.formatCurrencyAmount(balance.getString("amount"));
-        String balanceHomeString = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
-
-        String[] result = new String[] { balanceString, balance.getString("currency"),
-                                         balanceHomeString, userHomeCurrency.toUpperCase(Locale.CANADA) };
-
-        // Save balance in preferences
-        Editor editor = prefs.edit();
-        editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), result[0]);
-        editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), result[2]);
-        editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), result[3]);
-        editor.commit();
-
-        return result;
+        return exchangeRates;
 
       } catch (IOException e) {
 
         e.printStackTrace();
       } catch (JSONException e) {
 
-        ACRA.getErrorReporter().handleException(new RuntimeException("LoadBalance", e));
         e.printStackTrace();
       }
 
@@ -105,45 +86,17 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
 
     @Override
-    protected void onPreExecute() {
+    protected void onPostExecute(JSONObject result) {
 
-      mBalanceLoading = true;
-
-      if(mBalanceText != null) {
-        mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
-      }
-    }
-
-    @Override
-    protected void onPostExecute(String[] result) {
-
-      mBalanceLoading = false;
-
-      if(mBalanceText == null) {
-        return;
-      }
-
-      if(result == null) {
-        mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
-      } else {
-
-        mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
-        setBalance(result[0]);
-        mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), result[2], result[3]));
-      }
-    }
-
-    @Override
-    protected void onCancelled(String[] result) {
-
-      mBalanceLoading = false;
+      mExchangeRates = result;
+      updateBalance();
     }
 
   }
 
   private class SyncTransactionsTask extends AsyncTask<Integer, Void, Boolean> {
 
-    public static final int MAX_PAGES = 3;
+    public static final int MAX_PAGES = 1;
     public static final int MAX_ENDLESS_PAGES = 10;
 
     /**
@@ -154,8 +107,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     @Override
     protected Boolean doInBackground(Integer... params) {
 
+      Profiler p = new Profiler();
+
       List<JSONObject> transactions = new ArrayList<JSONObject>();
-      String currentUserId = null;
+      String currentUserId = null, balanceBtc = null;
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
       Map<String, JSONObject> extraInfo = new HashMap<String, JSONObject>();
@@ -177,6 +132,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           JSONObject response = RpcManager.getInstance().callGet(mParent, "account_changes", getParams);
 
           currentUserId = response.getJSONObject("current_user").getString("id");
+          balanceBtc = response.getJSONObject("balance").getString("amount");
 
           JSONArray transactionsArray = response.optJSONArray("account_changes");
           numPages = response.getInt("num_pages");
@@ -200,16 +156,34 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           loadedPage++;
         }
 
+        // Update balance
+        // (we do it here instead of in onPostExecute to update the balance ASAP.)
+        final String balanceBtcFinal = balanceBtc;
+        mParent.runOnUiThread(new Runnable() {
+          public void run() {
+            mBalanceBtc = balanceBtcFinal;
+            updateBalance();
+          }
+        });
+
+        p.segmentDone("Download account changes");
+
         mMaxPage = numPages;
 
         // Also fetch extra info from /transactions call
         // for first ~30 transactions
-        JSONObject extraJson = RpcManager.getInstance().callGet(mParent, "transactions");
-        JSONArray extras = extraJson.getJSONArray("transactions");
-        for(int i = 0; i < extras.length(); i++) {
-          JSONObject extra = extras.getJSONObject(i).getJSONObject("transaction");
-          extraInfo.put(extra.getString("id"), extra);
+        if (startPage == 0) {
+          JSONObject extraJson = RpcManager.getInstance().callGet(mParent, "transactions");
+          JSONArray extras = extraJson.getJSONArray("transactions");
+          for(int i = 0; i < extras.length(); i++) {
+            JSONObject extra = extras.getJSONObject(i).getJSONObject("transaction");
+            extraInfo.put(extra.getString("id"), extra);
+          }
+        } else {
+          // Don't reload transactions on an infinite scroll
         }
+
+        p.segmentDone("Download transactions");
 
       } catch (IOException e) {
         Log.e("Coinbase", "I/O error refreshing transactions.");
@@ -241,6 +215,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           Editor editor = prefs.edit();
           editor.putString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), currentUserId);
           editor.commit();
+
+          p.segmentDone("Set up database");
 
           for(JSONObject transaction : transactions) {
 
@@ -275,6 +251,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           db.setTransactionSuccessful(mParent);
           mLastLoadedPage = loadedPage;
+          p.segmentDone("Insert transactions to database");
 
           // Update list
           loadTransactionsList();
@@ -284,6 +261,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           // Update the buy / sell history list
           mParent.getBuySellFragment().onTransactionsSynced();
+
+          p.segmentDone("Done");
 
           return true;
 
@@ -314,6 +293,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     protected void onPreExecute() {
 
       ((MainActivity) mParent).setRefreshButtonAnimated(true);
+      mBalanceBtc = null;
 
       if(mSyncErrorView != null) {
         mSyncErrorView.setVisibility(View.GONE);
@@ -425,6 +405,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       if(mListView != null && result != null) {
 
         setHeaderPinned(!result.moveToFirst());
+        mListFooter.setVisibility(canLoadMorePages() ? View.VISIBLE : View.GONE);
 
         if(mListView.getAdapter() != null) {
 
@@ -454,8 +435,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       int padding = 2;
       boolean shouldLoadMore = firstVisibleItem + visibleItemCount + padding >= totalItemCount;
 
-      if(shouldLoadMore && mLastLoadedPage != -1 && mLastLoadedPage < SyncTransactionsTask.MAX_ENDLESS_PAGES &&
-          mLastLoadedPage < mMaxPage) {
+      if(shouldLoadMore && canLoadMorePages()) {
 
         // Load more transactions
         if(mSyncTask == null) {
@@ -478,10 +458,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   FrameLayout mListHeaderContainer;
   ListView mListView;
   ViewGroup mListHeader, mMainView;
+  View mListFooter;
   TextView mBalanceText, mBalanceHome;
   TextView mSyncErrorView;
   PullToRefreshAttacher mPullToRefreshAttacher;
   boolean mDetailsShowing = false;
+  JSONObject mExchangeRates = null;
+  String mBalanceBtc = null;
 
   SyncTransactionsTask mSyncTask;
   int mLastLoadedPage = -1, mMaxPage = -1;
@@ -510,6 +493,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     outState.putBoolean("details_showing", mDetailsShowing);
   }
 
+  private boolean canLoadMorePages() {
+    return mLastLoadedPage != -1 && mLastLoadedPage < SyncTransactionsTask.MAX_ENDLESS_PAGES &&
+            mLastLoadedPage < mMaxPage;
+  }
+
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
@@ -525,6 +513,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mListHeaderContainer = new FrameLayout(mParent);
     setHeaderPinned(true);
     mListView.addHeaderView(mListHeaderContainer);
+
+    // Footer
+    ViewGroup listFooterParent = (ViewGroup) inflater.inflate(R.layout.fragment_transactions_footer, null, false);
+    mListFooter = listFooterParent.findViewById(R.id.transactions_footer_text);
+    mListView.addFooterView(listFooterParent);
 
     // Header card swipe
     boolean showBalance = Utils.getPrefsBool(mParent, Constants.KEY_ACCOUNT_SHOW_BALANCE, true);
@@ -635,15 +628,60 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mBalanceText.setText(Html.fromHtml(String.format("<b>%1$s</b> BTC", balance)));
   }
 
+  private void updateBalance() {
+
+    if (mExchangeRates == null || mBalanceBtc == null || mBalanceText == null) {
+      return; // Not ready yet.
+    }
+
+    // Balance is loaded! update the view
+    mBalanceLoading = false;
+
+    try {
+      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+      int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+
+      // Calculate home currency amount
+      String userHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
+              "usd").toLowerCase(Locale.CANADA);
+      BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
+              new BigDecimal(mExchangeRates.getString("btc_to_" + userHomeCurrency)));
+
+      String balanceString = Utils.formatCurrencyAmount(mBalanceBtc);
+      String balanceHomeString = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
+
+      userHomeCurrency = userHomeCurrency.toUpperCase(Locale.CANADA);
+
+      // Save balance in preferences
+      Editor editor = prefs.edit();
+      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), balanceString);
+      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), balanceHomeString);
+      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), userHomeCurrency);
+      editor.commit();
+
+      // Update the view.
+      mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
+      setBalance(balanceString);
+      mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), balanceHomeString, userHomeCurrency));
+    } catch (Exception e) {
+      e.printStackTrace();
+      ACRA.getErrorReporter().handleException(new RuntimeException("updateBalance()", e));
+    }
+  }
+
   public void refresh() {
 
-    // Reload balance
-    new LoadBalanceTask().execute();
+    // Make balance appear invalidated
+    mBalanceLoading = true;
+    mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
 
-    // Reload transactions
+    // Reload exchange rates
+    Utils.runAsyncTaskConcurrently(new LoadExchangeRatesTask());
+
+    // Reload transactions + balance
     if(mSyncTask == null) {
       mSyncTask = new SyncTransactionsTask();
-      mSyncTask.execute();
+      Utils.runAsyncTaskConcurrently(mSyncTask);
     }
   }
 
@@ -686,8 +724,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   @Override
   public void onListItemClick(ListView l, View v, int position, long id) {
 
-    if (position == 0) {
-      return; // Header view
+    if (position == 0 || position == (l.getCount() - 1)) {
+      return; // Header/footer view
     }
     if (mDetailsShowing) {
       return;
