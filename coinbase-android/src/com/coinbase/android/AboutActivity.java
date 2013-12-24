@@ -17,6 +17,7 @@ public class AboutActivity extends SherlockActivity {
     setTitle(String.format(getString(R.string.about_title), getString(R.string.app_name)));
     
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setDisplayShowHomeEnabled(false);
     getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.rgb(52, 142, 218)));
   }
 

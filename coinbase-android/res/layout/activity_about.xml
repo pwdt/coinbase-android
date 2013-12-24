@@ -8,6 +8,13 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
       android:paddingLeft="20dp" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/home_globe"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"/>
 	
 	    <ImageView
 	        android:id="@+id/about_icon"
@@ -50,14 +57,8 @@
 	        android:paddingTop="10dp"
 	        android:text="@string/about_licence"
             android:textColor="#ffffff"
+            android:textColorLink="#ffffff"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/home_globe"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"/>
 	
 	</RelativeLayout>
 </ScrollView>
