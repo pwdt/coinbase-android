@@ -310,7 +310,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-        if(!LoginManager.getInstance().getAccountValid(mParent, activeAccount)) {
+        if(LoginManager.getInstance().getAccountValid(mParent, activeAccount) != null) {
           // Request failed because account is no longer valid
           if(getFragmentManager() != null) {
             new AccountInvalidDialogFragment().show(getFragmentManager(), "accountinvalid");

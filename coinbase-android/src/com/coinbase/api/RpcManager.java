@@ -1,9 +1,10 @@
 package com.coinbase.api;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
+import com.coinbase.android.Constants;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -22,11 +23,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
-import com.coinbase.android.Constants;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 public class RpcManager {
@@ -136,9 +136,10 @@ public class RpcManager {
       }
     }
 
-    if(!LoginManager.getInstance().getAccountValid(context, account)) {
+    String accountValid = LoginManager.getInstance().getAccountValid(context, account);
+    if(accountValid != null) {
       // Don't bother doing the request - this account is not valid
-      throw new IOException("Account is not valid");
+      throw new IOException("Account is not valid; made invalid by " + accountValid);
     }
 
     String accessToken = LoginManager.getInstance().getAccessToken(context, account);
@@ -158,7 +159,7 @@ public class RpcManager {
       } else {
         // We already retried and it didn't work. The OAuth token must be no longer valid.
         // Update the LoginManager so that the UI can display an appropriate message.
-        LoginManager.getInstance().setAccountValid(context, account, false);
+        LoginManager.getInstance().setAccountValid(context, account, false, "401 on " + method);
         throw new IOException("Account is no longer valid");
       }
     } else if(code != 200) {

@@ -329,18 +329,23 @@ public class LoginManager {
     return prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null);
   }
 
-  public void setAccountValid(Context context, int accountId, boolean status) {
+  public void setAccountValid(Context context, int accountId, boolean status, String desc) {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     Editor e = prefs.edit();
     e.putBoolean(String.format(Constants.KEY_ACCOUNT_VALID, accountId), status);
+    e.putString(String.format(Constants.KEY_ACCOUNT_VALID_DESC, accountId), desc);
     e.commit();
   }
 
-  public boolean getAccountValid(Context context, int accountId) {
+  public String getAccountValid(Context context, int accountId) {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    return prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_VALID, accountId), true);
+    if (prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_VALID, accountId), true)) {
+      return null; // Account valid
+    } else {
+      return prefs.getString(String.format(Constants.KEY_ACCOUNT_VALID_DESC, accountId), "No msg");
+    }
   }
 
   public void deleteCurrentAccount(Context context) {

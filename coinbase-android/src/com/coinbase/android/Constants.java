@@ -14,6 +14,7 @@ public class Constants {
   public static final String KEY_ACCOUNT_ACCESS_TOKEN = "account_%d_access_token";
   public static final String KEY_ACCOUNT_REFRESH_TOKEN = "account_%d_refresh_token";
   public static final String KEY_ACCOUNT_VALID = "account_%d_valid";
+  public static final String KEY_ACCOUNT_VALID_DESC = "account_%d_valid_desc";
   public static final String KEY_ACCOUNT_NAME = "account_%d_name";
   public static final String KEY_ACCOUNT_ID = "account_%d_id";
   public static final String KEY_ACCOUNT_NATIVE_CURRENCY = "account_%d_native_currency";
