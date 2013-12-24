@@ -679,7 +679,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     BigDecimal amount = new BigDecimal(amountS);
     BigDecimal result = amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
-    mNativeAmount.setText(String.format(mParent.getString(R.string.transfer_amt_native), Utils.formatCurrencyAmount(result, false, CurrencyType.TRADITIONAL),
+    CurrencyType currencyType = fromBitcoin ? CurrencyType.TRADITIONAL : CurrencyType.BTC;
+    mNativeAmount.setText(String.format(mParent.getString(R.string.transfer_amt_native), Utils.formatCurrencyAmount(result, false, currencyType),
       resultCurrency.toUpperCase(Locale.CANADA)));
   }
 
