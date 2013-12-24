@@ -186,12 +186,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mDrawerToggle = new ActionBarDrawerToggle(this, mSlidingMenu,
         R.drawable.ic_drawer_white, R.string.drawer_open, R.string.drawer_close) {
 
-        int lastTimeIndex = 0;
+        int lastTimeIndex = -1;
 
         @Override
         public void onDrawerClosed(View drawerView) {
           onSlidingMenuClosed(lastTimeIndex != mViewFlipper.getDisplayedChild());
-          lastTimeIndex = mViewFlipper.getDisplayedChild();
+          lastTimeIndex = -1;
           updateTitle();
           updateBackButton();
         }
@@ -200,6 +200,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         public void onDrawerOpened(View drawerView) {
           updateTitle();
           updateBackButton();
+          lastTimeIndex = mViewFlipper.getDisplayedChild();
         }
 
       };
@@ -430,9 +431,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
 
     if (mSlidingMenu == null || mPinSlidingMenu || !mSlidingMenu.isDrawerOpen(Gravity.LEFT)) {
+      Log.i("Coinbase", "Keyboard changing immediately");
       makeKeyboardObeyVisibleFragment();
     } else {
       // keyboard will be forced to obey after sliding menu closes
+      Log.i("Coinbase", "Keyboard: will be changed once menu closes");
       hideSlidingMenu(fragmentChanged);
     }
 
@@ -448,6 +451,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(fragmentChanged) {
 
       makeKeyboardObeyVisibleFragment();
+    } else {
+      Log.i("Coinbase", "Fragment was not changed when sliding menu closed.");
     }
   }
 
@@ -457,8 +462,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
     if(keyboardPreferredStatus) {
+      Log.i("Coinbase", "Opening keyboard");
       inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
     } else {
+      Log.i("Coinbase", "Closing keyboard");
       inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
     }
   }
