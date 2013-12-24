@@ -507,6 +507,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     if(mBalanceText != null) {
       outState.putString("balance_text", mBalanceText.getText().toString());
     }
+    outState.putBoolean("details_showing", mDetailsShowing);
   }
 
   @Override
@@ -620,6 +621,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Load transaction list
     loadTransactionsList();
+
+    if (savedInstanceState != null && savedInstanceState.getBoolean("details_showing", false)) {
+
+      mDetailsShowing = true;
+      view.findViewById(R.id.transaction_details_background).setVisibility(View.VISIBLE);
+    }
 
     return view;
   }

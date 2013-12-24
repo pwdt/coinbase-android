@@ -66,6 +66,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public static final String ACTION_TRANSACTIONS = "com.siriusapplications.coinbase.MainActivity.ACTION_TRANSACTIONS";
 
   private static final String KEY_VISIBLE_FRAGMENT = "KEY_VISIBLE_FRAGMENT";
+  private static final String KEY_IN_TRANSACTION_DETAILS_MODE = "KEY_IN_TRANSACTION_DETAILS_MODE";
 
   public static final int REQUEST_CODE_PIN = 2;
 
@@ -401,6 +402,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     super.onSaveInstanceState(outState);
 
     outState.putInt(KEY_VISIBLE_FRAGMENT, mViewFlipper.getDisplayedChild());
+    outState.putBoolean(KEY_IN_TRANSACTION_DETAILS_MODE, mInTransactionDetailsMode);
   }
 
   @Override
@@ -409,6 +411,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     // Update title, in case restoring the instance state has changed the current fragment
     switchTo(savedInstanceState.getInt(KEY_VISIBLE_FRAGMENT));
+    setInTransactionDetailsMode(savedInstanceState.getBoolean(KEY_IN_TRANSACTION_DETAILS_MODE));
   }
 
   /**

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:layout_width="match_parent"
              android:layout_height="match_parent">
     <FrameLayout
@@ -19,15 +19,15 @@
         android:id="@+id/transactiondetails_container"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
             <RelativeLayout
                 android:layout_width="@dimen/max_card_width"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
                 android:layout_gravity="center"
+                android:id="@+id/transactiondetails_maincard"
                 android:background="@drawable/fragment_transactiondetails_bg" >
 
                 <!-- Header -->
@@ -201,7 +201,8 @@
                 android:layout_gravity="center"
                 android:id="@+id/transactiondetails_actions"
                 android:background="@drawable/fragment_transactiondetails_bg"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_below="@+id/transactiondetails_maincard">
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
@@ -221,7 +222,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
             </LinearLayout>
 
-        </LinearLayout>
+        </RelativeLayout>
 
     </ScrollView>
-</FrameLayout>
+</RelativeLayout>
