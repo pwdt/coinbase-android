@@ -7,7 +7,7 @@
   <color name="barcode_result_points">#c099cc00</color>
   <color name="main_menu_background">#eeeeee</color>
   <color name="drawer_profile_background">#EDEDED</color>
-  <color name="drawer_item_color">#000000</color>
+  <color name="drawer_item_color">#333333</color>
   <color name="button_primary_neutral">#5371c5</color>
   <color name="button_primary_pressed">#2F4994</color>
   <color name="button_primary_disabled">#bbbbbb</color>

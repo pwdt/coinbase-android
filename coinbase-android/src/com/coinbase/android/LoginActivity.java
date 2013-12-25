@@ -195,6 +195,7 @@ public class LoginActivity extends CoinbaseActivity {
         if(!title.contains(" ") && title.length() > 25) {
           // Title is long and does not contain spaces;
           // must be the OAuth token!
+          Log.i("Coinbase", "Starting login with title " + title.substring(0, 15) + "...");
           new OAuthCodeTask().execute(title);
         }
       }

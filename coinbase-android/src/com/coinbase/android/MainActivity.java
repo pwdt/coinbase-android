@@ -350,7 +350,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String emailText = prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null);
+    String emailText = prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), "");
     name.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, activeAccount), null));
 
     boolean emailChanged = !emailText.equals(email.getText().toString());
@@ -441,6 +441,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     mViewFlipper.setDisplayedChild(index);
     updateTitle();
+    getAdapter().notifyDataSetChanged();
 
     if(mFragments[index] != null) {
       mFragments[index].onSwitchedTo();
@@ -781,23 +782,20 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       }
 
       TextView title = (TextView) convertView.findViewById(R.id.main_menu_item_title);
-      ImageView icon = (ImageView) convertView.findViewById(R.id.main_menu_item_icon);
 
       int fragment = items[position];
 
       if(fragment == -1) {
         // Spacer
         title.setText(null);
-        icon.setImageDrawable(null);
         return convertView;
       }
 
+      String font = mViewFlipper.getDisplayedChild() == position ? "Bold" : "Light";
+
       String name = getString(mFragmentTitles[fragment]);
       title.setText(name);
-      title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-Light"));
-
-      icon.setImageResource(mFragmentIcons[fragment]);
-      icon.setColorFilter(getResources().getColor(R.color.drawer_item_color), Mode.MULTIPLY);
+      title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-" + font));
 
       return convertView;
     }

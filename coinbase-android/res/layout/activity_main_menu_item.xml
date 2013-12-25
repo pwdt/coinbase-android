@@ -1,29 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
-
-    <ImageView
-        android:id="@+id/main_menu_item_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/ic_action_transactions"
-        android:visibility="gone"/>
+    android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/main_menu_item_title"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:layout_toRightOf="@+id/main_menu_item_icon"
-        android:layout_centerVertical="true"
+        android:gravity="center_vertical"
         android:textColor="@color/drawer_item_color"
-        android:layout_marginLeft="5dp"
+        android:layout_marginLeft="16dp"
         android:text="@string/title_transactions"
-        android:textSize="10pt"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"/>
+        android:textSize="21sp"/>
 
 </RelativeLayout>
