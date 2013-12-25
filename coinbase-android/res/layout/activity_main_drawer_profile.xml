@@ -34,7 +34,7 @@
         android:layout_marginLeft="10dp"
         android:layout_toRightOf="@+id/drawer_profile_avatar"
         android:singleLine="true"
-        android:text="isaac@siriusapplications.com"
+        android:text=""
         android:textColor="#676767"
         android:textSize="7pt" />
 
