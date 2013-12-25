@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -54,9 +55,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
-import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
-import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.AbsDefaultHeaderTransformer;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.Options;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
@@ -461,7 +464,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   View mListFooter;
   TextView mBalanceText, mBalanceHome;
   TextView mSyncErrorView;
-  PullToRefreshAttacher mPullToRefreshAttacher;
+  PullToRefreshLayout mPullToRefreshLayout;
   boolean mDetailsShowing = false;
   JSONObject mExchangeRates = null;
   String mBalanceBtc = null;
@@ -597,18 +600,20 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     });
 
     // Configure pull to refresh
-    mPullToRefreshAttacher = PullToRefreshAttacher.get(mParent);
-    PullToRefreshLayout ptrLayout =
-            (PullToRefreshLayout) view.findViewById(R.id.fragment_transactions_ptr);
-    ptrLayout.setPullToRefreshAttacher(mPullToRefreshAttacher,
-            new uk.co.senab.actionbarpulltorefresh.library.PullToRefreshAttacher.OnRefreshListener() {
-      @Override
-      public void onRefreshStarted(View view) {
-        mParent.refresh();
-      }
-    });
-    DefaultHeaderTransformer ht =
-            (DefaultHeaderTransformer) mPullToRefreshAttacher.getHeaderTransformer();
+    mPullToRefreshLayout = new PullToRefreshLayout(mParent);
+    AbsDefaultHeaderTransformer ht =
+            (AbsDefaultHeaderTransformer) new AbsDefaultHeaderTransformer();
+    ActionBarPullToRefresh.from(mParent)
+            .insertLayoutInto(view)
+            .theseChildrenArePullable(android.R.id.list)
+            .listener(new OnRefreshListener() {
+              @Override
+              public void onRefreshStarted(View view) {
+                mParent.refresh();
+              }
+            })
+            .options(Options.create().headerTransformer(ht).build())
+            .setup(mPullToRefreshLayout);
     ht.setPullText("Swipe down to refresh");
     ht.setRefreshingText("Refreshing...");
 
@@ -622,6 +627,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
 
     return view;
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    //mPullToRefreshAttacher.onConfigurationChanged(newConfig);
   }
 
   private void setBalance(String balance) {
@@ -686,7 +697,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   }
 
   public void refreshComplete() {
-    mPullToRefreshAttacher.setRefreshComplete();
+    mPullToRefreshLayout.setRefreshComplete();
   }
 
   private void setHeaderPinned(boolean pinned) {
