@@ -326,11 +326,15 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   private void createProfileView() {
     mMenuProfileView = View.inflate(this, R.layout.activity_main_drawer_profile, null);
-
     ImageView photo = (ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar);
 
-    photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar), 
-      25 * getResources().getDisplayMetrics().density, 50));
+    photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar),
+            25 * getResources().getDisplayMetrics().density, 50));
+
+    refreshProfileView();
+  }
+
+  public void refreshProfileView() {
 
     TextView name = (TextView) mMenuProfileView.findViewById(R.id.drawer_profile_name);
     TextView email = (TextView) mMenuProfileView.findViewById(R.id.drawer_profile_account);
@@ -339,9 +343,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     String emailText = prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), null);
     name.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, activeAccount), null));
-    email.setText(emailText);
 
-    new LoadAvatarTask().execute(emailText);
+    boolean emailChanged = !emailText.equals(email.getText().toString());
+    if (emailChanged) {
+      email.setText(emailText);
+      new LoadAvatarTask().execute(emailText);
+    }
   }
 
   @Override

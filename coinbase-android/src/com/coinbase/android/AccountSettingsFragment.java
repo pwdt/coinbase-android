@@ -86,6 +86,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     protected void onPostExecute(Boolean result) {
 
       setListAdapter(new PreferenceListAdapter());
+      mParent.refreshProfileView();
     }
 
   }
