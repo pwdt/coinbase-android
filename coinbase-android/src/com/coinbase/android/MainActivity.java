@@ -173,6 +173,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    int currentAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    String firstLaunchKey = String.format(Constants.KEY_ACCOUNT_FIRST_LAUNCH, currentAccount);
+    boolean firstLaunch = prefs.getBoolean(firstLaunchKey, true);
+    prefs.edit().putBoolean(firstLaunchKey, false).commit();
+
     // Set up the ViewFlipper
     mViewFlipper = (ViewFlipper) findViewById(R.id.flipper);
 
@@ -206,6 +212,9 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       };
       mSlidingMenu.setDrawerListener(mDrawerToggle);
       mSlidingMenu.setDrawerLockMode(BuildConfig.type == BuildType.CONSUMER ? DrawerLayout.LOCK_MODE_UNLOCKED : DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+      if (BuildConfig.type == BuildType.CONSUMER && firstLaunch) {
+        mSlidingMenu.openDrawer(Gravity.LEFT); // Open drawer on first sign in
+      }
     }
 
     // Set up Sliding Menu list
