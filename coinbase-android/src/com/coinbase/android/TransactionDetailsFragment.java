@@ -421,6 +421,7 @@ public class TransactionDetailsFragment extends Fragment {
 
     String name = person == null ? null : person.optString("name");
     String email = person == null ? null : person.optString("email");
+    boolean hasEmail = email != null && !email.equals("");
 
     if(person != null && currentUserId.equals(person.optString("id"))) {
       return getString(R.string.transaction_user_you);
@@ -431,11 +432,11 @@ public class TransactionDetailsFragment extends Fragment {
       String addition = "";
 
       if(!name.equals(email)) {
-        addition = (email == null ? "" : String.format(" (%s)", email));
+        addition = (hasEmail ? String.format(" (%s)", email) : "");
       }
 
       return name + addition;
-    } else if(email != null) {
+    } else if(hasEmail) {
       return email;
     } else if(address != null) {
       return address;
