@@ -52,8 +52,10 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class TransferFragment extends Fragment implements CoinbaseFragment {
 
@@ -138,12 +140,22 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     @Override
     protected Void doInBackground(Void... params) {
 
-      JSONArray contacts;
+      Set<String> contacts = new HashSet<String>();
 
       // Fetch emails
       try {
-        contacts = RpcManager.getInstance().callGet(mParent, "contacts", null).getJSONArray("contacts");
+        int numPages = 1;
 
+        for (int i = 0; i < numPages; i++) {
+          List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
+          getParams.add(new BasicNameValuePair("page", Integer.toString(i + 1)));
+          JSONObject response = RpcManager.getInstance().callGet(mParent, "contacts", getParams);
+          JSONArray contents = response.getJSONArray("contacts");
+          for (int j = 0; j < contents.length(); j++) {
+            contacts.add(contents.getJSONObject(j).getJSONObject("contact").optString("email"));
+          }
+          numPages = response.getInt("num_pages");
+        }
       } catch (IOException e) {
         e.printStackTrace();
         return null;
@@ -165,9 +177,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           DatabaseObject.getInstance().delete(mParent, EmailEntry.TABLE_NAME, null, null);
 
 
-          for(int i = 0; i < contacts.length(); i++) {
-
-            String email = contacts.getJSONObject(i).getJSONObject("contact").getString("email");
+          for(String email : contacts) {
 
             ContentValues emailValues = new ContentValues();
             emailValues.put(EmailEntry.COLUMN_NAME_EMAIL, email);
@@ -177,8 +187,6 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
           DatabaseObject.getInstance().setTransactionSuccessful(mParent);
 
-        } catch (JSONException e) {
-          e.printStackTrace();
         } finally {
 
           DatabaseObject.getInstance().endTransaction(mParent);
