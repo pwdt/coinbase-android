@@ -76,10 +76,12 @@
     <string name="sign_out_confirm">Are you sure you want to sign out?</string>
     <string name="transaction_status_pending">PENDING</string>
     <string name="transaction_status_complete">COMPLETE</string>
-    <string name="transaction_summary_request_me">%1$s requested money from you</string>
-    <string name="transaction_summary_request_them">You requested money from %1$s</string>
-    <string name="transaction_summary_send_me">You sent bitcoins to %1$s</string>
-    <string name="transaction_summary_send_them">You received bitcoins from %1$s</string>
+    <string name="transaction_summary_request_me">&lt;b&gt;%1$s&lt;/b&gt; requested money from you</string>
+    <string name="transaction_summary_request_them">You requested money from &lt;b&gt;%1$s&lt;/b&gt;</string>
+    <string name="transaction_summary_send_me">You sent money to &lt;b&gt;%1$s&lt;/b&gt;</string>
+    <string name="transaction_summary_send_them">&lt;b&gt;%1$s&lt;/b&gt; sent you money</string>
+    <string name="transaction_summary_invoice_them">&lt;b&gt;%1$s&lt;/b&gt; sent you an invoice</string>
+    <string name="transaction_summary_invoice_me">You sent an invoice to &lt;b&gt;%1$s&lt;/b&gt;</string>
     <string name="transaction_status_error">Unknown</string>
     <string name="transaction_user_external">an external account</string>
     <string name="transaction_summary_sell">You sold bitcoins</string>
