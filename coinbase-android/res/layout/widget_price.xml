@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/widget_outer">
+	<RelativeLayout
+	    android:id="@+id/widget_base"
+	    android:background="@drawable/appwidget_balance_bg"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+	  <RelativeLayout
+	      android:id="@+id/widget_icon"
+	      android:layout_width="wrap_content"
+	      android:layout_height="match_parent"
+        android:background="@drawable/appwidget_button_center"
+        android:layout_alignParentLeft="true"
+        android:padding="15dp">
+	
+	    <TextView
+	        android:id="@+id/widget_balance"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerVertical="true"
+	        android:layout_alignParentLeft="true"
+	        android:text="@string/widget_balance_default"
+          android:textColor="#666666"
+	        android:textAppearance="?android:attr/textAppearanceLarge" />
+	
+	    <TextView
+	        android:id="@+id/widget_currency"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/btc"
+	        android:layout_alignBaseline="@+id/widget_balance"
+	        android:layout_toRightOf="@+id/widget_balance"
+          android:textColor="#666666"
+	        android:layout_marginLeft="5dp"
+	        android:textAppearance="?android:attr/textAppearanceSmall" />
+	    </RelativeLayout>
+	
+	    <ImageButton
+	        android:id="@+id/widget_refresh"
+	        android:layout_width="wrap_content"
+	        android:layout_height="match_parent"
+	        android:layout_gravity="center"
+	        android:background="@drawable/appwidget_button_center"
+	        android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+	        android:padding="10dp"
+	        android:src="@drawable/ic_action_refresh_light" />
+	
+	</RelativeLayout>
+</FrameLayout>
