@@ -220,6 +220,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     // Set up Sliding Menu list
     mMenuListView = (ListView) findViewById(R.id.drawer);
     createProfileView();
+    int shortestWidth = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
+    int dWidthCalc = (int) (shortestWidth * (3.0/4.0)),
+            dWidthMax = getResources().getDimensionPixelSize(R.dimen.drawer_max_width);
+    mMenuListView.getLayoutParams().width = Math.min(dWidthCalc, dWidthMax);
     mMenuListView.addHeaderView(mMenuProfileView);
     mMenuListView.setAdapter(new SectionsListAdapter());
     mMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
