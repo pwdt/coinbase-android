@@ -233,14 +233,14 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
             String text;
             if (state == CheckStatusState.SUCCESS) {
               textColor = Color.BLACK;
-              bgColor = getResources().getColor(R.color.pos_waiting_good);
+              bgColor = mParent.getResources().getColor(R.color.pos_waiting_good);
               text = getString(R.string.pos_accept_waiting);
 
               int index = (mTimesExecuted % 3) + 1;
               text = text.substring(0, text.length() - index) + " " + text.substring(text.length() - index);
             } else {
               textColor = Color.WHITE;
-              bgColor = getResources().getColor(R.color.pos_waiting_bad);
+              bgColor = mParent.getResources().getColor(R.color.pos_waiting_bad);
               text = getString(R.string.pos_accept_waiting_error);
             }
 
@@ -523,10 +523,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       color = R.color.pos_result_error;
     }
 
-    float radius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, getResources().getDisplayMetrics());
+    float radius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, mParent.getResources().getDisplayMetrics());
     ShapeDrawable background = new ShapeDrawable(new RoundRectShape(
             new float[] { radius, radius, radius, radius, radius, radius, radius, radius }, null, null));
-    background.getPaint().setColor(getResources().getColor(color));
+    background.getPaint().setColor(mParent.getResources().getColor(color));
     mResultStatus.setBackgroundDrawable(background);
 
     mResultStatus.setText(status);
