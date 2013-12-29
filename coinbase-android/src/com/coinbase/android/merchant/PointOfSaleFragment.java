@@ -482,7 +482,6 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     mCheckStatusTimer.cancel();
     mCheckStatusTimer = null;
-    ((Vibrator) mParent.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(500 );
 
     mParent.runOnUiThread(new Runnable() {
       @Override
@@ -528,6 +527,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mResultMessage.setText(message);
     mFlipper.setDisplayedChild(INDEX_RESULT);
     setKeyboardVisible(false);
+    ((Vibrator) mParent.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(500);
   }
 
   private BigDecimal moneyToValue(JSONObject money) {
