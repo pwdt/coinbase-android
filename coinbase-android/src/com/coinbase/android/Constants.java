@@ -10,6 +10,7 @@ public class Constants {
   public static final String KEY_MAX_ACCOUNT = "max_account";
   
   public static final String KEY_WIDGET_ACCOUNT = "widget_%d_account";
+  public static final String KEY_WIDGET_CURRENCY = "widget_%d_currency";
   
   public static final String KEY_ACCOUNT_ACCESS_TOKEN = "account_%d_access_token";
   public static final String KEY_ACCOUNT_REFRESH_TOKEN = "account_%d_refresh_token";

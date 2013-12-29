@@ -30,6 +30,14 @@
             <meta-data android:name="android.appwidget.provider"
                        android:resource="@xml/transactions_appwidget_provider" />
         </receiver>
+        <receiver android:name="com.coinbase.android.PriceAppWidgetProvider"
+                  android:label="@string/widget_price_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                       android:resource="@xml/price_appwidget_provider" />
+        </receiver>
         <activity android:name="com.google.zxing.client.android.CaptureActivity"
                   android:configChanges="keyboardHidden"
                   android:theme="@android:style/Theme.NoTitleBar"
@@ -39,8 +47,15 @@
         <service android:name="com.coinbase.android.TransactionsRemoteViewsService"
                  android:permission="android.permission.BIND_REMOTEVIEWS"></service>
         <service android:name="com.coinbase.android.UpdateWidgetBalanceService"></service>
+        <service android:name="com.coinbase.android.UpdateWidgetPriceService"></service>
         <activity android:name="com.coinbase.android.WidgetChooseAccountActivity"
                   android:theme="@style/Theme.Coinbase.Transparent">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+        <activity android:name="com.coinbase.android.WidgetChooseCurrencyActivity"
+            android:label="@string/widget_currency_title">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>

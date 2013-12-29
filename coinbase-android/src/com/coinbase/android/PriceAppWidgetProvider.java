@@ -1,6 +1,7 @@
 package com.coinbase.android;
 
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
@@ -8,28 +9,35 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.coinbase.android.UpdateWidgetBalanceService.WidgetUpdater;
-
 public class PriceAppWidgetProvider extends AppWidgetProvider {
 
-  public static class PriceWidgetUpdater implements WidgetUpdater {
+  public static class PriceWidgetUpdater implements UpdateWidgetPriceService.WidgetUpdater {
 
     @Override
     public void updateWidget(Context context, AppWidgetManager manager,
         int appWidgetId, String price) {
 
-      RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_balance);
+      RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_price);
+      String currency = PreferenceManager.getDefaultSharedPreferences(context).getString(
+              String.format(Constants.KEY_WIDGET_CURRENCY, appWidgetId), "USD");
 
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
         setKeyguardPadding(context, manager, appWidgetId, views);
       }
 
-      views.setTextViewText(R.id.widget_balance, price);
-      
-      WidgetCommon.bindButtons(context, views, appWidgetId);
+      views.setTextViewText(R.id.widget_price, price);
+      views.setTextViewText(R.id.widget_currency, currency);
+
+      // Refresh
+      Intent refresh = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+      refresh.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[] { appWidgetId });
+      refresh.setPackage(context.getPackageName());
+      PendingIntent pRefresh = PendingIntent.getBroadcast(context, appWidgetId, refresh, 0);
+      views.setOnClickPendingIntent(R.id.widget_refresh, pRefresh);
 
       Log.i("Coinbase", "Updating price widget " + appWidgetId + " with price " + price);
       manager.updateAppWidget(appWidgetId, views);
@@ -65,7 +73,7 @@ public class PriceAppWidgetProvider extends AppWidgetProvider {
       new PriceWidgetUpdater().updateWidget(context, appWidgetManager, appWidgetIds[i], null);
       
       // Then, start the service to update the widget with price
-      Intent service = new Intent(context, UpdateWidgetBalanceService.class);
+      Intent service = new Intent(context, UpdateWidgetPriceService.class);
       service.putExtra(UpdateWidgetBalanceService.EXTRA_UPDATER_CLASS, PriceWidgetUpdater.class);
       service.putExtra(UpdateWidgetBalanceService.EXTRA_WIDGET_ID, appWidgetIds[i]);
       context.startService(service);

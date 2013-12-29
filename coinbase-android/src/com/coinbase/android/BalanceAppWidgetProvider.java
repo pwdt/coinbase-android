@@ -11,12 +11,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.coinbase.android.R;
-import com.coinbase.android.UpdateWidgetBalanceService.WidgetUpdater;
-
 public class BalanceAppWidgetProvider extends AppWidgetProvider {
 
-  public static class BalanceWidgetUpdater implements WidgetUpdater {
+  public static class BalanceWidgetUpdater implements UpdateWidgetBalanceService.WidgetUpdater {
 
     @Override
     public void updateWidget(Context context, AppWidgetManager manager,

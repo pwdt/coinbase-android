@@ -18,12 +18,12 @@
         android:padding="15dp">
 	
 	    <TextView
-	        android:id="@+id/widget_balance"
+	        android:id="@+id/widget_price"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
 	        android:layout_alignParentLeft="true"
-	        android:text="@string/widget_balance_default"
+	        android:text=""
           android:textColor="#666666"
 	        android:textAppearance="?android:attr/textAppearanceLarge" />
 	
@@ -31,9 +31,9 @@
 	        android:id="@+id/widget_currency"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:text="@string/btc"
-	        android:layout_alignBaseline="@+id/widget_balance"
-	        android:layout_toRightOf="@+id/widget_balance"
+	        android:text="USD"
+	        android:layout_alignBaseline="@+id/widget_price"
+	        android:layout_toRightOf="@+id/widget_price"
           android:textColor="#666666"
 	        android:layout_marginLeft="5dp"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />

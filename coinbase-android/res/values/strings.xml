@@ -231,4 +231,6 @@
     <string name="merchant_tools_moved_play_store">Go to Play Store</string>
     <string name="transactions_loading_more">Loading...</string>
     <string name="pos_empty_amount">Please enter an amount.</string>
+    <string name="widget_price_label">Coinbase Price</string>
+    <string name="widget_currency_title">Choose currency</string>
 </resources>
