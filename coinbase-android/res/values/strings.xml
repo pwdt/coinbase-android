@@ -228,4 +228,5 @@
     <string name="merchant_tools_moved_title">Looking for Point of Sale?</string>
     <string name="merchant_tools_moved_play_store">Go to Play Store</string>
     <string name="transactions_loading_more">Loading...</string>
+    <string name="pos_empty_amount">Please enter an amount.</string>
 </resources>

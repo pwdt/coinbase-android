@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.coinbase.android.CoinbaseFragment;
@@ -343,6 +344,11 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
       @Override
       public void onClick(View v) {
+
+        if ("".equals(mAmount.getText().toString())) {
+          Toast.makeText(mParent, R.string.pos_empty_amount, Toast.LENGTH_SHORT).show();
+          return;
+        }
 
         mFlipper.setDisplayedChild(INDEX_LOADING);
         new CreateButtonTask().execute(mAmount.getText().toString(),
