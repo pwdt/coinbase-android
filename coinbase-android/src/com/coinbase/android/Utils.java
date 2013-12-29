@@ -169,32 +169,36 @@ public class Utils {
     String otherName = t.getJSONObject("cache").getJSONObject("other_user").getString("name");
     boolean senderMe = t.getJSONObject("amount").getString("amount").startsWith("-");
 
-    otherName = otherName.replace(" ", "\u00A0");
+    if(otherName.contains("external account")) {
+        otherName = c.getString(R.string.transaction_user_external);
+    } else {
+        otherName.replace(" ", "\u00A0");
+    }
 
     String html = null;
     if("request".equals(category)) {
       if(senderMe) {
-        html = String.format("<b>%1$s</b> requested money from you", otherName);
+        html = String.format(c.getString(R.string.transaction_summary_request_me), otherName);
       } else {
-        html = String.format("You requested money from <b>%1$s</b>", otherName);
+        html = String.format(c.getString(R.string.transaction_summary_request_them), otherName);
       }
     } else if("invoice".equals(category)) {
       if(senderMe) {
-        html = String.format("<b>%1$s</b> sent you an invoice", otherName);
+        html = String.format(c.getString(R.string.transaction_summary_invoice_them), otherName);
       } else {
-        html = String.format("You sent an invoice to <b>%1$s</b>", otherName);
+        html = String.format(c.getString(R.string.transaction_summary_invoice_me), otherName);
       }
     } else if("transfer".equals(category)) {
       if(senderMe) {
-        html = "You sold bitcoins";
+        html = c.getString(R.string.transaction_summary_sell);
       } else {
-        html = "You purchased bitcoins";
+        html = c.getString(R.string.transaction_summary_buy);
       }
     } else {
       if(senderMe) {
-        html = String.format("You sent money to <b>%1$s</b>", otherName);
+        html = String.format(c.getString(R.string.transaction_summary_send_me), otherName);
       } else {
-        html = String.format("<b>%1$s</b> sent you money", otherName);
+        html = String.format(c.getString(R.string.transaction_summary_send_them), otherName);
       }
     }
 

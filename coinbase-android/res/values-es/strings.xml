@@ -66,10 +66,12 @@
     <string name="sign_out_confirm">¿Está seguro que desea cerrar la sesión?</string>
     <string name="transaction_status_pending">PENDIENTE</string>
     <string name="transaction_status_complete">COMPLETADO</string>
-    <string name="transaction_summary_request_me">%1$s le ha solicitado dinero</string>
-    <string name="transaction_summary_request_them">Has solicitado dinero a %1$s</string>
-    <string name="transaction_summary_send_me">Has enviado bitcoins a %1$s</string>
-    <string name="transaction_summary_send_them">Has recibido bitcoin de %1$s</string>
+    <string name="transaction_summary_request_me">&lt;b&gt;%1$s&lt;/b&gt; le ha solicitado dinero</string>
+    <string name="transaction_summary_request_them">Has solicitado dinero a &lt;b&gt;%1$s&lt;/b&gt;</string>
+    <string name="transaction_summary_send_me">Has enviado dinero a &lt;b&gt;%1$s&lt;/b&gt;</string>
+    <string name="transaction_summary_send_them">Has recibido dinero de &lt;b&gt;%1$s&lt;/b&gt;</string>
+    <string name="transaction_summary_invoice_them">&lt;b&gt;%1$s&lt;/b&gt; te ha enviado una factura</string>
+    <string name="transaction_summary_invoice_me">Has enviado una factura a &lt;b&gt;%1$s&lt;/b&gt;</string>
     <string name="transaction_status_error">Desconocido</string>
     <string name="transaction_user_external">una cuenta externa</string>
     <string name="transaction_summary_sell">Has vendido bitcoins</string>
