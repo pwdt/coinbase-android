@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -502,7 +503,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     showResult(status, mParent.getString(message), order);
   }
 
-  private void showResult(String status, String message, JSONObject order) {
+  private void showResult(String status, String _message, JSONObject order) {
 
     if (status == null) {
       status = "ERROR";
@@ -510,18 +511,21 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       status = status.toUpperCase(Locale.CANADA);
     }
 
+    CharSequence message;
     int color;
     if ("COMPLETED".equals(status)) {
 
+      String orderId = order.optString("id");
       String amount = Utils.formatCurrencyAmount(moneyToValue(order.optJSONObject("total_native")), false, Utils.CurrencyType.TRADITIONAL);
       String currency = order.optJSONObject("total_native").optString("currency_iso").toUpperCase(Locale.CANADA);
-      message = getString(R.string.pos_result_completed, amount, currency);
+      message = Html.fromHtml(String.format("<b>Order %1$s</b><br>%2$s", orderId, getString(R.string.pos_result_completed, amount, currency)));
       color = R.color.pos_result_completed;
     } else if ("MISPAID".equals(status)) {
       message = getString(R.string.pos_result_mispaid);
       color = R.color.pos_result_mispaid;
     } else {
       color = R.color.pos_result_error;
+      message = _message;
     }
 
     float radius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, mParent.getResources().getDisplayMetrics());
