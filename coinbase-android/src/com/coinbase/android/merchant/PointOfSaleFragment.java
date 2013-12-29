@@ -366,6 +366,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View view) {
         mFlipper.setDisplayedChild(INDEX_MAIN);
+        mAmount.requestFocus();
         setKeyboardVisible(true);
       }
     });
@@ -570,6 +571,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     boolean btcPrices = prefs.getBoolean(String.format(Constants.KEY_ACCOUNT_POS_BTC_AMT, activeAccount), false);
     mNotes.setText(notes);
     mCurrency.setSelection(btcPrices ? 0 : 1);
+
+    if (mFlipper.getDisplayedChild() == INDEX_MAIN) {
+      mAmount.requestFocus();
+    }
   }
 
   @Override
