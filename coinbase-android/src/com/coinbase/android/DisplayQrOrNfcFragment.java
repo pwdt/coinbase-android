@@ -1,13 +1,5 @@
 package com.coinbase.android;
 
-import java.math.BigDecimal;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -25,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -36,6 +29,14 @@ import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.math.BigDecimal;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class DisplayQrOrNfcFragment extends DialogFragment {
 
@@ -194,10 +195,16 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
       return null;
     }
 
+    DisplayMetrics metrics = getResources().getDisplayMetrics();
+    int smallestWidth = Math.min(metrics.widthPixels, metrics.heightPixels);
+    int qrSize = smallestWidth - (int) (100 * metrics.density);
+
     View view = View.inflate(getActivity(), R.layout.dialog_qrcode, null);
     ImageView imageView = (ImageView) view.findViewById(R.id.qrcode);
     imageView.setImageBitmap(bitmap);
     imageView.setVisibility(getArguments().getBoolean("isNfc") ? View.GONE : View.VISIBLE);
+    imageView.getLayoutParams().width = qrSize;
+    imageView.getLayoutParams().height = qrSize;
 
     TextView nfcStatus = (TextView) view.findViewById(R.id.nfc_status);
     boolean nfcSupported = IS_NFC_SUPPORTED && NfcAdapter.getDefaultAdapter(getActivity()) != null;

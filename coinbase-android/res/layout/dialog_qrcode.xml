@@ -13,8 +13,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:scaleType="centerInside"
-            android:adjustViewBounds="true" />
+            android:scaleType="fitXY" />
 
         <TextView
             android:id="@+id/nfc_status"
