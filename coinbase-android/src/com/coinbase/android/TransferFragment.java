@@ -5,10 +5,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -16,7 +14,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -35,8 +32,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.Utils.CurrencyType;
-import com.coinbase.android.db.DatabaseObject;
-import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
 
@@ -52,10 +47,8 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class TransferFragment extends Fragment implements CoinbaseFragment {
 
@@ -133,69 +126,6 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         Utils.showMessageDialog(getFragmentManager(), (String) result[1]);
       }
     }
-  }
-
-  private class ReloadContactsDatabaseTask extends AsyncTask<Void, Void, Void> {
-
-    @Override
-    protected Void doInBackground(Void... params) {
-
-      Set<String> contacts = new HashSet<String>();
-
-      // Fetch emails
-      try {
-        int numPages = 1;
-
-        for (int i = 0; i < numPages; i++) {
-          List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
-          getParams.add(new BasicNameValuePair("page", Integer.toString(i + 1)));
-          JSONObject response = RpcManager.getInstance().callGet(mParent, "contacts", getParams);
-          JSONArray contents = response.getJSONArray("contacts");
-          for (int j = 0; j < contents.length(); j++) {
-            contacts.add(contents.getJSONObject(j).getJSONObject("contact").optString("email"));
-          }
-          numPages = response.getInt("num_pages");
-        }
-      } catch (IOException e) {
-        e.printStackTrace();
-        return null;
-      } catch (JSONException e) {
-        ACRA.getErrorReporter().handleException(new RuntimeException("ReloadContacts", e));
-        e.printStackTrace();
-        return null;
-      }
-
-      synchronized(DatabaseObject.getInstance().databaseLock) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-        int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-
-        try {
-
-          DatabaseObject.getInstance().beginTransaction(mParent);
-
-          // Remove all old emails
-          DatabaseObject.getInstance().delete(mParent, EmailEntry.TABLE_NAME, null, null);
-
-
-          for(String email : contacts) {
-
-            ContentValues emailValues = new ContentValues();
-            emailValues.put(EmailEntry.COLUMN_NAME_EMAIL, email);
-            emailValues.put(EmailEntry.COLUMN_NAME_ACCOUNT, activeAccount);
-            DatabaseObject.getInstance().insertWithOnConflict(mParent, EmailEntry.TABLE_NAME, null, emailValues, SQLiteDatabase.CONFLICT_IGNORE);
-          }
-
-          DatabaseObject.getInstance().setTransactionSuccessful(mParent);
-
-        } finally {
-
-          DatabaseObject.getInstance().endTransaction(mParent);
-        }
-      }
-
-      return null;
-    }
-
   }
 
   public static class ConfirmTransferFragment extends DialogFragment {
@@ -290,7 +220,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   private AutoCompleteTextView mRecipientView;
   private View mRequestDivider;
 
-  private SimpleCursorAdapter mAutocompleteAdapter;
+  private Utils.ContactsAutoCompleteAdapter mAutocompleteAdapter;
 
   private int mTransferType;
   private String mAmount, mNotes, mRecipient, mTransferCurrency;
@@ -319,8 +249,6 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   @Override
   public void onDestroyView() {
     super.onDestroyView();
-
-    Utils.disposeOfEmailAutocompleteAdapter(mAutocompleteAdapter);
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     prefs.unregisterOnSharedPreferenceChangeListener(mPreferenceChangeListener);
@@ -1015,8 +943,6 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   public void refresh() {
 
-    // Reload contacts
-    new ReloadContactsDatabaseTask().execute();
   }
 
   @Override

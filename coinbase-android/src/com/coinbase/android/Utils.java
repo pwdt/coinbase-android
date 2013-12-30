@@ -3,25 +3,25 @@ package com.coinbase.android;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Html;
-import android.widget.FilterQueryProvider;
+import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 
-import com.coinbase.android.db.DatabaseObject;
-import com.coinbase.android.db.TransactionsDatabase.EmailEntry;
+import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +30,9 @@ import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Locale;
 
 public class Utils {
@@ -63,6 +65,72 @@ public class Utils {
     CurrencyType(int max, int min) {
       maximumFractionDigits = max;
       minimumFractionDigits = min;
+    }
+  }
+
+  public static class ContactsAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
+    private ArrayList<String> resultList;
+
+    public ContactsAutoCompleteAdapter(Context context, int textViewResourceId) {
+      super(context, textViewResourceId);
+    }
+
+    @Override
+    public int getCount() {
+      return resultList.size();
+    }
+
+    @Override
+    public String getItem(int index) {
+      return resultList.get(index);
+    }
+
+    @Override
+    public Filter getFilter() {
+      Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+          FilterResults filterResults = new FilterResults();
+          if (constraint != null) {
+            // Retrieve the autocomplete results.
+            resultList = fetchContacts(constraint.toString());
+
+            // Assign the data to the FilterResults
+            filterResults.values = resultList;
+            filterResults.count = resultList.size();
+          }
+          return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+          if (results != null && results.count > 0) {
+            notifyDataSetChanged();
+          }
+          else {
+            notifyDataSetInvalidated();
+          }
+        }};
+      return filter;
+    }
+
+    private ArrayList<String> fetchContacts(String filter) {
+      ArrayList<String> result = new ArrayList<String>();
+
+      try {
+
+        List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
+        getParams.add(new BasicNameValuePair("query", filter));
+        JSONArray response = RpcManager.getInstance().callGet(getContext(), "contacts", getParams)
+                .getJSONArray("contacts");
+        for (int i = 0; i < response.length(); i++) {
+          result.add(response.getJSONObject(i).getJSONObject("contact").optString("email"));
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      return result;
     }
   }
 
@@ -118,49 +186,8 @@ public class Utils {
     return bitmap;
   }
 
-  /** Important note: a call to disposeOfEmailAutocompleteAdapter must be made when you are done with the Adapter */
-  public static SimpleCursorAdapter getEmailAutocompleteAdapter(final Context context) {
-
-    String[] from = { EmailEntry.COLUMN_NAME_EMAIL };
-    int[] to = { android.R.id.text1 };
-    final SimpleCursorAdapter adapter = new SimpleCursorAdapter(context, android.R.layout.simple_spinner_dropdown_item, null,
-      from, to, 0);
-
-    adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
-      @Override
-      public CharSequence convertToString(Cursor cursor) {
-        int colIndex = cursor.getColumnIndexOrThrow(EmailEntry.COLUMN_NAME_EMAIL);
-        return cursor.getString(colIndex);
-      }
-    });
-
-    adapter.setFilterQueryProvider(new FilterQueryProvider() {
-      @Override
-      public Cursor runQuery(CharSequence description) {
-
-        if(description == null) {
-          description = "";
-        }
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-
-        // This method (runQuery) is called on a background thread
-        // so it is OK to use DatabaseObject
-        Cursor c = DatabaseObject.getInstance().query(context, EmailEntry.TABLE_NAME,
-          null, EmailEntry.COLUMN_NAME_ACCOUNT + " = ? AND " + EmailEntry.COLUMN_NAME_EMAIL + " LIKE ?",
-          new String[] { Integer.toString(activeAccount), "%" + description + "%" }, null, null, null);
-
-        return c;
-      }
-    });
-
-    return adapter;
-  }
-
-  public static void disposeOfEmailAutocompleteAdapter(SimpleCursorAdapter autocompleteAdapter) {
-
-    // No longer needed with new DatabaseObject
+  public static ContactsAutoCompleteAdapter getEmailAutocompleteAdapter(final Context context) {
+    return new ContactsAutoCompleteAdapter(context, android.R.layout.simple_spinner_dropdown_item);
   }
 
   public static CharSequence generateTransactionSummary(Context c, JSONObject t) throws JSONException {

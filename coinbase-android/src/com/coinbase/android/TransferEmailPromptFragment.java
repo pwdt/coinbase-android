@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
@@ -16,7 +15,7 @@ import com.coinbase.android.TransferFragment.TransferType;
 
 public class TransferEmailPromptFragment extends DialogFragment {
   
-  private SimpleCursorAdapter mAutocompleteAdapter;
+  private Utils.ContactsAutoCompleteAdapter mAutocompleteAdapter;
 
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -62,13 +61,6 @@ public class TransferEmailPromptFragment extends DialogFragment {
     });
 
     return builder.create();
-  }
-
-  @Override
-  public void onStop() {
-    super.onStop();
-    
-    Utils.disposeOfEmailAutocompleteAdapter(mAutocompleteAdapter);
   }
 
 }

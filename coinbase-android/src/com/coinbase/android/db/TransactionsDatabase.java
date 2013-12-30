@@ -21,13 +21,6 @@ public class TransactionsDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_NAME_NUMERIC_ID = "numeric_id";
   }
 
-  public static class EmailEntry {
-
-    public static final String TABLE_NAME = "coinbaseEmails";
-    public static final String COLUMN_NAME_EMAIL = "_id";
-    public static final String COLUMN_NAME_ACCOUNT = "account";
-  }
-
   public static final String TEXT_TYPE = " TEXT";
   public static final String INTEGER_TYPE = " INTEGER";
   public static final String COMMA_SEP = ",";
@@ -42,17 +35,8 @@ public class TransactionsDatabase extends SQLiteOpenHelper {
           TransactionEntry.COLUMN_NAME_TIME + INTEGER_TYPE +
           ")";
 
-  public static final String SQL_CREATE_ENTRIES_EMAIL =
-      "CREATE TABLE " + EmailEntry.TABLE_NAME + " (" +
-          EmailEntry.COLUMN_NAME_EMAIL + " TEXT PRIMARY KEY," +
-          EmailEntry.COLUMN_NAME_ACCOUNT + INTEGER_TYPE +
-          ")";
-
   public static final String SQL_DELETE_ENTRIES =
       "DROP TABLE IF EXISTS " + TransactionEntry.TABLE_NAME;
-
-  public static final String SQL_DELETE_ENTRIES_EMAIL =
-      "DROP TABLE IF EXISTS " + EmailEntry.TABLE_NAME;
 
   public static final int DATABASE_VERSION = 10;
   public static final String DATABASE_NAME = "transactions";
@@ -62,13 +46,11 @@ public class TransactionsDatabase extends SQLiteOpenHelper {
   }
   public void onCreate(SQLiteDatabase db) {
     db.execSQL(SQL_CREATE_ENTRIES);
-    db.execSQL(SQL_CREATE_ENTRIES_EMAIL);
   }
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     // Transactions will be re-synced; just wipe the database for now
     db.execSQL(SQL_DELETE_ENTRIES);
-    db.execSQL(SQL_DELETE_ENTRIES_EMAIL);
     onCreate(db);
   }
   public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
