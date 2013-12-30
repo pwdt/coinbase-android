@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,7 +18,9 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Html;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+import com.coinbase.android.CoinbaseActivity;
 import com.coinbase.android.CoinbaseFragment;
 import com.coinbase.android.Constants;
 import com.coinbase.android.FontManager;
@@ -99,6 +104,8 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     @Override
     protected void onPostExecute(Object o) {
+
+      mCreatingTask = null;
 
       if (o == null) {
 
@@ -180,11 +187,16 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
         String title = ((JSONObject) result[0]).optString("company_name");
         for (TextView titleView : mHeaderTitles) {
           titleView.setText(title);
+          titleView.setGravity(result[1] != null ? Gravity.RIGHT : Gravity.CENTER);
         }
 
-        if (result[1] != null) {
-          for (ImageView logoView : mHeaderLogos) {
+
+        for (ImageView logoView : mHeaderLogos) {
+          if (result[1] != null) {
+            logoView.setVisibility(View.VISIBLE);
             logoView.setImageBitmap((Bitmap) result[1]);
+          } else {
+            logoView.setVisibility(View.GONE);
           }
         }
       }
@@ -285,6 +297,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private static final int CHECK_PERIOD = 2000;
 
   private MainActivity mParent;
+  private ToneGenerator mToneGenerator;
 
   private EditText mAmount, mNotes;
   private Button mSubmit;
@@ -296,6 +309,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private TextView mAcceptDesc;
   private TextView mAcceptStatus;
   private Button mAcceptCancel;
+  private Button mLoadingCancel;
 
   private TextView mResultStatus, mResultMessage;
   private Button mResultOK;
@@ -303,8 +317,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private View[] mHeaders;
   private TextView[] mHeaderTitles;
   private ImageView[] mHeaderLogos;
+  private ImageView mMenuButton;
 
   private Timer mCheckStatusTimer = null;
+  private CreateButtonTask mCreatingTask = null;
 
   @Override
   public void onSwitchedTo() {
@@ -312,11 +328,27 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     if (mFlipper.getDisplayedChild() == INDEX_MAIN) {
       mAmount.requestFocus();
     }
+
+    ((CoinbaseActivity) mParent).getSupportActionBar().hide();
+  }
+
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    mToneGenerator = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
   }
 
   @Override
   public void onPINPromptSuccessfulReturn() {
 
+  }
+
+  private void switchToMain() {
+
+    mFlipper.setDisplayedChild(INDEX_MAIN);
+    mAmount.requestFocus();
+    setKeyboardVisible(true);
   }
 
   @Override
@@ -335,6 +367,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mAcceptQr = (ImageView) view.findViewById(R.id.pos_accept_qr);
     mAcceptDesc = (TextView) view.findViewById(R.id.pos_accept_desc);
     mAcceptStatus = (TextView) view.findViewById(R.id.pos_accept_waiting);
+    mLoadingCancel = (Button) view.findViewById(R.id.pos_loading_cancel);
 
     mResultStatus = (TextView) view.findViewById(R.id.pos_result_status);
     mResultMessage = (TextView) view.findViewById(R.id.pos_result_msg);
@@ -342,20 +375,47 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     mSubmit.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
     mAcceptCancel.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    mLoadingCancel.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
     mResultOK.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+
+    DisplayMetrics metrics = getResources().getDisplayMetrics();
+    int smallestWidth = Math.min(metrics.widthPixels, metrics.heightPixels);
+    int qrSize = smallestWidth - (int) (100 * metrics.density);
+    mAcceptQr.getLayoutParams().height = mAcceptQr.getLayoutParams().width = qrSize;
+
+    mMenuButton = (ImageView) view.findViewById(R.id.pos_menu);
+    mMenuButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        mParent.openOptionsMenu();
+      }
+    });
+
+    mLoadingCancel.setOnClickListener(new View.OnClickListener() {
+
+      @Override
+      public void onClick(View v) {
+
+        if (mFlipper.getDisplayedChild() != INDEX_LOADING) return;
+        mCreatingTask.cancel(true);
+        switchToMain();
+      }
+    });
 
     mSubmit.setOnClickListener(new View.OnClickListener() {
 
       @Override
       public void onClick(View v) {
 
+        if (mFlipper.getDisplayedChild() != INDEX_MAIN) return;
         if ("".equals(mAmount.getText().toString())) {
           Toast.makeText(mParent, R.string.pos_empty_amount, Toast.LENGTH_SHORT).show();
           return;
         }
 
         mFlipper.setDisplayedChild(INDEX_LOADING);
-        new CreateButtonTask().execute(mAmount.getText().toString(),
+        mCreatingTask = new CreateButtonTask();
+        mCreatingTask.execute(mAmount.getText().toString(),
                 (String) mCurrency.getSelectedItem(), mNotes.getText().toString());
         mAmount.setText(null);
       }
@@ -363,15 +423,16 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mAcceptCancel.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+
+        if (mFlipper.getDisplayedChild() != INDEX_ACCEPT) return;
         stopAccepting();
       }
     });
     mResultOK.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        mFlipper.setDisplayedChild(INDEX_MAIN);
-        mAmount.requestFocus();
-        setKeyboardVisible(true);
+        if (mFlipper.getDisplayedChild() != INDEX_RESULT) return;
+        switchToMain();
       }
     });
     
@@ -516,6 +577,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     CharSequence message;
     int color;
+    int tone = ToneGenerator.TONE_DTMF_1;
     if ("COMPLETED".equals(status)) {
 
       String orderId = order.optString("id");
@@ -523,6 +585,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       String currency = order.optJSONObject("total_native").optString("currency_iso").toUpperCase(Locale.CANADA);
       message = Html.fromHtml(String.format("<b>Order %1$s</b><br>%2$s", orderId, getString(R.string.pos_result_completed, amount, currency)));
       color = R.color.pos_result_completed;
+      tone = ToneGenerator.TONE_DTMF_9;
     } else if ("MISPAID".equals(status)) {
       message = getString(R.string.pos_result_mispaid);
       color = R.color.pos_result_mispaid;
@@ -542,6 +605,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mFlipper.setDisplayedChild(INDEX_RESULT);
     setKeyboardVisible(false);
     ((Vibrator) mParent.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(500);
+    // mToneGenerator.startTone(tone, 500);
   }
 
   private BigDecimal moneyToValue(JSONObject money) {
@@ -562,7 +626,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     InputMethodManager inputMethodManager = (InputMethodManager) mParent.getSystemService(Context.INPUT_METHOD_SERVICE);
 
     if(visible) {
-      inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+      inputMethodManager.showSoftInput(mAmount, InputMethodManager.SHOW_FORCED);
     } else {
       inputMethodManager.hideSoftInputFromWindow(mParent.findViewById(android.R.id.content).getWindowToken(), 0);
     }

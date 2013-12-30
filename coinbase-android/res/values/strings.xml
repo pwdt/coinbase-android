@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name_consumer">Coinbase</string>
     <string name="app_name_consumer_long">Coinbase for Android</string>
-    <string name="app_name_merchant">Point of Sale</string>
-    <string name="app_name_merchant_long">Coinbase Point of Sale</string>
+    <string name="app_name_merchant">Coinbase Merchant</string>
+    <string name="app_name_merchant_long">Coinbase Merchant for Android</string>
     <string name="title_account">Account Settings</string>
     <string name="title_transfer">Send / Request</string>
     <string name="title_buysell">Buy / Sell Bitcoin</string>
@@ -181,7 +181,7 @@
     <string name="widget_transactions_compat">Sorry, this widget is not compatible with your device.</string>
     <string name="pos_amt_title">Order amount</string>
     <string name="pos_amt">Order amount in %1$s</string>
-    <string name="pos_submit">Create order</string>
+    <string name="pos_submit">Request payment</string>
     <string name="pos_btc">= %1$s BTC</string>
     <string name="pos_traditional">≈ %1$s %2$s</string>
     <string name="pos_notes">Order name</string>
@@ -223,7 +223,7 @@
     <string name="transactiondetails_action_success_resend">Request re-sent.</string>
     <string name="transactiondetails_action_success_cancel">Request cancelled.</string>
     <string name="transactiondetails_action_success_complete">Request completed.</string>
-    <string name="login_pos_warning"><b>Warning: this is the Coinbase Point of Sale, not Coinbase for Android.</b>\n\nUnless you are a merchant interested in accepting bitcoin payments at a point of sale, you should uninstall this app and install Coinbase for Android from the Play Store.</string>
+    <string name="login_pos_title">Merchant</string>
     <string name="login_title_merchant">Set up merchant account</string>
     <string name="login_pos_notice">Sign in with your Coinbase merchant account. The Coinbase Point of Sale application will only have access to merchant functions and will not have access to the funds in your account.</string>
     <string name="merchant_tools_moved">Point of Sale has been moved into a separate app. The new Coinbase Point of Sale app only has access to merchant tools and does not have access to your account funds, improving security.\n\nDownload Coinbase Point of Sale from the Play Store or use the Send / Request tab.</string>
@@ -233,4 +233,5 @@
     <string name="pos_empty_amount">Please enter an amount.</string>
     <string name="widget_price_label">Coinbase Price</string>
     <string name="widget_currency_title">Choose currency</string>
+    <string name="pos_bottom_notice">Powered by <b>Coinbase</b></string>
 </resources>
