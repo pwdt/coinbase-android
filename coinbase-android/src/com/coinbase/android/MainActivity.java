@@ -183,7 +183,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     mViewFlipper = (ViewFlipper) findViewById(R.id.flipper);
 
     // Configure the DrawerLayout (never pin menu on POS app)
-    mPinSlidingMenu = getResources().getBoolean(R.bool.pin_sliding_menu) && BuildConfig.type == BuildType.CONSUMER;
+    mPinSlidingMenu = getResources().getBoolean(R.bool.pin_sliding_menu);
     getSupportActionBar().setHomeButtonEnabled(!mPinSlidingMenu);
 
     if(!mPinSlidingMenu) {
@@ -219,6 +219,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     // Set up Sliding Menu list
     mMenuListView = (ListView) findViewById(R.id.drawer);
+    if (BuildConfig.type == BuildType.MERCHANT && mPinSlidingMenu) {
+      mMenuListView.setVisibility(View.GONE);
+      findViewById(R.id.activity_main_divider).setVisibility(View.GONE);
+    }
     createProfileView();
     int shortestWidth = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
     int dWidthCalc = (int) (shortestWidth * (3.0/4.0)),
