@@ -542,9 +542,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       }
     });
     mListHeader.setOnTouchListener(balanceTouchListener);
-    LayoutTransition transition = new LayoutTransition();
-    transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
-    mListHeader.setLayoutTransition(transition);
+
+    if (Build.VERSION.SDK_INT >= 11) {
+      LayoutTransition transition = new LayoutTransition();
+      transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
+      mListHeader.setLayoutTransition(transition);
+    }
+
     mListHeader.findViewById(R.id.wallet_hidden_show).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
