@@ -118,6 +118,12 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
           });
         }
 
+        if(!"D".equals(index)) {
+          // Reset submit button visibility
+          submit.setVisibility(View.INVISIBLE);
+          cell.findViewById(R.id.key).setVisibility(View.VISIBLE);
+        }
+
         number.setText(index);
         number.setTypeface(FontManager.getFont(PINPromptActivity.this, "Roboto-Light"));
 
