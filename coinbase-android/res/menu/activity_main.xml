@@ -18,6 +18,11 @@
         android:title="@string/menu_merchant_pin">
     </item>
     <item
+        android:id="@+id/menu_kiosk_mode"
+        android:showAsAction="never"
+        android:title="@string/menu_kiosk_mode_enable">
+    </item>
+    <item
         android:id="@+id/menu_sign_out"
         android:showAsAction="never"
         android:title="@string/menu_sign_out">

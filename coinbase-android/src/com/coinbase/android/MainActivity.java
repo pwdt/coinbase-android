@@ -2,11 +2,13 @@ package com.coinbase.android;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,6 +33,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -39,12 +42,15 @@ import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
 import com.coinbase.android.CoinbaseActivity.RequiresPIN;
+import com.coinbase.android.merchant.MerchantKioskHomeActivity;
+import com.coinbase.android.merchant.MerchantKioskModeService;
 import com.coinbase.android.merchant.MerchantToolsFragment;
 import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.android.pin.PINSettingDialogFragment;
@@ -261,6 +267,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }).start();
 
     switchTo(BuildConfig.type == BuildType.CONSUMER ? FRAGMENT_INDEX_TRANSACTIONS : FRAGMENT_INDEX_POINT_OF_SALE);
+    updateKioskMode(Utils.inKioskMode(this));
 
     onNewIntent(getIntent());
   }
@@ -509,6 +516,17 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   }
 
   @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+
+    if(!hasFocus && Utils.inKioskMode(this)) {
+      // In kiosk mode, prevent any system dialogs from being opened.
+      Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+      sendBroadcast(closeDialog);
+    }
+  }
+
+  @Override
   public void onBackPressed() {
 
     if(isSlidingMenuShowing() && !mPinSlidingMenu) {
@@ -516,8 +534,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     } else {
 
       if (BuildConfig.type == BuildType.MERCHANT) {
-        // Quit app
-        super.onBackPressed();
+        // Quit app if not in kiosk mode; otherwise, do nothing
+        if (!Utils.inKioskMode(this)) {
+          super.onBackPressed();
+        }
       } else if (mViewFlipper.getDisplayedChild() == FRAGMENT_INDEX_TRANSACTIONS) {
         if (mTransactionsFragment.onBackPressed()) {
           // Give transactions fragment an opportunity to handle back
@@ -582,6 +602,41 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     updateBackButton();
   }
 
+  private void setKioskModeEnabled(boolean enabled) {
+
+    // Enable / disable home screen component
+    PackageManager pm = getPackageManager();
+    ComponentName homeScreenActivity = new ComponentName(this, MerchantKioskHomeActivity.class);
+    int newState = enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+    pm.setComponentEnabledSetting(homeScreenActivity, newState, PackageManager.DONT_KILL_APP);
+
+    // Save in preferences
+    SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(this).edit();
+    e.putBoolean(Constants.KEY_KIOSK_MODE, enabled);
+    e.commit();
+
+    updateKioskMode(enabled);
+  }
+
+  private void updateKioskMode(boolean enabled) {
+
+    // 1. Notifications bar
+    if (enabled) {
+      getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+              WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    } else {
+      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
+    // 2. Manage service
+    Intent service = new Intent(this, MerchantKioskModeService.class);
+    if (enabled) {
+      startService(service);
+    } else {
+      stopService(service);
+    }
+  }
+
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
 
@@ -602,6 +657,12 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     boolean pinSet = Utils.getPrefsString(this, Constants.KEY_ACCOUNT_PIN, null) != null;
     menu.findItem(R.id.menu_merchant_pin).setVisible(BuildConfig.type == BuildType.MERCHANT);
     menu.findItem(R.id.menu_merchant_pin).setTitle(pinSet ? R.string.menu_merchant_pin_already_set : R.string.menu_merchant_pin);
+
+    boolean kioskMode = Utils.inKioskMode(this);
+    menu.findItem(R.id.menu_kiosk_mode).setVisible(BuildConfig.type == BuildType.MERCHANT);
+    menu.findItem(R.id.menu_kiosk_mode).setTitle(kioskMode ? R.string.menu_kiosk_mode_disable : R.string.menu_kiosk_mode_enable);
+    menu.findItem(R.id.menu_help).setVisible(!kioskMode);
+    menu.findItem(R.id.menu_about).setVisible(!kioskMode);
 
     return true;
   }
@@ -727,6 +788,33 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         return true;
       case R.id.menu_merchant_pin:
         new PINSettingDialogFragment().show(getSupportFragmentManager(), "pin");
+        return true;
+      case R.id.menu_kiosk_mode:
+        if (Utils.inKioskMode(MainActivity.this)) {
+          setKioskModeEnabled(false);
+        } else {
+          new AlertDialog.Builder(this).setTitle(R.string.kiosk_dialog_title)
+            .setMessage(R.string.kiosk_dialog_text)
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+
+                setKioskModeEnabled(true);
+                Toast.makeText(MainActivity.this, R.string.kiosk_setup_toast, Toast.LENGTH_LONG).show();
+                // Start the home screen so the user can set Coinbase as the default
+                Intent startMain = new Intent(Intent.ACTION_MAIN);
+                startMain.addCategory(Intent.CATEGORY_HOME);
+                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(startMain);
+              }
+            })
+            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+                // Nothing
+              }
+            }).create().show();
+        }
         return true;
       case android.R.id.home:
         if(mInTransactionDetailsMode) {

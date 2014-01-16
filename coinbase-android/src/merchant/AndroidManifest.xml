@@ -1,3 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Used for kiosk mode -->
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+
+    <application>
+        <activity android:name="com.coinbase.android.merchant.MerchantKioskHomeActivity"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>

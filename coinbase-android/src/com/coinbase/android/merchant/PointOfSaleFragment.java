@@ -673,6 +673,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mAmount.setHint(String.format(getString(R.string.pos_amt), currency.toUpperCase(Locale.CANADA)));
   }
 
+
   public void refresh() {
 
     new LoadMerchantInfoTask().execute();

@@ -289,6 +289,10 @@ public class Utils {
     return prefs.getString(String.format(key, activeAccount), def);
   }
 
+  public static boolean inKioskMode(Context c) {
+    return PreferenceManager.getDefaultSharedPreferences(c).getBoolean(Constants.KEY_KIOSK_MODE, false);
+  }
+
   public static boolean getPrefsBool(Context c, String key, boolean def) {
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);

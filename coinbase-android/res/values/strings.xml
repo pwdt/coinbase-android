@@ -237,4 +237,11 @@
     <string name="pos_bottom_notice">Powered by <b>Coinbase</b></string>
     <string name="menu_merchant_pin">Add settings passcode</string>
     <string name="menu_merchant_pin_already_set">Passcode settings</string>
+    <string name="kiosk_notif_title">Coinbase Merchant running in kiosk mode</string>
+    <string name="kiosk_notif_text">Stop kiosk mode by opening the app</string>
+    <string name="menu_kiosk_mode_enable">Enable kiosk mode</string>
+    <string name="menu_kiosk_mode_disable">Disable kiosk mode</string>
+    <string name="kiosk_dialog_title">Enable kiosk mode?</string>
+    <string name="kiosk_dialog_text">When kiosk mode is enabled, this Android device will be locked down and only the Coinbase Merchant app will be accessible. You will not be able to open any other apps. Enable kiosk mode?\n\n(Note: after clicking OK, a dialog will appear. Choose Coinbase Merchant and click Always.)</string>
+    <string name="kiosk_setup_toast">Select Coinbase Merchant then click Always.</string>
 </resources>
