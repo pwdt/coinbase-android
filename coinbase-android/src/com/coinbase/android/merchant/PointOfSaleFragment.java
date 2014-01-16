@@ -42,6 +42,7 @@ import com.coinbase.android.FontManager;
 import com.coinbase.android.MainActivity;
 import com.coinbase.android.R;
 import com.coinbase.android.Utils;
+import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
@@ -341,7 +342,12 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   @Override
   public void onPINPromptSuccessfulReturn() {
-
+    // PIN menu is only opened when trying to access settings
+    new Handler().postDelayed(new Runnable() {
+      public void run() {
+        mParent.openOptionsMenu();
+      }
+    }, 1000);
   }
 
   private void switchToMain() {
@@ -387,6 +393,10 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mMenuButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+
+        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+          return;
+        }
         mParent.openOptionsMenu();
       }
     });

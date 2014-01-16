@@ -6,4 +6,5 @@
     <string name="title_activity_login">@string/app_name_merchant</string>
 
     <string name="login_title">@string/login_title_merchant</string>
+    <string name="account_android_pin_edit">@string/account_android_pin_edit_merchant</string>
 </resources>

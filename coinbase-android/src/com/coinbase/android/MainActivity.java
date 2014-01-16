@@ -15,7 +15,6 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -48,6 +47,7 @@ import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
 import com.coinbase.android.CoinbaseActivity.RequiresPIN;
 import com.coinbase.android.merchant.MerchantToolsFragment;
 import com.coinbase.android.merchant.PointOfSaleFragment;
+import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
 import com.justinschultz.pusherclient.Pusher;
@@ -599,6 +599,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       item.setVisible(!hide);
     }
 
+    boolean pinSet = Utils.getPrefsString(this, Constants.KEY_ACCOUNT_PIN, null) != null;
+    menu.findItem(R.id.menu_merchant_pin).setVisible(BuildConfig.type == BuildType.MERCHANT);
+    menu.findItem(R.id.menu_merchant_pin).setTitle(pinSet ? R.string.menu_merchant_pin_already_set : R.string.menu_merchant_pin);
+
     return true;
   }
 
@@ -720,6 +724,9 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
         Intent helpIntent = new Intent(Intent.ACTION_VIEW);
         helpIntent.setData(Uri.parse("http://support.coinbase.com/"));
         startActivity(helpIntent);
+        return true;
+      case R.id.menu_merchant_pin:
+        new PINSettingDialogFragment().show(getSupportFragmentManager(), "pin");
         return true;
       case android.R.id.home:
         if(mInTransactionDetailsMode) {

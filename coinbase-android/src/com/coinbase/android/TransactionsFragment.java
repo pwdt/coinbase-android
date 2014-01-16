@@ -545,7 +545,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     if (Build.VERSION.SDK_INT >= 11) {
       LayoutTransition transition = new LayoutTransition();
-      transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
+      //transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
       mListHeader.setLayoutTransition(transition);
     }
 
