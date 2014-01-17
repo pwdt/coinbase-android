@@ -2,12 +2,14 @@ package com.coinbase.android.pin;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -16,12 +18,15 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.coinbase.android.AccountsFragment;
+import com.coinbase.android.BuildConfig;
+import com.coinbase.android.BuildType;
 import com.coinbase.android.CoinbaseActivity;
 import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
 import com.coinbase.android.Constants;
 import com.coinbase.android.FontManager;
 import com.coinbase.android.LoginActivity;
 import com.coinbase.android.R;
+import com.coinbase.android.Utils;
 import com.coinbase.api.LoginManager;
 
 @RequiresAuthentication
@@ -45,8 +50,14 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
       return;
     }
 
+    if (Utils.inKioskMode(this)) {
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
     setContentView(R.layout.activity_pinprompt);
 
+    boolean hideSwitchAccounts = mIsSetMode || BuildConfig.type == BuildType.MERCHANT;
     findViewById(R.id.pin_switch_accounts).setOnClickListener(new View.OnClickListener() {
 
       @Override
@@ -57,7 +68,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
     });
     ((TextView) findViewById(R.id.pin_switch_accounts)).setTypeface(
             FontManager.getFont(this, "RobotoCondensed-Regular"));
-    findViewById(R.id.pin_switch_accounts).setVisibility(mIsSetMode ? View.GONE : View.VISIBLE);
+    findViewById(R.id.pin_switch_accounts).setVisibility(hideSwitchAccounts ? View.GONE : View.VISIBLE);
 
     ((TextView) findViewById(R.id.pin_account)).setText(LoginManager.getInstance().getSelectedAccountName(this));
 
@@ -196,7 +207,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
   public void finish() {
     super.finish();
 
-    if(!mIsSetMode) {
+    if(!mIsSetMode && BuildConfig.type != BuildType.MERCHANT) {
       overridePendingTransition(R.anim.pin_stop_enter, R.anim.pin_stop_exit);
     }
   }

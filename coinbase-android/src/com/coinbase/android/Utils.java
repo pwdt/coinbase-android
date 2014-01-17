@@ -1,18 +1,24 @@
 package com.coinbase.android;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.text.Html;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.FrameLayout;
 
 import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
@@ -133,6 +139,60 @@ public class Utils {
       return result;
     }
   }
+
+  // http://stackoverflow.com/a/19494006/764272 (modified)
+  public static class AndroidBug5497Workaround {
+
+    private View mChildOfContent;
+    private int usableHeightPrevious;
+    private FrameLayout.LayoutParams frameLayoutParams;
+    private ViewTreeObserver.OnGlobalLayoutListener globalLayoutListener;
+
+    public void startAssistingActivity(Activity activity) {
+      FrameLayout content = (FrameLayout) activity.findViewById(android.R.id.content);
+      mChildOfContent = content.getChildAt(0);
+      globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+        public void onGlobalLayout() {
+          possiblyResizeChildOfContent();
+        }
+      };
+      mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
+      frameLayoutParams = (FrameLayout.LayoutParams) mChildOfContent.getLayoutParams();
+    }
+
+    public void stopAssistingActivity() {
+      if (globalLayoutListener != null) {
+        mChildOfContent.getViewTreeObserver().removeGlobalOnLayoutListener(globalLayoutListener);
+        frameLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        mChildOfContent.requestLayout();
+      }
+    }
+
+    private void possiblyResizeChildOfContent() {
+      int usableHeightNow = computeUsableHeight();
+      if (usableHeightNow != usableHeightPrevious) {
+        int usableHeightSansKeyboard = mChildOfContent.getRootView().getHeight();
+        int heightDifference = usableHeightSansKeyboard - usableHeightNow;
+        if (heightDifference > (usableHeightSansKeyboard/4)) {
+          // keyboard probably just became visible
+          frameLayoutParams.height = usableHeightSansKeyboard - heightDifference;
+        } else {
+          // keyboard probably just became hidden
+          frameLayoutParams.height = usableHeightSansKeyboard;
+        }
+        mChildOfContent.requestLayout();
+        usableHeightPrevious = usableHeightNow;
+      }
+    }
+
+    private int computeUsableHeight() {
+      Rect r = new Rect();
+      mChildOfContent.getWindowVisibleDisplayFrame(r);
+      return (r.bottom - r.top);
+    }
+
+  }
+
 
   public static final String formatCurrencyAmount(String amount) {
     return formatCurrencyAmount(new BigDecimal(amount), false, CurrencyType.BTC);

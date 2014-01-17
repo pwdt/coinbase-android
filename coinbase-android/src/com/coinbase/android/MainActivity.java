@@ -173,6 +173,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   long mLastRefreshTime = -1;
   boolean mInTransactionDetailsMode = false;
   boolean mPendingPinReturn = false;
+  Utils.AndroidBug5497Workaround mBugWorkaround = new Utils.AndroidBug5497Workaround();
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -624,8 +625,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if (enabled) {
       getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
               WindowManager.LayoutParams.FLAG_FULLSCREEN);
+      mBugWorkaround.startAssistingActivity(this);
     } else {
       getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+      // Clear bug workaround
+      mBugWorkaround.stopAssistingActivity();
     }
 
     // 2. Manage service
@@ -634,6 +638,17 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       startService(service);
     } else {
       stopService(service);
+    }
+
+    // 3. Keyguard
+    if (enabled) {
+      getWindow().setFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD,
+              WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+      getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
+              WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+    } else {
+      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
     }
   }
 
@@ -663,6 +678,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     menu.findItem(R.id.menu_kiosk_mode).setTitle(kioskMode ? R.string.menu_kiosk_mode_disable : R.string.menu_kiosk_mode_enable);
     menu.findItem(R.id.menu_help).setVisible(!kioskMode);
     menu.findItem(R.id.menu_about).setVisible(!kioskMode);
+    menu.findItem(R.id.menu_sign_out).setVisible(!kioskMode);
+    menu.findItem(R.id.menu_accounts).setVisible(!kioskMode);
 
     return true;
   }
