@@ -223,16 +223,18 @@ public class LoginManager {
   public String generateOAuthUrl(String redirectUrl){
 
     String baseUrl = CLIENT_BASEURL + "/oauth/authorize";
+    String device = Build.MODEL.startsWith(Build.MANUFACTURER) ? Build.MODEL : Build.MANUFACTURER + " " + Build.MODEL;
 
     try{
       redirectUrl = URLEncoder.encode(redirectUrl, "utf-8");
+      device = URLEncoder.encode(device, "utf-8");
     } catch(Exception e) {
       throw new RuntimeException(e);
     }
 
     String scope = BuildConfig.type == BuildType.CONSUMER ? "all" : "merchant";
 
-    String authorizeUrl = baseUrl + "?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + redirectUrl + "&scope=" + scope;
+    String authorizeUrl = baseUrl + "?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + redirectUrl + "&scope=" + scope + "&meta[name]=" + device;
     return authorizeUrl;
   }
 
