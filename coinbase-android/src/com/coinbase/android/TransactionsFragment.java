@@ -778,6 +778,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // 2. if necessary, change action bar
     mParent.setInTransactionDetailsMode(true);
+
+    // 3. pull to refresh
+    mPullToRefreshLayout.setEnabled(false);
   }
 
   protected void hideDetails(boolean animated) {
@@ -814,6 +817,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // 2. action bar
     mParent.setInTransactionDetailsMode(false);
+
+    // 3. pull to refresh
+    mPullToRefreshLayout.setEnabled(true);
   }
 
   public boolean onBackPressed() {
