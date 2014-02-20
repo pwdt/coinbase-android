@@ -1,15 +1,5 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -26,6 +16,16 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.api.RpcManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ReceiveAddressesActivity extends SherlockListActivity {
 
@@ -119,6 +119,10 @@ public class ReceiveAddressesActivity extends SherlockListActivity {
 
   @Override
   protected void onListItemClick(ListView l, View v, int position, long id) {
+
+    if (position == 0) {
+      return; // Header
+    }
 
     String address = (String)((Map<?, ?>) l.getItemAtPosition(position)).get("address");
     setClipboard(address);
