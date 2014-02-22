@@ -142,16 +142,21 @@ public class RpcManager {
       throw new IOException("Account is not valid; made invalid by " + accountValid);
     }
 
+    if (LoginManager.getInstance().needToRefreshAccessToken(context, account)) {
+      // Refresh the access token before doing the request
+      LoginManager.getInstance().refreshAccessToken(context, account);
+    }
+
     String accessToken = LoginManager.getInstance().getAccessToken(context, account);
     request.addHeader("Authorization", String.format("Bearer %s", accessToken));
 
     HttpResponse response = client.execute(request);
     int code = response.getStatusLine().getStatusCode();
 
-    if(code == 401 ) {
+    if (code == 401) {
 
       // Authentication error.
-      if(retry) {
+      if (retry) {
         // This may be caused by an outdated access token - attempt to fetch a new one
         // before failing.
         LoginManager.getInstance().refreshAccessToken(context, account);

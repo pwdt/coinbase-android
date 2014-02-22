@@ -182,41 +182,53 @@ public class LoginManager {
     return prefs.getString(String.format(Constants.KEY_ACCOUNT_ACCESS_TOKEN, activeAccount), null);
   }
 
+  public boolean needToRefreshAccessToken(Context context, int account) {
+
+    synchronized (this) {
+      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+      long tokenExpiresAt = prefs.getLong(String.format(Constants.KEY_ACCOUNT_TOKEN_EXPIRES_AT, account), -1);
+      return System.currentTimeMillis() >= tokenExpiresAt;
+    }
+  }
+
   public void refreshAccessToken(Context context, int account) {
 
-    Log.i("Coinbase", "Refreshing access token...");
+    synchronized (this) {
+      Log.i("Coinbase", "Refreshing access token...");
 
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    String refreshToken = prefs.getString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, account), null);
+      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+      String refreshToken = prefs.getString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, account), null);
 
-    List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
-    parametersBody.add(new BasicNameValuePair("grant_type", "refresh_token"));
-    parametersBody.add(new BasicNameValuePair("refresh_token", refreshToken));
+      List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
+      parametersBody.add(new BasicNameValuePair("grant_type", "refresh_token"));
+      parametersBody.add(new BasicNameValuePair("refresh_token", refreshToken));
 
-    String[] newTokens;
+      Object[] newTokens;
 
-    try {
-      newTokens = doTokenRequest(context, parametersBody, account);
-    } catch(Exception e) {
+      try {
+        newTokens = doTokenRequest(context, parametersBody, account);
+      } catch(Exception e) {
 
-      e.printStackTrace();
-      Log.e("Coinbase", "Could not fetch new access token!");
-      return;
+        e.printStackTrace();
+        Log.e("Coinbase", "Could not fetch new access token!");
+        return;
+      }
+
+      if(newTokens == null) {
+
+        // Authentication error.
+        Log.e("Coinbase", "Authentication error when fetching new access token.");
+        return;
+      }
+
+      Editor e = prefs.edit();
+
+      e.putString(String.format(Constants.KEY_ACCOUNT_ACCESS_TOKEN, account), (String)newTokens[0]);
+      e.putString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, account), (String)newTokens[1]);
+      e.putLong(String.format(Constants.KEY_ACCOUNT_TOKEN_EXPIRES_AT, account), System.currentTimeMillis() + 7200000);
+
+      e.commit();
     }
-
-    if(newTokens == null) {
-
-      // Authentication error.
-      Log.e("Coinbase", "Authentication error when fetching new access token.");
-      return;
-    }
-
-    Editor e = prefs.edit();
-
-    e.putString(String.format(Constants.KEY_ACCOUNT_ACCESS_TOKEN, account), newTokens[0]);
-    e.putString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, account), newTokens[1]);
-
-    e.commit();
   }
 
   // start three legged oauth handshake
@@ -248,7 +260,7 @@ public class LoginManager {
     parametersBody.add(new BasicNameValuePair("code", code));
 
     try {
-      String[] tokens = doTokenRequest(context, parametersBody, -1);
+      Object[] tokens = doTokenRequest(context, parametersBody, -1);
 
       if(tokens == null) {
         return context.getString(R.string.login_error_auth);
@@ -261,8 +273,9 @@ public class LoginManager {
       e.putInt(Constants.KEY_MAX_ACCOUNT, accountId);
       e.putInt(Constants.KEY_ACTIVE_ACCOUNT, accountId);
 
-      e.putString(String.format(Constants.KEY_ACCOUNT_ACCESS_TOKEN, accountId), tokens[0]);
-      e.putString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, accountId), tokens[1]);
+      e.putString(String.format(Constants.KEY_ACCOUNT_ACCESS_TOKEN, accountId), (String)tokens[0]);
+      e.putString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, accountId), (String)tokens[1]);
+      e.putLong(String.format(Constants.KEY_ACCOUNT_TOKEN_EXPIRES_AT, accountId), System.currentTimeMillis() + 7200000);
 
       e.commit();
 
@@ -291,7 +304,7 @@ public class LoginManager {
     }
   }
 
-  private String[] doTokenRequest(Context context, Collection<BasicNameValuePair> params, int account) throws IOException, JSONException {
+  private Object[] doTokenRequest(Context context, Collection<BasicNameValuePair> params, int account) throws IOException, JSONException {
 
     DefaultHttpClient client = new DefaultHttpClient();
 
@@ -321,7 +334,7 @@ public class LoginManager {
     String accessToken = content.getString("access_token");
     String refreshToken = content.getString("refresh_token");
 
-    return new String[] { accessToken, refreshToken };
+    return new Object[] { accessToken, refreshToken };
   }
 
   public String getSelectedAccountName(Context context) {
