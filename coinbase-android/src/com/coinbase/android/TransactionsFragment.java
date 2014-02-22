@@ -125,13 +125,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       int startPage = (params.length == 0 || params[0] == null) ? 0 : params[0];
       int loadedPage;
 
-      // Make API call to download list of transactions
+      // Make API call to download list of account changes
       try {
 
         int numPages = 1; // Real value will be set after first list iteration
         loadedPage = startPage;
 
-        // Loop is required to sync all pages of transaction history
+        // Loop is required to sync all pages of account history
         for(int i = startPage + 1; i <= startPage + Math.min(numPages, MAX_PAGES); i++) {
 
           List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
@@ -215,7 +215,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           if(startPage == 0) {
             // Remove all old transactions
-            db.delete(mParent, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) });
+            int deleted = db.delete(mParent, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) });
+            Log.d("Coinbase", deleted + " rows deleted.");
           }
 
           // Update user ID
@@ -260,19 +261,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           mLastLoadedPage = loadedPage;
           p.segmentDone("Insert transactions to database");
 
-          // Update list
-          loadTransactionsList();
-
-          // Update transaction widgets
-          updateWidgets();
-
-          // Update the buy / sell history list
-          mParent.getBuySellFragment().onTransactionsSynced();
-
-          p.segmentDone("Done");
-
-          return true;
-
         } catch (JSONException e) {
           // Malformed response from Coinbase.
           Log.e("Coinbase", "Could not parse JSON response from Coinbase, aborting refresh of transactions.");
@@ -284,6 +272,19 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           db.endTransaction(mParent);
         }
       }
+
+      // Update list
+      loadTransactionsList();
+
+      // Update transaction widgets
+      updateWidgets();
+
+      // Update the buy / sell history list
+      mParent.getBuySellFragment().onTransactionsSynced();
+
+      p.segmentDone("Done");
+
+      return true;
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)

@@ -37,7 +37,11 @@ public class InsertedItemListAdapter implements WrapperListAdapter {
 
   @Override
   public int getCount() {
-    return mWrappedAdapter.getCount() + numInserted();
+    if (mWrappedAdapter.getCount() > mInsertIndex) {
+      return mWrappedAdapter.getCount() + numInserted();
+    } else {
+      return mWrappedAdapter.getCount();
+    }
   }
 
   @Override

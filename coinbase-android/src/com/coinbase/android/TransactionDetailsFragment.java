@@ -157,6 +157,7 @@ public class TransactionDetailsFragment extends Fragment {
 
       mId = params[0];
 
+      Log.i("Coinbase", "Loading transaction " + mId + " from internet...");
       try {
         return RpcManager.getInstance().callGet(getActivity(), "transactions/" + mId).getJSONObject("transaction");
       } catch (JSONException e) {
@@ -238,14 +239,18 @@ public class TransactionDetailsFragment extends Fragment {
 
       // Fetch transaction JSON from database
       final String transactionId = getArguments().getString(EXTRA_ID);
-      Cursor c = DatabaseObject.getInstance().query(getActivity(), TransactionEntry.TABLE_NAME, new String[] {
-          TransactionEntry.COLUMN_NAME_TRANSACTION_JSON },
-          TransactionEntry._ID + " = ?", new String[] { transactionId }, null, null, null);
+      Cursor c = DatabaseObject.getInstance().query(getActivity(), TransactionEntry.TABLE_NAME,
+          new String[] { TransactionEntry.COLUMN_NAME_TRANSACTION_JSON, },
+          TransactionEntry._ID + " = ? AND " + TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?",
+          new String[] { transactionId, Integer.toString(activeAccount) }, null, null, null);
       if(!c.moveToFirst()) {
         // Transaction not found
         Toast.makeText(getActivity(), R.string.transactiondetails_error, Toast.LENGTH_SHORT).show();
         getActivity().finish();
         return view;
+      }
+      if (c.getCount() > 1) {
+        Log.w("Coinbase", "Warning: a query for a single tranasction returned " + c.getCount() + " results.");
       }
 
       String stringData;
