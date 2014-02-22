@@ -553,7 +553,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       Utils.runAsyncTaskConcurrently(new ShowNetworkListTask(), "currencies",
               String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
               "native_currency");
-    } else if("refresh_token".equals(data[2])) {
+    } else if("tokens".equals(data[2])) {
 
       // Refresh token
       new Thread(new Runnable() {
