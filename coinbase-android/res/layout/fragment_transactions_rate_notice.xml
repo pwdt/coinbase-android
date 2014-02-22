@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#52A84F"
+    android:paddingTop="15dp"
+    android:paddingBottom="10dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/rate_notice_title"
+        android:textColor="#ffffff"
+        android:id="@+id/rate_notice_title"
+        android:textSize="10pt"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/rate_notice_text"
+        android:textColor="#ffffff"
+        android:id="@+id/rate_notice_text"
+        android:layout_below="@+id/rate_notice_title"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/rate_notice_buttons"
+        android:layout_below="@+id/rate_notice_text"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/rate_notice_btn_positive"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="#ffffff"
+            android:id="@+id/rate_notice_btn_positive"
+            android:background="@drawable/button_transparent"
+            android:layout_marginLeft="15dp"
+            />
+
+        <View
+            android:layout_width="0.5dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center"
+            android:background="#ccffffff"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/rate_notice_btn_negative"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="#ffffff"
+            android:id="@+id/rate_notice_btn_negative"
+            android:background="@drawable/button_transparent"
+            android:layout_marginRight="15dp"
+            />
+    </LinearLayout>
+
+</RelativeLayout>

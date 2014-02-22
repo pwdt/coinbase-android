@@ -6,10 +6,12 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,15 +29,17 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.Adapter;
 import android.widget.FrameLayout;
-import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.WrapperListAdapter;
 
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
+import com.coinbase.android.util.InsertedItemListAdapter;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
 
@@ -55,8 +59,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.AbsDefaultHeaderTransformer;
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.Options;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -410,9 +414,14 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         setHeaderPinned(!result.moveToFirst());
         mListFooter.setVisibility(canLoadMorePages() ? View.VISIBLE : View.GONE);
 
+        // "rate me" notice
+        Constants.RateNoticeState rateNoticeState = Constants.RateNoticeState.valueOf(Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN.name()));
+        boolean showRateNotice = rateNoticeState == Constants.RateNoticeState.SHOULD_SHOW_NOTICE;
+
         if(mListView.getAdapter() != null) {
 
           // Just update existing adapter
+          getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(showRateNotice);
           getAdapter().changeCursor(result);
           return;
         }
@@ -424,7 +433,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(mParent, R.layout.fragment_transactions_item, result,
           from, to, 0);
         adapter.setViewBinder(new TransactionViewBinder());
-        mListView.setAdapter(adapter);
+
+        View rateNotice = getRateNotice();
+        InsertedItemListAdapter wrappedAdapter = new InsertedItemListAdapter(adapter, rateNotice, 2);
+        wrappedAdapter.setInsertedViewVisible(showRateNotice);
+
+        mListView.setAdapter(wrappedAdapter);
       }
     }
   }
@@ -462,6 +476,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   ListView mListView;
   ViewGroup mListHeader, mMainView;
   View mListFooter;
+  View mRateNotice;
   TextView mBalanceText, mBalanceHome;
   TextView mSyncErrorView;
   PullToRefreshLayout mPullToRefreshLayout;
@@ -643,6 +658,45 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mBalanceText.setText(Html.fromHtml(String.format("<b>%1$s</b> BTC", balance)));
   }
 
+  private View getRateNotice() {
+
+    if (mRateNotice != null) {
+      return mRateNotice;
+    }
+
+    View rateNotice = View.inflate(mParent, R.layout.fragment_transactions_rate_notice, null);
+
+    ((TextView) rateNotice.findViewById(R.id.rate_notice_title)).setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+
+    TextView btnPositive = (TextView) rateNotice.findViewById(R.id.rate_notice_btn_positive),
+            btnNegative = (TextView) rateNotice.findViewById(R.id.rate_notice_btn_negative);
+    btnPositive.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // Permanently hide notice
+        hideRateNotice();
+        // Open Play Store
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.coinbase.android")));
+      }
+    });
+    btnNegative.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // Permanently hide notice
+        hideRateNotice();
+      }
+    });
+
+    mRateNotice = rateNotice;
+    return rateNotice;
+  }
+
+  private void hideRateNotice() {
+    Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.NOTICE_DISMISSED.name());
+    getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(false);
+    getAdapter().notifyDataSetChanged();
+  }
+
   private void updateBalance() {
 
     if (mExchangeRates == null || mBalanceBtc == null || mBalanceText == null) {
@@ -733,23 +787,28 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   }
 
   private CursorAdapter getAdapter() {
-    return ((CursorAdapter) ((HeaderViewListAdapter) mListView.getAdapter()).getWrappedAdapter());
+    return getAdapter(CursorAdapter.class);
+  }
+
+  private <T> T getAdapter(Class<T> adapterType) {
+    Adapter adapter = mListView.getAdapter();
+    while (adapter instanceof WrapperListAdapter && !adapterType.equals(adapter.getClass())) {
+      adapter = ((WrapperListAdapter) adapter).getWrappedAdapter(); // Un-wrap adapter
+    }
+    return (T) adapter;
   }
 
   @Override
   public void onListItemClick(ListView l, View v, int position, long id) {
 
-    if (position == 0 || position == (l.getCount() - 1)) {
-      return; // Header/footer view
-    }
     if (mDetailsShowing) {
       return;
     }
 
-    position--;
-
-    Cursor c = getAdapter().getCursor();
-    c.moveToPosition(position);
+    Cursor c = (Cursor) l.getItemAtPosition(position);
+    if (c == null) {
+      return; // Header / footer / rate notice
+    }
 
     String transactionId = c.getString(c.getColumnIndex(TransactionEntry._ID));
     Bundle args = new Bundle();

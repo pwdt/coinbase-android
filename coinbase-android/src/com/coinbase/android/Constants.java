@@ -3,7 +3,13 @@ package com.coinbase.android;
 public class Constants {
 
   private Constants() {}
-  
+
+  public static enum RateNoticeState {
+    NOTICE_NOT_YET_SHOWN,
+    SHOULD_SHOW_NOTICE,
+    NOTICE_DISMISSED;
+  }
+
   public static final boolean DEBUG_BUILD = false;
   
   public static final String KEY_ACTIVE_ACCOUNT = "active_account";
@@ -28,6 +34,7 @@ public class Constants {
   public static final String KEY_ACCOUNT_POS_BTC_AMT = "account_%1$d_pos_btc_amt";
   public static final String KEY_ACCOUNT_SHOW_BALANCE = "account_%1$d_show_balance";
   public static final String KEY_ACCOUNT_FIRST_LAUNCH = "account_%1$d_first_launch";
+  public static final String KEY_ACCOUNT_RATE_NOTICE_STATE = "account_%1$d_rate_notice_state";
 
   public static final String KEY_ACCOUNT_PIN = "account_%d_pin";
   public static final String KEY_ACCOUNT_LAST_PIN_ENTRY_TIME = "account_%d_last_pin_entry_time";

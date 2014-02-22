@@ -244,4 +244,8 @@
     <string name="kiosk_dialog_title">Enable kiosk mode?</string>
     <string name="kiosk_dialog_text">When kiosk mode is enabled, this Android device will be locked down and only the Coinbase Merchant app will be accessible. You will not be able to open any other apps. Enable kiosk mode?\n\n(Note: after clicking OK, a dialog will appear. Choose Coinbase Merchant and click Always.)</string>
     <string name="kiosk_setup_toast">Select Coinbase Merchant then click Always.</string>
+    <string name="rate_notice_title">Rate this app?</string>
+    <string name="rate_notice_text">Positive reviews help our Play Store ranking. Negative reviews help us improve the app.</string>
+    <string name="rate_notice_btn_positive">RATE NOW</string>
+    <string name="rate_notice_btn_negative">NEVER</string>
 </resources>

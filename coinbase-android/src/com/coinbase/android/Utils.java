@@ -359,4 +359,11 @@ public class Utils {
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     return prefs.getBoolean(String.format(key, activeAccount), def);
   }
+
+  public static boolean putPrefsString(Context c, String key, String newValue) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return prefs.edit().putString(String.format(key, activeAccount), newValue).commit();
+  }
 }

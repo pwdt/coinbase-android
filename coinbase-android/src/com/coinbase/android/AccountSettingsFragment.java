@@ -97,12 +97,16 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
     @Override
     public int getCount() {
-      return mPreferences.length;
+      return mPreferences.length + (BuildConfig.DEBUG ? mDebugPreferences.length : 0);
     }
 
     @Override
     public Object getItem(int position) {
-      return mPreferences[position];
+      if (position >= mPreferences.length) {
+        return mDebugPreferences[position - mPreferences.length];
+      } else {
+        return mPreferences[position];
+      }
     }
 
     @Override
@@ -151,7 +155,11 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
             String.format((String) item[1], mActiveAccount), null);
       }
 
-      text1.setText((Integer) item[0]);
+      if (item[0] instanceof String) {
+        text1.setText((String) item[0]);
+      } else {
+        text1.setText((Integer) item[0]);
+      }
       text2.setText(desc);
 
       return view;
@@ -457,6 +465,11 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       { R.string.account_android_pin, Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, "pin" },
   };
 
+  private Object[][] mDebugPreferences = new Object[][] {
+          { "Rate notice state", Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, "rate_notice_state" },
+          { "Tokens", Constants.KEY_ACCOUNT_ACCESS_TOKEN, "tokens" },
+  };
+
   MainActivity mParent;
   int mPinItem = -1;
   SharedPreferences.OnSharedPreferenceChangeListener mChangeListener;
@@ -567,6 +580,8 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     } else if("pin".equals(data[2])) {
 
       new PINSettingDialogFragment().show(getFragmentManager(), "pin");
+    } else if("rate_notice_state".equals(data[2])) {
+      Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.SHOULD_SHOW_NOTICE.name());
     }
   }
 
