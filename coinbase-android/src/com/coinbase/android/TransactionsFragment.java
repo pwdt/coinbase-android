@@ -794,10 +794,23 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
   }
 
-  public void insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
+  public void insertTransactionAnimated(final int insertAtIndex, final JSONObject transaction, final String category) {
 
-    getListView().setSelection(0);
-    //getListView().setEnabled(false);
+    getListView().setEnabled(false);
+    getListView().post(new Runnable() {
+      @Override
+      public void run() {
+        getListView().setSelection(0);
+        getListView().post(new Runnable() {
+          public void run() {
+            _insertTransactionAnimated(insertAtIndex, transaction, category);
+          }
+        });
+      }
+    });
+  }
+
+  private void _insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
 
     // Step 1
     // Take a screenshot of the relevant part of the list view and put it over top of the real one
