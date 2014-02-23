@@ -761,7 +761,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
               new BigDecimal(mExchangeRates.getString("btc_to_" + userHomeCurrency)));
 
-      String balanceString = Utils.formatCurrencyAmount(mBalanceBtc);
+      String balanceString = Utils.formatCurrencyAmount(mBalanceBtc, false, CurrencyType.BTC_FUZZY);
       String balanceHomeString = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
 
       userHomeCurrency = userHomeCurrency.toUpperCase(Locale.CANADA);

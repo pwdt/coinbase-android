@@ -61,7 +61,8 @@ public class Utils {
   }
 
   public static enum CurrencyType {
-    BTC(4, 2),
+    BTC(8, 2),
+    BTC_FUZZY(4, 2),
     TRADITIONAL(2, 2);
 
 
@@ -204,6 +205,10 @@ public class Utils {
 
   public static final String formatCurrencyAmount(String amount, boolean ignoreSign) {
     return formatCurrencyAmount(new BigDecimal(amount), ignoreSign, CurrencyType.BTC);
+  }
+
+  public static final String formatCurrencyAmount(String amount, boolean ignoreSign, CurrencyType type) {
+    return formatCurrencyAmount(new BigDecimal(amount), ignoreSign, type);
   }
 
   public static final String formatCurrencyAmount(BigDecimal balanceNumber, boolean ignoreSign, CurrencyType type) {
