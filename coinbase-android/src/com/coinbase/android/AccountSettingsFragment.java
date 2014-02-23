@@ -581,7 +581,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
       new PINSettingDialogFragment().show(getFragmentManager(), "pin");
     } else if("rate_notice_state".equals(data[2])) {
-      mParent.getTransactionsFragment().showRateNotice();
+      mParent.getTransactionsFragment().setRateNoticeState(Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
     }
   }
 

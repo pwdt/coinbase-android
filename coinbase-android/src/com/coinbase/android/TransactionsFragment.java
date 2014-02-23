@@ -691,7 +691,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       @Override
       public void onClick(View v) {
         // Permanently hide notice
-        hideRateNotice();
+        setRateNoticeState(Constants.RateNoticeState.NOTICE_DISMISSED);
         // Open Play Store
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.coinbase.android")));
       }
@@ -700,7 +700,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       @Override
       public void onClick(View v) {
         // Permanently hide notice
-        hideRateNotice();
+        setRateNoticeState(Constants.RateNoticeState.NOTICE_DISMISSED);
       }
     });
 
@@ -708,15 +708,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     return rateNotice;
   }
 
-  public void showRateNotice() {
-    Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.SHOULD_SHOW_NOTICE.name());
-    getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(true);
-    getAdapter().notifyDataSetChanged();
-  }
-
-  public void hideRateNotice() {
-    Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.NOTICE_DISMISSED.name());
-    getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(false);
+  public void setRateNoticeState(Constants.RateNoticeState state) {
+    Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, state.name());
+    getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(state == Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
     getAdapter().notifyDataSetChanged();
   }
 
@@ -797,6 +791,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   public void insertTransactionAnimated(final int insertAtIndex, final JSONObject transaction, final String category) {
 
     getListView().setEnabled(false);
+    setRateNoticeState(Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN);
     getListView().post(new Runnable() {
       @Override
       public void run() {
@@ -956,7 +951,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         db.endTransaction(mParent);
       }
     }
-    getAdapter(InsertedItemListAdapter.class).incrementInsertIndex();
     loadTransactionsList();
   }
 
