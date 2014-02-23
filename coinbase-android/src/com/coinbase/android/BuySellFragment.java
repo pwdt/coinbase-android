@@ -18,6 +18,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -177,8 +178,9 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
         mAmount.setText(null);
 
         // Sync transactions
-        mParent.refresh();
+        mParent.getTransactionsFragment().insertTransactionAnimated(0, (JSONObject) result[3], "transfer");
         Utils.incrementPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE);
+        mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
 
         // Hide keyboard (so the user can see their new transaction)
         InputMethodManager inputMethodManager = (InputMethodManager) mParent.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -530,8 +532,17 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
       boolean success = response.getBoolean("success");
 
       if(success) {
-
-        return new Object[] { true, amount, type };
+        // Download the newly created transaction to put in the list
+        JSONObject transaction;
+        try {
+          transaction = RpcManager.getInstance().callGet(mParent, "transactions/" + response.getJSONObject("transfer").getString("transaction_id"));
+          transaction = transaction.getJSONObject("transaction");
+        } catch (Exception e) {
+          Log.e("Coinbase", "Could not load transaction for new transfer");
+          transaction = null;
+          e.printStackTrace();
+        }
+        return new Object[] { true, amount, type, transaction };
       } else {
 
         String errorMessage = response.getJSONArray("errors").optString(0);
