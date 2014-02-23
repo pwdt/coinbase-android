@@ -903,6 +903,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         root.removeView(fakeListView);
         root.removeView(background);
         getListView().setEnabled(true);
+        refresh();
       }
 
       @Override
