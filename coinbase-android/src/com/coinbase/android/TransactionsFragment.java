@@ -703,7 +703,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       @Override
       public void onClick(View v) {
         // Permanently hide notice
-        setRateNoticeState(Constants.RateNoticeState.NOTICE_DISMISSED);
+        setRateNoticeState(Constants.RateNoticeState.NOTICE_DISMISSED, true);
         // Open Play Store
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.coinbase.android")));
       }
@@ -712,7 +712,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       @Override
       public void onClick(View v) {
         // Permanently hide notice
-        setRateNoticeState(Constants.RateNoticeState.NOTICE_DISMISSED);
+        setRateNoticeState(Constants.RateNoticeState.NOTICE_DISMISSED, true);
       }
     });
 
@@ -720,7 +720,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     return rateNotice;
   }
 
-  public void setRateNoticeState(Constants.RateNoticeState state) {
+  public void setRateNoticeState(Constants.RateNoticeState state, boolean force) {
+
+    Constants.RateNoticeState rateNoticeState = Constants.RateNoticeState.valueOf(Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN.name()));
+    if (rateNoticeState == Constants.RateNoticeState.NOTICE_DISMISSED && !force) {
+      return;
+    }
+
     Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, state.name());
     if (getAdapter() != null) {
       getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(state == Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
@@ -814,7 +820,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     mAnimationPlaying = true;
     getListView().setEnabled(false);
-    setRateNoticeState(Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN);
+    setRateNoticeState(Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN, false);
     refreshBalance();
     getListView().post(new Runnable() {
       @Override
@@ -1102,7 +1108,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     int appUsageCount = Utils.getPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE, 0);
     if (appUsageCount >= 2 && !mAnimationPlaying) {
-      setRateNoticeState(Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
+      setRateNoticeState(Constants.RateNoticeState.SHOULD_SHOW_NOTICE, false);
     }
   }
 
