@@ -76,7 +76,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
-  private class LoadExchangeRatesTask extends AsyncTask<Void, Void, JSONObject> {
+  private class LoadExchangeRatesTask extends AsyncTask<Object, Void, JSONObject> {
 
     @Override
     protected void onPreExecute() {
@@ -84,12 +84,19 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
 
     @Override
-    protected JSONObject doInBackground(Void... params) {
+    protected JSONObject doInBackground(Object... params) {
+
+      boolean alsoFetchBalance = (Boolean) params[0];
 
       try {
         JSONObject exchangeRates = RpcManager.getInstance().callGet(mParent, "currencies/exchange_rates");
-        return exchangeRates;
 
+        if (alsoFetchBalance) {
+          exchangeRates.put("balance", RpcManager.getInstance().callGet(mParent, "account/balance"));
+          return exchangeRates;
+        } else {
+          return exchangeRates;
+        }
       } catch (IOException e) {
 
         e.printStackTrace();
@@ -103,6 +110,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     @Override
     protected void onPostExecute(JSONObject result) {
+
+      if (result != null && result.has("balance")) {
+        mBalanceBtc = result.optJSONObject("balance").optString("amount");
+        result.remove("balance");
+      }
 
       mExchangeRates = result;
       updateBalance();
@@ -716,6 +728,14 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
   }
 
+  // Refresh just account balance.
+  private void refreshBalance() {
+
+    mBalanceLoading = true;
+    mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
+    Utils.runAsyncTaskConcurrently(new LoadExchangeRatesTask(), true);
+  }
+
   private void updateBalance() {
 
     if (mExchangeRates == null || mBalanceBtc == null || mBalanceText == null) {
@@ -764,7 +784,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
 
     // Reload exchange rates
-    Utils.runAsyncTaskConcurrently(new LoadExchangeRatesTask());
+    Utils.runAsyncTaskConcurrently(new LoadExchangeRatesTask(), false);
 
     // Reload transactions + balance
     if(mSyncTask == null) {
@@ -795,6 +815,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mAnimationPlaying = true;
     getListView().setEnabled(false);
     setRateNoticeState(Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN);
+    refreshBalance();
     getListView().post(new Runnable() {
       @Override
       public void run() {
@@ -901,7 +922,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         root.removeView(fakeListView);
         root.removeView(background);
         getListView().setEnabled(true);
-        refresh();
       }
 
       @Override
