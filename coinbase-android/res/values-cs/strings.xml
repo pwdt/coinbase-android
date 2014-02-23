@@ -95,7 +95,7 @@
     <string name="transfer_recipient">Email nebo bitcoinová adresa</string>
     <string name="transfer_confirm_message_send">Opravdu chcete poslat %2$s %1$s BTC?</string>
     <string name="transfer_confirm_message_request">Opravdu chcete vyžádat od %2$s %1$s BTC?</string>
-    <string name="transfer_confirm_message_send_fee">Tato transakce vyžaduje poplatek of 0,0005 BTC aby byla akceptovaná sítí. Opravdu chcete poslat %2$s %1$s BTC?</string>
+    <string name="transfer_confirm_message_send_fee">Tato transakce vyžaduje poplatek of %3$s BTC aby byla akceptovaná sítí. Opravdu chcete poslat %2$s %1$s BTC?</string>
     <string name="transfer_error_exception">Požadavek nemohl být dokončen.</string>
     <string name="transfer_error_api">Požadavek nemohl být dokončen.\n\n%1$s</string>
     <string name="transfer_progress">Zasílám&#8230;</string>

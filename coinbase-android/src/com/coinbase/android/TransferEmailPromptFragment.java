@@ -50,7 +50,7 @@ public class TransferEmailPromptFragment extends DialogFragment {
         TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
 
         if(parent != null) {
-          parent.startTransferTask(type, amount, notes, field.getText().toString(), false);
+          parent.startTransferTask(type, amount, notes, field.getText().toString(), null);
         }
       }
     });

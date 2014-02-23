@@ -874,7 +874,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       JSONObject cache = new JSONObject();
       cache.put("category", category);
       boolean thisUserSender = Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
-      cache.put("other_user", transaction.getJSONObject(thisUserSender ? "recipient" : "sender"));
+      JSONObject otherUser = transaction.optJSONObject(thisUserSender ? "recipient" : "sender");
+      if (otherUser == null) {
+        otherUser = new JSONObject();
+        otherUser.put("id", null);
+        otherUser.put("name", "an external account");
+      }
+      cache.put("other_user", otherUser);
       accountChange.put("cache", cache);
 
       newListItem = View.inflate(mParent, R.layout.fragment_transactions_item, null);

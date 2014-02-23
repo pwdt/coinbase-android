@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TransferFragment extends Fragment implements CoinbaseFragment {
 
@@ -83,6 +85,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   private class DoTransferTask extends AsyncTask<Object, Void, Object[]> {
 
     private ProgressDialog mDialog;
+    private Object[] params;
 
     @Override
     protected void onPreExecute() {
@@ -93,7 +96,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     protected Object[] doInBackground(Object... params) {
 
-      return doTransfer((TransferType) params[0], (String) params[1], (String) params[2], (String) params[3], (Boolean) params[4]);
+      this.params = params;
+      return doTransfer((TransferType) params[0], (String) params[1], (String) params[2], (String) params[3], (String) params[4]);
     }
 
     protected void onPostExecute(Object[] result) {
@@ -123,7 +127,26 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
       } else {
 
-        Utils.showMessageDialog(getFragmentManager(), (String) result[1]);
+        String neededFee = (String) result[2];
+        if (neededFee == null) {
+          Utils.showMessageDialog(getFragmentManager(), (String) result[1]);
+        } else {
+
+          // Show confirm dialog with fee
+          ConfirmTransferFragment dialog = new ConfirmTransferFragment();
+
+          Bundle b = new Bundle();
+
+          b.putSerializable("type", (TransferType) params[0]);
+          b.putString("amount", (String) params[1]);
+          b.putString("notes", (String) params[2]);
+          b.putString("toFrom", (String) params[3]);
+          b.putString("feeAmount", neededFee);
+
+          dialog.setArguments(b);
+
+          dialog.show(getFragmentManager(), "confirm");
+        }
       }
     }
   }
@@ -137,21 +160,21 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       final String amount = getArguments().getString("amount"),
           toFrom = getArguments().getString("toFrom"),
           notes = getArguments().getString("notes");
-      final boolean isFeePrompt = getArguments().getBoolean("isFeePrompt");
+      final String feeAmount = getArguments().getString("feeAmount");
 
       int messageResource;
 
       if(type == TransferType.REQUEST) {
         messageResource =  R.string.transfer_confirm_message_request;
       } else {
-        if(isFeePrompt) {
+        if(feeAmount != null) {
           messageResource =  R.string.transfer_confirm_message_send_fee;
         } else {
           messageResource =  R.string.transfer_confirm_message_send;
         }
       }
 
-      String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount), toFrom);
+      String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount), toFrom, feeAmount);
 
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
       builder.setMessage(message)
@@ -162,7 +185,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
 
           if(parent != null) {
-            parent.startTransferTask(type, amount, notes, toFrom, isFeePrompt);
+            parent.startTransferTask(type, amount, notes, toFrom, feeAmount);
           }
         }
       })
@@ -485,7 +508,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
     b.putString("notes", mNotes);
     b.putString("toFrom", mRecipient);
-    b.putBoolean("isFeePrompt", ((BigDecimal) btcAmount).compareTo(new BigDecimal("0.001")) == -1);
+    b.putString("feeAmount", null);
 
     dialog.setArguments(b);
 
@@ -815,12 +838,12 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     updateNativeCurrency();
   }
 
-  protected void startTransferTask(TransferType type, String amount, String notes, String toFrom, boolean addFee) {
+  protected void startTransferTask(TransferType type, String amount, String notes, String toFrom, String feeAmount) {
 
-    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, notes, toFrom, addFee);
+    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, notes, toFrom, feeAmount);
   }
 
-  private Object[] doTransfer(TransferType type, String amount, String notes, String toFrom, boolean addFee) {
+  private Object[] doTransfer(TransferType type, String amount, String notes, String toFrom, String feeAmount) {
 
     List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
     params.add(new BasicNameValuePair("transaction[amount]", amount));
@@ -829,8 +852,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       params.add(new BasicNameValuePair("transaction[notes]", notes));
     }
 
-    if(addFee) {
-      params.add(new BasicNameValuePair("transaction[user_fee]", "0.0005"));
+    if(feeAmount != null) {
+      params.add(new BasicNameValuePair("transaction[user_fee]", feeAmount));
     }
 
     params.add(new BasicNameValuePair(
@@ -850,11 +873,26 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
         JSONArray errors = response.getJSONArray("errors");
         String errorMessage = "";
+        Pattern feeRegex = Pattern.compile("This transaction requires a ([0-9\\.]+) fee to be accepted");
+        Matcher matcher = null;
+        String feeNeeded = null;
 
         for(int i = 0; i < errors.length(); i++) {
-          errorMessage += (errorMessage.equals("") ? "" : "\n") + errors.getString(i);
+          String error = errors.getString(i);
+          if (matcher == null) {
+            matcher = feeRegex.matcher(error);
+          } else {
+            matcher.reset(error);
+          }
+
+          boolean isFeeMessage = matcher.find();
+          if (isFeeMessage) {
+            feeNeeded = matcher.group(1);
+          } else {
+            errorMessage += (errorMessage.equals("") ? "" : "\n") + error;
+          }
         }
-        return new Object[] { false, String.format(getString(R.string.transfer_error_api), errorMessage) };
+        return new Object[] { false, String.format(getString(R.string.transfer_error_api), errorMessage), feeNeeded };
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -864,7 +902,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
 
     // There was an exception
-    return new Object[] { false, getString(R.string.transfer_error_exception) };
+    return new Object[] { false, getString(R.string.transfer_error_exception), null };
   }
 
   public void fillFormForBitcoinUri(String content) {

@@ -91,7 +91,7 @@
     <string name="transfer_recipient">E-mail o dirección de bitcoin del beneficiario</string>
     <string name="transfer_confirm_message_send">¿Está seguro que le desea enviar %1$s BTC a %2$s?</string>
     <string name="transfer_confirm_message_request">¿Está seguro que le desea solicitar %1$s BTC a %2$s?</string>
-    <string name="transfer_confirm_message_send_fee">Está transacción requiere una comisión de 0.0005 BTC para que sea aceptada por la red de bitcoin. ¿Está seguro que le desea enviar %1$s BTC a %2$s?</string>
+    <string name="transfer_confirm_message_send_fee">Está transacción requiere una comisión de %3$s BTC para que sea aceptada por la red de bitcoin. ¿Está seguro que le desea enviar %1$s BTC a %2$s?</string>
     <string name="transfer_error_exception">El pedido no pudo ser completado.</string>
     <string name="transfer_error_api">El pedido no pudo ser completado.\n\n%1$s</string>
     <string name="transfer_progress">Enviando&#8230;</string>

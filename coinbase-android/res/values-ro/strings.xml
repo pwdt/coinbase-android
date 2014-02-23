@@ -113,7 +113,7 @@
     <string name="transfer_recipient">Destinatar de e-mail sau adresa de Bitcoin</string>
     <string name="transfer_confirm_message_send">Sunteţi sigur(ă) că doriţi să trimiteţi %1$s BTC pentru %2$s?</string>
     <string name="transfer_confirm_message_request">Sunteţi sigur(ă) că doriţi să solicitaţi %1$s BTC de la %2$s?</string>
-    <string name="transfer_confirm_message_send_fee">Această tranzacţie necesită o taxă de 0,0005 BTC pentru a fi acceptat de către reţeaua Bitcoin. Sunteţi sigur(ă) că doriţi să trimiteţi %1$s BTC pentru %2$s?</string>
+    <string name="transfer_confirm_message_send_fee">Această tranzacţie necesită o taxă de %3$s BTC pentru a fi acceptat de către reţeaua Bitcoin. Sunteţi sigur(ă) că doriţi să trimiteţi %1$s BTC pentru %2$s?</string>
     <string name="transfer_error_exception">Cererea nu a putut fi finalizată.</string>
     <string name="transfer_error_api">Cererea nu a putut fi finalizată.\n\n%1$s</string>
     <string name="transfer_progress">În curse de trimitere&#8230;</string>

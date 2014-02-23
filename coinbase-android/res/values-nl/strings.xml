@@ -99,7 +99,7 @@
     <string name="transfer_recipient">Ontvanger email of bitcoin adres</string>
     <string name="transfer_confirm_message_send">Weet je het zeker dat je %1$s BTC wilt versturen naar %2$s?</string>
     <string name="transfer_confirm_message_request">Weet jet het zeker dat je %1$s BTC wilt vragen van %2$s?</string>
-    <string name="transfer_confirm_message_send_fee">Deze transactie heeft een fee van 0.0005 BTC om te worden geacepteerd in het bitcoin netwerk. Weet je het zeker dat je %1$s BTC wilt sturen naar %2$s?</string>
+    <string name="transfer_confirm_message_send_fee">Deze transactie heeft een fee van %3$s BTC om te worden geacepteerd in het bitcoin netwerk. Weet je het zeker dat je %1$s BTC wilt sturen naar %2$s?</string>
     <string name="transfer_error_exception">De aanvraag kon niet worden voltooid.</string>
     <string name="transfer_error_api">De aanvraag kon niet worden voltooid\n\n%1$s</string>
     <string name="transfer_progress">Versturen&#8230;</string>
