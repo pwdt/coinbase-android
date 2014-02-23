@@ -488,7 +488,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   MainActivity mParent;
 
-  boolean mBalanceLoading;
+  boolean mBalanceLoading, mAnimationPlaying;
   FrameLayout mListHeaderContainer;
   ListView mListView;
   ViewGroup mListHeader, mMainView;
@@ -710,8 +710,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   public void setRateNoticeState(Constants.RateNoticeState state) {
     Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, state.name());
-    getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(state == Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
-    getAdapter().notifyDataSetChanged();
+    if (getAdapter() != null) {
+      getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(state == Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
+      getAdapter().notifyDataSetChanged();
+    }
   }
 
   private void updateBalance() {
@@ -790,17 +792,18 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   public void insertTransactionAnimated(final int insertAtIndex, final JSONObject transaction, final String category) {
 
+    mAnimationPlaying = true;
     getListView().setEnabled(false);
     setRateNoticeState(Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN);
     getListView().post(new Runnable() {
       @Override
       public void run() {
         getListView().setSelection(0);
-        getListView().post(new Runnable() {
+        getListView().postDelayed(new Runnable() {
           public void run() {
             _insertTransactionAnimated(insertAtIndex, transaction, category);
           }
-        });
+        }, 500);
       }
     });
   }
@@ -883,7 +886,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     ObjectAnimator listAnimation = ObjectAnimator.ofFloat(fakeListView, "translationY", 0, itemHeight);
 
     set.playSequentially(listAnimation, itemAnimation);
-    set.setStartDelay(500);
     set.setDuration(300);
     final View _newListItem = newListItem;
     set.addListener(new Animator.AnimatorListener() {
@@ -894,6 +896,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
       @Override
       public void onAnimationEnd(Animator animation) {
+        mAnimationPlaying = false;
         root.removeView(_newListItem);
         root.removeView(fakeListView);
         root.removeView(background);
@@ -1076,7 +1079,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   @Override
   public void onSwitchedTo() {
-    // Not used
+
+    int appUsageCount = Utils.getPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE, 0);
+    if (appUsageCount >= 2 && !mAnimationPlaying) {
+      setRateNoticeState(Constants.RateNoticeState.SHOULD_SHOW_NOTICE);
+    }
   }
 
   @Override

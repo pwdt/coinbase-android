@@ -150,6 +150,8 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
         desc = getString(enabled ? (editOnly ? R.string.account_android_pin_edit : R.string.account_android_pin_all) : R.string.account_android_pin_none);
 
+      } else if ("app_usage".equals(item[2])) {
+        desc = Integer.toString(prefs.getInt(String.format((String) item[1], mActiveAccount), 0));
       } else {
         desc = prefs.getString(
             String.format((String) item[1], mActiveAccount), null);
@@ -468,6 +470,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
   private Object[][] mDebugPreferences = new Object[][] {
           { "Rate notice state", Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, "rate_notice_state" },
           { "Tokens", Constants.KEY_ACCOUNT_ACCESS_TOKEN, "tokens" },
+          { "App usage count", Constants.KEY_ACCOUNT_APP_USAGE, "app_usage" },
   };
 
   MainActivity mParent;

@@ -366,4 +366,26 @@ public class Utils {
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     return prefs.edit().putString(String.format(key, activeAccount), newValue).commit();
   }
+
+  public static int getPrefsInt(Context c, String key, int def) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return prefs.getInt(String.format(key, activeAccount), def);
+  }
+
+  public static boolean putPrefsInt(Context c, String key, int newValue) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return prefs.edit().putInt(String.format(key, activeAccount), newValue).commit();
+  }
+
+  public static boolean incrementPrefsInt(Context c, String key) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    int current = prefs.getInt(String.format(key, activeAccount), 0);
+    return prefs.edit().putInt(String.format(key, activeAccount), current + 1).commit();
+  }
 }

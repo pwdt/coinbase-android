@@ -178,6 +178,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
         // Sync transactions
         mParent.refresh();
+        Utils.incrementPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE);
 
         // Hide keyboard (so the user can see their new transaction)
         InputMethodManager inputMethodManager = (InputMethodManager) mParent.getSystemService(Context.INPUT_METHOD_SERVICE);

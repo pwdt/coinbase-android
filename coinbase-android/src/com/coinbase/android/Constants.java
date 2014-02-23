@@ -36,6 +36,7 @@ public class Constants {
   public static final String KEY_ACCOUNT_SHOW_BALANCE = "account_%1$d_show_balance";
   public static final String KEY_ACCOUNT_FIRST_LAUNCH = "account_%1$d_first_launch";
   public static final String KEY_ACCOUNT_RATE_NOTICE_STATE = "account_%1$d_rate_notice_state";
+  public static final String KEY_ACCOUNT_APP_USAGE = "account_%1$d_app_usage";
 
   public static final String KEY_ACCOUNT_PIN = "account_%d_pin";
   public static final String KEY_ACCOUNT_LAST_PIN_ENTRY_TIME = "account_%d_last_pin_entry_time";
