@@ -1006,6 +1006,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     return mTransferFragment;
   }
 
+  public TransactionsFragment getTransactionsFragment() {
+    return mTransactionsFragment;
+  }
+
   public AccountSettingsFragment getAccountSettingsFragment() {
     return mSettingsFragment;
   }

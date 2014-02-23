@@ -26,6 +26,10 @@ public class InsertedItemListAdapter implements WrapperListAdapter {
     mInsertedViewVisible = visible;
   }
 
+  public void incrementInsertIndex() {
+    mInsertIndex++;
+  }
+
   private int numInserted() {
     return mInsertedViewVisible ? 1 : 0;
   }

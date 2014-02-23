@@ -11,6 +11,10 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -21,6 +25,7 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Html;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +36,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
@@ -42,6 +48,9 @@ import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.util.InsertedItemListAdapter;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorSet;
+import com.nineoldandroids.animation.ObjectAnimator;
 
 import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
@@ -226,6 +235,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           p.segmentDone("Set up database");
 
+          int i = startPage * 100;
           for(JSONObject transaction : transactions) {
 
             ContentValues values = new ContentValues();
@@ -253,8 +263,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
             values.put(TransactionEntry.COLUMN_NAME_JSON, transaction.toString());
             values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
             values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
+            values.put(TransactionEntry.COLUMN_NAME_ORDER, i);
 
             db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
+            i++;
           }
 
           db.setTransactionSuccessful(mParent);
@@ -335,9 +347,19 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     @Override
     public boolean setViewValue(View arg0, Cursor arg1, int arg2) {
-
       try {
         JSONObject item = new JSONObject(new JSONTokener(arg1.getString(arg2)));
+        return setViewValue(arg0, item);
+      } catch (JSONException e) {
+        // Malformed transaction JSON.
+        Log.e("Coinbase", "Corrupted database entry! " + arg1.getInt(arg1.getColumnIndex(TransactionEntry._ID)));
+        e.printStackTrace();
+
+        return true;
+      }
+    }
+
+    public boolean setViewValue(View arg0, JSONObject item) throws JSONException {
 
         switch(arg0.getId()) {
 
@@ -384,13 +406,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         }
 
         return false;
-      } catch (JSONException e) {
-        // Malformed transaction JSON.
-        Log.e("Coinbase", "Corrupted database entry! " + arg1.getInt(arg1.getColumnIndex(TransactionEntry._ID)));
-        e.printStackTrace();
-
-        return true;
-      }
     }
   }
 
@@ -403,7 +418,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
       Cursor c = DatabaseObject.getInstance().query(mParent, TransactionsDatabase.TransactionEntry.TABLE_NAME,
-        null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) }, null, null, null);
+        null, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) }, null, null, TransactionEntry.COLUMN_NAME_ORDER + " ASC");
+      Log.i("Coinbase", "Loaded " + c.getCount() + " rows.");
       return c;
     }
 
@@ -422,8 +438,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         if(mListView.getAdapter() != null) {
 
           // Just update existing adapter
-          getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(showRateNotice);
           getAdapter().changeCursor(result);
+          getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(showRateNotice);
           return;
         }
 
@@ -692,7 +708,13 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     return rateNotice;
   }
 
-  private void hideRateNotice() {
+  public void showRateNotice() {
+    Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.SHOULD_SHOW_NOTICE.name());
+    getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(true);
+    getAdapter().notifyDataSetChanged();
+  }
+
+  public void hideRateNotice() {
     Utils.putPrefsString(mParent, Constants.KEY_ACCOUNT_RATE_NOTICE_STATE, Constants.RateNoticeState.NOTICE_DISMISSED.name());
     getAdapter(InsertedItemListAdapter.class).setInsertedViewVisible(false);
     getAdapter().notifyDataSetChanged();
@@ -770,6 +792,157 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     } else {
       mListHeaderContainer.addView(mListHeader);
     }
+  }
+
+  public void insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
+
+    getListView().setSelection(0);
+    //getListView().setEnabled(false);
+
+    // Step 1
+    // Take a screenshot of the relevant part of the list view and put it over top of the real one
+    Bitmap bitmap = Bitmap.createBitmap(getListView().getWidth(), getListView().getHeight(), Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas (bitmap);
+    getListView().draw(canvas);
+    int heightToCropOff = 0;
+    for (int i = 0; i <= insertAtIndex; i++) {
+      heightToCropOff += getListView().getChildAt(i).getHeight();
+    }
+    int height = getListView().getHeight() - heightToCropOff;
+
+    final FrameLayout root = (FrameLayout) getView().findViewById(R.id.root);
+    DisplayMetrics metrics = getResources().getDisplayMetrics();
+    final ImageView fakeListView = new ImageView(mParent);
+    fakeListView.setImageBitmap(bitmap);
+
+    Matrix m = new Matrix();
+    m.setTranslate(0, -heightToCropOff);
+    fakeListView.setImageMatrix(m);
+    fakeListView.setScaleType(ImageView.ScaleType.MATRIX);
+
+    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, height);
+    params.topMargin = heightToCropOff + getListView().getDividerHeight();
+    fakeListView.setLayoutParams(params);
+
+    // Step 2
+    // Create a fake version of the new list item and a background for it to animate onto
+    JSONObject accountChange = new JSONObject();
+    View newListItem;
+    try {
+      accountChange.put("transaction_id", transaction.getString("id"));
+      accountChange.put("created_at", transaction.getString("created_at"));
+      accountChange.put("confirmed", !transaction.getString("status").equals("pending"));
+      accountChange.put("amount", transaction.getJSONObject("amount"));
+      JSONObject cache = new JSONObject();
+      cache.put("category", category);
+      boolean thisUserSender = Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
+      cache.put("other_user", transaction.getJSONObject(thisUserSender ? "recipient" : "sender"));
+      accountChange.put("cache", cache);
+
+      newListItem = View.inflate(mParent, R.layout.fragment_transactions_item, null);
+      TransactionViewBinder binder = new TransactionViewBinder();
+      for (int i : new int[] { R.id.transaction_title, R.id.transaction_amount,
+              R.id.transaction_status, R.id.transaction_currency }) {
+        if (newListItem.findViewById(i) != null) {
+          binder.setViewValue(newListItem.findViewById(i), accountChange);
+        }
+      }
+      newListItem.setBackgroundColor(Color.WHITE);
+    } catch (JSONException e) {
+      throw new RuntimeException("Malformed JSON from Coinbase", e);
+    }
+    int itemHeight = (int)(70 * metrics.density);
+    FrameLayout.LayoutParams itemParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, itemHeight);
+    itemParams.topMargin = heightToCropOff + getListView().getDividerHeight(); // account for divider
+    newListItem.setLayoutParams(itemParams);
+
+    final View background = new View(mParent);
+    background.setBackgroundColor(Color.parseColor("#eeeeee"));
+    FrameLayout.LayoutParams bgParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, itemHeight + (2 * getListView().getDividerHeight()));
+    bgParams.topMargin = heightToCropOff;
+    background.setLayoutParams(bgParams);
+
+    root.addView(background, root.getChildCount());
+    root.addView(fakeListView, root.getChildCount());
+    root.addView(newListItem, root.getChildCount());
+
+    // Step 3
+    // Animate
+    AnimatorSet set = new AnimatorSet();
+
+    newListItem.setTranslationX(-metrics.widthPixels);
+    ObjectAnimator itemAnimation = ObjectAnimator.ofFloat(newListItem, "translationX", -metrics.widthPixels, 0);
+    ObjectAnimator listAnimation = ObjectAnimator.ofFloat(fakeListView, "translationY", 0, itemHeight);
+
+    set.playSequentially(listAnimation, itemAnimation);
+    set.setDuration(500);
+    final View _newListItem = newListItem;
+    set.addListener(new Animator.AnimatorListener() {
+      @Override
+      public void onAnimationStart(Animator animation) {
+
+      }
+
+      @Override
+      public void onAnimationEnd(Animator animation) {
+        root.removeView(_newListItem);
+        root.removeView(fakeListView);
+        root.removeView(background);
+        getListView().setEnabled(true);
+      }
+
+      @Override
+      public void onAnimationCancel(Animator animation) {
+
+      }
+
+      @Override
+      public void onAnimationRepeat(Animator animation) {
+
+      }
+    });
+    set.start();
+
+    // Step 4
+    // Now that the animation is started, update the actual list values behind-the-scenes
+    DatabaseObject db = DatabaseObject.getInstance();
+    synchronized(db.databaseLock) {
+      db.beginTransaction(mParent);
+      try {
+        ContentValues values = new ContentValues();
+
+        String createdAtStr = transaction.optString("created_at", null);
+        long createdAt;
+        try {
+          if(createdAtStr != null) {
+            createdAt = ISO8601.toCalendar(createdAtStr).getTimeInMillis();
+          } else {
+            createdAt = -1;
+          }
+        } catch (ParseException e) {
+          // Error parsing createdAt
+          e.printStackTrace();
+          createdAt = -1;
+        }
+
+        values.put(TransactionEntry.COLUMN_NAME_TRANSACTION_JSON, transaction.toString());
+        values.put(TransactionEntry._ID, transaction.getString("id"));
+        values.put(TransactionEntry.COLUMN_NAME_JSON, accountChange.toString());
+        values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
+        values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, Utils.getActiveAccount(mParent));
+        values.put(TransactionEntry.COLUMN_NAME_ORDER, -System.currentTimeMillis());
+
+        long newId = db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
+        System.out.println("Inserted with ID " + newId);
+        db.setTransactionSuccessful(mParent);
+      } catch (JSONException e) {
+        throw new RuntimeException("Malformed JSON from Coinbase", e);
+      } finally {
+        db.endTransaction(mParent);
+      }
+    }
+    getAdapter(InsertedItemListAdapter.class).incrementInsertIndex();
+    loadTransactionsList();
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)

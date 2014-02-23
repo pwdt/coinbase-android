@@ -118,8 +118,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         mNotesView.setText("");
         mRecipientView.setText("");
         
-        // Sync transactions
-        mParent.refresh();
+        // Add new transaction to transactions screen
+        mParent.getTransactionsFragment().insertTransactionAnimated(0, (JSONObject) result[4], "tx");
         mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
       } else {
 
@@ -841,10 +841,11 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         String.format("transactions/%s_money", type.getRequestName()), params);
 
       boolean success = response.getBoolean("success");
+      JSONObject transaction = response.getJSONObject("transaction");
 
       if(success) {
 
-        return new Object[] { true, amount, type, toFrom };
+        return new Object[] { true, amount, type, toFrom, transaction };
       } else {
 
         JSONArray errors = response.getJSONArray("errors");
