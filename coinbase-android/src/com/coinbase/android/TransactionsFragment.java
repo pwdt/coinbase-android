@@ -875,7 +875,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     ObjectAnimator listAnimation = ObjectAnimator.ofFloat(fakeListView, "translationY", 0, itemHeight);
 
     set.playSequentially(listAnimation, itemAnimation);
-    set.setDuration(500);
+    set.setStartDelay(500);
+    set.setDuration(300);
     final View _newListItem = newListItem;
     set.addListener(new Animator.AnimatorListener() {
       @Override
