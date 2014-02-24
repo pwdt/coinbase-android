@@ -396,6 +396,15 @@ public class Utils {
     return prefs.edit().putInt(String.format(key, activeAccount), current + 1).commit();
   }
 
+  public static boolean togglePrefsBool(Context c, String key, boolean def) {
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    boolean current = prefs.getBoolean(String.format(key, activeAccount), def);
+    prefs.edit().putBoolean(String.format(key, activeAccount), !current).commit();
+    return !current;
+  }
+
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   public static void setClipboard(Context c, String text) {
 

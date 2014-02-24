@@ -620,6 +620,14 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     ((TextView) view.findViewById(R.id.wallet_send_label)).setTypeface(
            FontManager.getFont(mParent, "RobotoCondensed-Regular"));
 
+    mBalanceText.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Utils.togglePrefsBool(mParent, Constants.KEY_ACCOUNT_BALANCE_FUZZY, true);
+        setBalance((String) v.getTag());
+      }
+    });
+
     // Load old balance
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
@@ -684,7 +692,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   }
 
   private void setBalance(String balance) {
-    mBalanceText.setText(Html.fromHtml(String.format("<b>%1$s</b> BTC", balance)));
+
+    boolean fuzzy = Utils.getPrefsBool(mParent, Constants.KEY_ACCOUNT_BALANCE_FUZZY, true);
+    String formatted = Utils.formatCurrencyAmount(balance, false, fuzzy ? CurrencyType.BTC_FUZZY : CurrencyType.BTC);
+    mBalanceText.setText(Html.fromHtml(String.format("<b>%1$s</b> BTC", formatted)));
+    mBalanceText.setTag(balance);
   }
 
   private View getRateNotice() {
@@ -761,21 +773,20 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
               new BigDecimal(mExchangeRates.getString("btc_to_" + userHomeCurrency)));
 
-      String balanceString = Utils.formatCurrencyAmount(mBalanceBtc, false, CurrencyType.BTC_FUZZY);
       String balanceHomeString = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
 
       userHomeCurrency = userHomeCurrency.toUpperCase(Locale.CANADA);
 
       // Save balance in preferences
       Editor editor = prefs.edit();
-      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), balanceString);
+      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), mBalanceBtc);
       editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), balanceHomeString);
       editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), userHomeCurrency);
       editor.commit();
 
       // Update the view.
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
-      setBalance(balanceString);
+      setBalance(mBalanceBtc);
       mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), balanceHomeString, userHomeCurrency));
     } catch (Exception e) {
       e.printStackTrace();
