@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -322,6 +323,10 @@ public class TransactionDetailsFragment extends Fragment {
     String recipient = getName(data.optJSONObject("recipient"), data.optString("recipient_address"), currentUserId);
     from.setText(getName(data.optJSONObject("sender"), null, currentUserId));
     to.setText(recipient);
+    if (Build.VERSION.SDK_INT >= 11) {
+      from.setTextIsSelectable(true);
+      to.setTextIsSelectable(true);
+    }
 
     // Date
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy, 'at' hh:mma zzz");
