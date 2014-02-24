@@ -2,6 +2,8 @@ package com.coinbase.android;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -392,5 +394,23 @@ public class Utils {
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     int current = prefs.getInt(String.format(key, activeAccount), 0);
     return prefs.edit().putInt(String.format(key, activeAccount), current + 1).commit();
+  }
+
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+  public static void setClipboard(Context c, String text) {
+
+    int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+    if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+
+      android.content.ClipboardManager clipboard =
+              (ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
+      ClipData clip = ClipData.newPlainText("Coinbase", text);
+      clipboard.setPrimaryClip(clip);
+    } else {
+
+      android.text.ClipboardManager clipboard =
+              (android.text.ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
+      clipboard.setText(text);
+    }
   }
 }

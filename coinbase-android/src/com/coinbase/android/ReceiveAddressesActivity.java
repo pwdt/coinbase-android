@@ -1,12 +1,7 @@
 package com.coinbase.android;
 
-import android.annotation.TargetApi;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -99,24 +94,6 @@ public class ReceiveAddressesActivity extends SherlockListActivity {
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-  private void setClipboard(String text) {
-
-    int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-    if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-
-      android.content.ClipboardManager clipboard =
-          (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-      ClipData clip = ClipData.newPlainText("Coinbase", text);
-      clipboard.setPrimaryClip(clip);
-    } else {
-
-      android.text.ClipboardManager clipboard =
-          (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-      clipboard.setText(text);
-    }
-  }
-
   @Override
   protected void onListItemClick(ListView l, View v, int position, long id) {
 
@@ -125,7 +102,7 @@ public class ReceiveAddressesActivity extends SherlockListActivity {
     }
 
     String address = (String)((Map<?, ?>) l.getItemAtPosition(position)).get("address");
-    setClipboard(address);
+    Utils.setClipboard(this, address);
     Toast.makeText(ReceiveAddressesActivity.this, getString(R.string.addresses_copied), Toast.LENGTH_SHORT).show();
   }
 
