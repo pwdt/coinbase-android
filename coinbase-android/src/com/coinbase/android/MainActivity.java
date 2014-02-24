@@ -276,19 +276,15 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   /*
    * http://www.curious-creature.org/2012/12/11/android-recipe-1-image-with-rounded-corners/
    */
-  class AvatarDrawable extends Drawable {
+  public static class AvatarDrawable extends Drawable {
 
-    private final float mCornerRadius;
     private final RectF mRect = new RectF();
     private final BitmapShader mBitmapShader;
     private final Paint mPaint;
 
-    AvatarDrawable(Bitmap bitmap, float cornerRadius, int sizeDp) {
-      mCornerRadius = cornerRadius;
+    AvatarDrawable(Bitmap bitmap) {
 
-      int sizePx = (int)(sizeDp * getResources().getDisplayMetrics().density);
-      mBitmapShader = new BitmapShader(Bitmap.createScaledBitmap(bitmap, sizePx, sizePx, true),
-        Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+      mBitmapShader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
 
       mPaint = new Paint();
       mPaint.setAntiAlias(true);
@@ -304,7 +300,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     @Override
     public void draw(Canvas canvas) {
-      canvas.drawRoundRect(mRect, mCornerRadius, mCornerRadius, mPaint);
+      canvas.drawRoundRect(mRect, mRect.width() / 2, mRect.height() / 2, mPaint);
     }
 
     @Override
@@ -343,8 +339,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     @Override
     protected void onPostExecute(Bitmap result) {
       if(result != null) {
-        ((ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar)).setImageDrawable(new AvatarDrawable(
-          result, 25 * getResources().getDisplayMetrics().density, 50));
+        ((ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar)).setImageDrawable(new AvatarDrawable(result));
       }
     }
   }
@@ -353,8 +348,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     mMenuProfileView = View.inflate(this, R.layout.activity_main_drawer_profile, null);
     ImageView photo = (ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar);
 
-    photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar),
-            25 * getResources().getDisplayMetrics().density, 50));
+    photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar)));
 
     refreshProfileView();
   }
