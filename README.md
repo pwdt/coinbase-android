@@ -12,23 +12,19 @@ The official Android application for [Coinbase](https://coinbase.com/).
 * 100% open source - contributions welcome
 * Revoke [access](https://coinbase.com/account/integrations) remotely if you lose your phone.
 
-<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen1.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen1.png" width="250" /></a>
-<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen2.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen2.png" width="250" /></a>
-<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen3.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen3.png" width="250" /></a>
-<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen4.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen4.png" width="250" /></a>
-<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen5.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen5.png" width="250" /></a>
-<a href="https://dl.dropbox.com/u/324237/coinbase-android/screen6.png"><img src="https://dl.dropbox.com/u/324237/coinbase-android/screen6.png" width="250" /></a>
+You can find more information, and download the app, at https://play.google.com/store/apps/details?id=com.coinbase.android.
 
 ## Building
 
-To build the Android app in [Eclipse](http://developer.android.com/sdk/index.html):
+Building the app is only supported in [Android Studio](http://developer.android.com/sdk/installing/studio.html). Steps to build:
 
 1.  `git clone git@github.com:coinbase/coinbase-android.git`
-2.	Open Eclipse and go to File > Import... > Android > Existing Code into Android Workspace
-3.	Choose the root directory of the cloned project
-4.	Deselect all projects and only add: coinbase-android, library-actionbarsherlock, library-slidingmenu
-5.  Go to Window > Android SDK Manager and check the box to install "Google APIs" under Android 4.2.2 (this is needed for SlidingMenu)
-5. 	The project should now build!
+2.	Open Android Studio, and close any open project
+3.	Click 'Import project...'
+4.	Open the `coinbase-android` directory downloaded in step 1
+5.  That's it! You should be able to build and run the app from inside Android Studio.
+
+Contributions are welcome - please send a pull request.
 
 ## Translations
 
