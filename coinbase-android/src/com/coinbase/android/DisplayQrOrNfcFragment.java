@@ -40,7 +40,7 @@ import java.util.TimerTask;
 
 public class DisplayQrOrNfcFragment extends DialogFragment {
 
-  private static final boolean IS_NFC_SUPPORTED = Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
+  private static final boolean IS_NFC_SUPPORTED = PlatformUtils.hasIceCreamSandwich();
 
   private class CheckStatusTask extends TimerTask {
 
@@ -227,7 +227,7 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
 
     b.setView(view);
 
-    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+    if(!PlatformUtils.hasHoneycomb()) {
       // Make sure dialog has white background so QR code is legible
       view.setBackgroundColor(Color.WHITE);
     }

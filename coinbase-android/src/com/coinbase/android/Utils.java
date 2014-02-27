@@ -314,7 +314,7 @@ public class Utils {
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   public static <T> void runAsyncTaskConcurrently(AsyncTask<T, ?, ?> task, T... params) {
 
-    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+    if (PlatformUtils.hasHoneycomb()) {
       task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, params);
     } else {
       task.execute(params);
@@ -408,8 +408,7 @@ public class Utils {
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   public static void setClipboard(Context c, String text) {
 
-    int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-    if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+    if (PlatformUtils.hasHoneycomb()) {
 
       android.content.ClipboardManager clipboard =
               (ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);

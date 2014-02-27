@@ -19,7 +19,7 @@ public class WidgetChooseAccountActivity extends FragmentActivity implements Acc
 
     int widgetId = getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
     AppWidgetManager manager = AppWidgetManager.getInstance(this);
-    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB &&
+    if(!PlatformUtils.hasHoneycomb() &&
         manager.getAppWidgetInfo(widgetId).provider.getClassName().equals(TransactionsAppWidgetProvider.class.getName())) {
       Toast.makeText(this, R.string.widget_transactions_compat, Toast.LENGTH_LONG).show();
       return; // Transactions widget does not work (adapter widgets were added in Honeycomb)

@@ -313,7 +313,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void updateWidgets() {
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+      if(PlatformUtils.hasHoneycomb()) {
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(mParent);
         widgetManager.notifyAppWidgetViewDataChanged(
           widgetManager.getAppWidgetIds(new ComponentName(mParent, TransactionsAppWidgetProvider.class)),
@@ -1002,7 +1002,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private void loadTransactionsList() {
-    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+    if (PlatformUtils.hasHoneycomb()) {
       new LoadTransactionsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     } else {
       new LoadTransactionsTask().execute();

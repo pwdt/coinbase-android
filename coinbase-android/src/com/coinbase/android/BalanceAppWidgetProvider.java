@@ -21,7 +21,7 @@ public class BalanceAppWidgetProvider extends AppWidgetProvider {
 
       RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_balance);
 
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      if(PlatformUtils.hasJellybeanMR1()) {
         setKeyguardPadding(context, manager, appWidgetId, views);
       }
 

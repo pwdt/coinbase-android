@@ -25,7 +25,7 @@ public class PriceAppWidgetProvider extends AppWidgetProvider {
       String currency = PreferenceManager.getDefaultSharedPreferences(context).getString(
               String.format(Constants.KEY_WIDGET_CURRENCY, appWidgetId), "USD");
 
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      if(PlatformUtils.hasJellybeanMR1()) {
         setKeyguardPadding(context, manager, appWidgetId, views);
       }
 
