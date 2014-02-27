@@ -76,27 +76,15 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
-  private class LoadExchangeRatesTask extends AsyncTask<Object, Void, JSONObject> {
-
-    @Override
-    protected void onPreExecute() {
-      mExchangeRates = null;
-    }
+  private class LoadJustBalanceTask extends AsyncTask<Object, Void, JSONObject> {
 
     @Override
     protected JSONObject doInBackground(Object... params) {
 
-      boolean alsoFetchBalance = (Boolean) params[0];
-
       try {
         JSONObject exchangeRates = RpcManager.getInstance().callGet(mParent, "currencies/exchange_rates");
-
-        if (alsoFetchBalance) {
-          exchangeRates.put("balance", RpcManager.getInstance().callGet(mParent, "account/balance"));
-          return exchangeRates;
-        } else {
-          return exchangeRates;
-        }
+        exchangeRates.put("balance", RpcManager.getInstance().callGet(mParent, "account/balance"));
+        return exchangeRates;
       } catch (IOException e) {
 
         e.printStackTrace();
@@ -111,13 +99,20 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     @Override
     protected void onPostExecute(JSONObject result) {
 
-      if (result != null && result.has("balance")) {
+      if (result != null) {
         mBalanceBtc = result.optJSONObject("balance").optString("amount");
-        result.remove("balance");
-      }
 
-      mExchangeRates = result;
-      updateBalance();
+        // Calculate home currency amount
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
+        int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+        mCurrencyNative = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
+                "usd").toUpperCase(Locale.CANADA);
+        BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
+                new BigDecimal(result.optString("btc_to_" + mCurrencyNative)));
+
+        mBalanceNative = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
+        updateBalance();
+      }
     }
 
   }
@@ -138,7 +133,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       Profiler p = new Profiler();
 
       List<JSONObject> transactions = new ArrayList<JSONObject>();
-      String currentUserId = null, balanceBtc = null;
+      String currentUserId = null;
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
       Map<String, JSONObject> extraInfo = new HashMap<String, JSONObject>();
@@ -152,23 +147,30 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         int numPages = 1; // Real value will be set after first list iteration
         loadedPage = startPage;
 
-        // Loop is required to sync all pages of account history
-        for(int i = startPage + 1; i <= startPage + Math.min(numPages, MAX_PAGES); i++) {
+        List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
+        getParams.add(new BasicNameValuePair("page", Integer.toString(startPage + 1)));
+        JSONObject response = RpcManager.getInstance().callGet(mParent, "account_changes", getParams);
 
-          List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
-          getParams.add(new BasicNameValuePair("page", Integer.toString(i)));
-          JSONObject response = RpcManager.getInstance().callGet(mParent, "account_changes", getParams);
-
-          currentUserId = response.getJSONObject("current_user").getString("id");
-          balanceBtc = response.getJSONObject("balance").getString("amount");
-
-          JSONArray transactionsArray = response.optJSONArray("account_changes");
-          numPages = response.getInt("num_pages");
-
-          if(transactionsArray == null) {
-            // No transactions
-            continue;
+        // Update balance
+        // (we do it here to update the balance ASAP.)
+        final String balanceBtc = response.getJSONObject("balance").getString("amount");
+        final String balanceNative = response.getJSONObject("native_balance").getString("amount");
+        final String currencyNative = response.getJSONObject("native_balance").getString("currency");
+        mParent.runOnUiThread(new Runnable() {
+          public void run() {
+            mBalanceBtc = balanceBtc;
+            mBalanceNative = Utils.formatCurrencyAmount(balanceNative, false, CurrencyType.TRADITIONAL);
+            mCurrencyNative = currencyNative;
+            updateBalance();
           }
+        });
+
+        currentUserId = response.getJSONObject("current_user").getString("id");
+
+        JSONArray transactionsArray = response.optJSONArray("account_changes");
+        numPages = response.getInt("num_pages");
+
+        if(transactionsArray != null) {
 
           for(int j = 0; j < transactionsArray.length(); j++) {
 
@@ -180,19 +182,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
             transactions.add(transaction);
           }
-
-          loadedPage++;
         }
 
-        // Update balance
-        // (we do it here instead of in onPostExecute to update the balance ASAP.)
-        final String balanceBtcFinal = balanceBtc;
-        mParent.runOnUiThread(new Runnable() {
-          public void run() {
-            mBalanceBtc = balanceBtcFinal;
-            updateBalance();
-          }
-        });
+        loadedPage++;
 
         p.segmentDone("Download account changes");
 
@@ -325,7 +317,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     protected void onPreExecute() {
 
       ((MainActivity) mParent).setRefreshButtonAnimated(true);
-      mBalanceBtc = null;
+      mBalanceBtc = mBalanceNative = mCurrencyNative = null;
 
       if(mSyncErrorView != null) {
         mSyncErrorView.setVisibility(View.GONE);
@@ -510,8 +502,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   TextView mSyncErrorView;
   PullToRefreshLayout mPullToRefreshLayout;
   boolean mDetailsShowing = false;
-  JSONObject mExchangeRates = null;
-  String mBalanceBtc = null;
+  String mBalanceBtc = null, mBalanceNative = null, mCurrencyNative = null;
 
   SyncTransactionsTask mSyncTask;
   int mLastLoadedPage = -1, mMaxPage = -1;
@@ -751,12 +742,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     mBalanceLoading = true;
     mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
-    Utils.runAsyncTaskConcurrently(new LoadExchangeRatesTask(), true);
+    Utils.runAsyncTaskConcurrently(new LoadJustBalanceTask());
   }
 
   private void updateBalance() {
 
-    if (mExchangeRates == null || mBalanceBtc == null || mBalanceText == null) {
+    if (mBalanceBtc == null || mBalanceText == null) {
       return; // Not ready yet.
     }
 
@@ -767,27 +758,17 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
 
-      // Calculate home currency amount
-      String userHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-              "usd").toLowerCase(Locale.CANADA);
-      BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
-              new BigDecimal(mExchangeRates.getString("btc_to_" + userHomeCurrency)));
-
-      String balanceHomeString = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
-
-      userHomeCurrency = userHomeCurrency.toUpperCase(Locale.CANADA);
-
       // Save balance in preferences
       Editor editor = prefs.edit();
       editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE, activeAccount), mBalanceBtc);
-      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), balanceHomeString);
-      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), userHomeCurrency);
+      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME, activeAccount), mBalanceNative);
+      editor.putString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), mCurrencyNative);
       editor.commit();
 
       // Update the view.
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
       setBalance(mBalanceBtc);
-      mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), balanceHomeString, userHomeCurrency));
+      mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), mBalanceNative, mCurrencyNative));
     } catch (Exception e) {
       e.printStackTrace();
       ACRA.getErrorReporter().handleException(new RuntimeException("updateBalance()", e));
@@ -799,9 +780,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     // Make balance appear invalidated
     mBalanceLoading = true;
     mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
-
-    // Reload exchange rates
-    Utils.runAsyncTaskConcurrently(new LoadExchangeRatesTask(), false);
 
     // Reload transactions + balance
     if(mSyncTask == null) {
