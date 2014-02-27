@@ -647,7 +647,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   private void refreshExchangeRate() {
     mNativeExchangeTask = new RefreshExchangeRateTask();
 
-    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+    if (PlatformUtils.hasHoneycomb()) {
       mNativeExchangeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     } else {
       mNativeExchangeTask.execute();

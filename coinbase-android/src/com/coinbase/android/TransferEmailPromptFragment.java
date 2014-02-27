@@ -37,7 +37,7 @@ public class TransferEmailPromptFragment extends DialogFragment {
     
     messageView.setText(message);
     
-    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+    if(!PlatformUtils.hasHoneycomb()) {
       messageView.setTextColor(Color.WHITE);
     }
 

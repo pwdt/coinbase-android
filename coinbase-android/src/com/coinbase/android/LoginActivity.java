@@ -133,7 +133,7 @@ public class LoginActivity extends CoinbaseActivity {
       @Override
       public void onPageStarted(WebView view, String url, Bitmap favicon) {
 
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+        if(!PlatformUtils.hasHoneycomb()) {
           // There is a bug where shouldOverrideUrlLoading is not called
           // On versions of Android lower then Honeycomb
           // When the URL change is a result of a redirect
@@ -148,7 +148,7 @@ public class LoginActivity extends CoinbaseActivity {
       @Override
       public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if(PlatformUtils.hasHoneycomb()) {
           return _shouldOverrideUrlLoading(view, url);
         } else {
           return false;
