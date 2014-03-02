@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">@string/app_name_merchant_long</string>
     <string name="app_name_long">@string/app_name_merchant_long</string>
-    <string name="title_activity_main">@string/app_name_merchant</string>
+    <string name="title_activity_main">@string/app_name_merchant_home_screen</string>
     <string name="title_activity_login">@string/app_name_merchant</string>
 
     <string name="login_title">@string/login_title_merchant</string>

@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name_consumer">Coinbase</string>
     <string name="app_name_consumer_long">Coinbase for Android</string>
+    <string name="app_name_consumer_home_screen">Bitcoin Wallet</string>
     <string name="app_name_merchant">Coinbase Merchant</string>
     <string name="app_name_merchant_long">Coinbase Merchant for Android</string>
+    <string name="app_name_merchant_home_screen">Bitcoin Merchant</string>
     <string name="title_account">Account Settings</string>
     <string name="title_transfer">Send / Request</string>
     <string name="title_buysell">Buy / Sell Bitcoin</string>
