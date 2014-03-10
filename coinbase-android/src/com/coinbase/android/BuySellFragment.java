@@ -464,8 +464,11 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     // Swap views
     LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mTypeBuy.getLayoutParams();
     LinearLayout parent = (LinearLayout) mTypeBuy.getParent();
+    View divider = parent.findViewById(R.id.buysell_divider_2);
     parent.removeView(mTypeBuy);
+    parent.removeView(divider);
     parent.addView(mTypeBuy, type == BuySellType.BUY ? 0 : 1, params);
+    parent.addView(divider, 1);
 
     // Text color
     TextView active = type == BuySellType.BUY ? mTypeBuy : mTypeSell;

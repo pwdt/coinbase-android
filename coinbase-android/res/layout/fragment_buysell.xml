@@ -33,6 +33,14 @@
                     android:padding="15dp"
                     android:background="@drawable/button_secondary" />
 
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0"
+                    android:background="#eee"
+                    android:id="@+id/buysell_divider_2"
+                    />
+
                 <TextView
                     android:id="@+id/buysell_type_sell"
                     android:text="@string/buysell_type_sell"
