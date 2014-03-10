@@ -783,8 +783,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         "usd").toUpperCase(Locale.CANADA);
 
     mCurrenciesArray = new String[] {
-                                     "BTC",
-                                     nativeCurrency,
+            nativeCurrency,
+            "BTC",
     };
 
     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
@@ -963,7 +963,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     if(mTransferTypeView != null) {
       mTransferTypeView.setSelection(0); // SEND
-      mTransferCurrencyView.setSelection(0); // BTC is always first
+      mTransferCurrencyView.setSelection(1); // BTC is always second
       mAmountView.setText(amount);
       mNotesView.setText(message);
       mRecipientView.setText(address);
