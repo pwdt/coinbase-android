@@ -106,7 +106,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
         mCurrencyNative = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-                "usd").toUpperCase(Locale.CANADA);
+                "usd").toLowerCase(Locale.CANADA);
         BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
                 new BigDecimal(result.optString("btc_to_" + mCurrencyNative)));
 
@@ -826,6 +826,16 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   private void _insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
 
+    if (!PlatformUtils.hasHoneycomb()) {
+      // Do not play animation!
+      try {
+        insertTransaction(transaction, createAccountChangeForTransaction(transaction, category));
+      } catch (Exception e) {
+        throw new RuntimeException("Malformed JSON from Coinbase", e);
+      }
+      return;
+    }
+
     // Step 1
     // Take a screenshot of the relevant part of the list view and put it over top of the real one
     Bitmap bitmap = Bitmap.createBitmap(getListView().getWidth(), getListView().getHeight(), Bitmap.Config.ARGB_8888);
@@ -856,21 +866,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     JSONObject accountChange = new JSONObject();
     View newListItem;
     try {
-      accountChange.put("transaction_id", transaction.getString("id"));
-      accountChange.put("created_at", transaction.getString("created_at"));
-      accountChange.put("confirmed", !transaction.getString("status").equals("pending"));
-      accountChange.put("amount", transaction.getJSONObject("amount"));
-      JSONObject cache = new JSONObject();
-      cache.put("category", category);
-      boolean thisUserSender = Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
-      JSONObject otherUser = transaction.optJSONObject(thisUserSender ? "recipient" : "sender");
-      if (otherUser == null) {
-        otherUser = new JSONObject();
-        otherUser.put("id", null);
-        otherUser.put("name", "an external account");
-      }
-      cache.put("other_user", otherUser);
-      accountChange.put("cache", cache);
+      accountChange = createAccountChangeForTransaction(transaction, category);
 
       newListItem = View.inflate(mParent, R.layout.fragment_transactions_item, null);
       TransactionViewBinder binder = new TransactionViewBinder();
@@ -939,6 +935,30 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Step 4
     // Now that the animation is started, update the actual list values behind-the-scenes
+    insertTransaction(transaction, accountChange);
+  }
+
+  private JSONObject createAccountChangeForTransaction(JSONObject transaction, String category) throws JSONException {
+    JSONObject accountChange = new JSONObject();
+    accountChange.put("transaction_id", transaction.getString("id"));
+    accountChange.put("created_at", transaction.getString("created_at"));
+    accountChange.put("confirmed", !transaction.getString("status").equals("pending"));
+    accountChange.put("amount", transaction.getJSONObject("amount"));
+    JSONObject cache = new JSONObject();
+    cache.put("category", category);
+    boolean thisUserSender = Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
+    JSONObject otherUser = transaction.optJSONObject(thisUserSender ? "recipient" : "sender");
+    if (otherUser == null) {
+      otherUser = new JSONObject();
+      otherUser.put("id", null);
+      otherUser.put("name", "an external account");
+    }
+    cache.put("other_user", otherUser);
+    accountChange.put("cache", cache);
+    return accountChange;
+  }
+
+  private void insertTransaction(JSONObject transaction, JSONObject accountChange) {
     DatabaseObject db = DatabaseObject.getInstance();
     synchronized(db.databaseLock) {
       db.beginTransaction(mParent);
