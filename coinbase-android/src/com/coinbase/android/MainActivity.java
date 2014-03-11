@@ -279,22 +279,26 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public static class AvatarDrawable extends Drawable {
 
     private final RectF mRect = new RectF();
-    private final BitmapShader mBitmapShader;
+    private final Bitmap mOriginalBitmap;
     private final Paint mPaint;
 
     AvatarDrawable(Bitmap bitmap) {
 
-      mBitmapShader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+      mOriginalBitmap = bitmap;
 
       mPaint = new Paint();
       mPaint.setAntiAlias(true);
-      mPaint.setShader(mBitmapShader);
 
     }
 
     @Override
     protected void onBoundsChange(Rect bounds) {
       super.onBoundsChange(bounds);
+
+      BitmapShader shader = new BitmapShader(Bitmap.createScaledBitmap(mOriginalBitmap, bounds.width(), bounds.height(), true),
+              Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+      mPaint.setShader(shader);
+
       mRect.set(0, 0, bounds.width(), bounds.height());
     }
 
