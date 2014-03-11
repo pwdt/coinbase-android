@@ -106,11 +106,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
         mCurrencyNative = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-                "usd").toLowerCase(Locale.CANADA);
+                "usd").toUpperCase(Locale.CANADA);
         BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
-                new BigDecimal(result.optString("btc_to_" + mCurrencyNative)));
+                new BigDecimal(result.optString("btc_to_" + mCurrencyNative.toLowerCase(Locale.CANADA))));
 
-        mBalanceNative = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL).toUpperCase(Locale.CANADA);
+        mBalanceNative = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
         updateBalance();
       }
     }
