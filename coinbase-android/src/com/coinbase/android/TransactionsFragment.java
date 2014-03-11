@@ -627,7 +627,14 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     String oldHomeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_BALANCE_HOME_CURRENCY, activeAccount), null);
 
     if(oldBalance != null) {
-      setBalance(oldBalance);
+      try {
+        setBalance(oldBalance);
+      } catch (NumberFormatException e) {
+        // Old versions of the app would store the balance in a localized format
+        // ex. in some countries with the decimal separator "," instead of "."
+        // Restoring balance will fail on upgrade, so just ignore it
+        // and reload the balance from the network
+      }
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color));
       mBalanceHome.setText(String.format(mParent.getString(R.string.wallet_balance_home), oldHomeBalance, oldHomeCurrency));
     }
