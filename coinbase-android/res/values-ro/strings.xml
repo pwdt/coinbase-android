@@ -107,7 +107,6 @@
         <item>dck28 (https://github.com/dck28)</item>
         <item>Alexandru Trican (https://github.com/dwkd)</item>
     </string-array>
-    <string name="version_name">2.0</string>
     <string name="menu_about">Despre</string>
     <string name="menu_help">Ajutor</string>
     <string name="transfer_recipient">Destinatar de e-mail sau adresa de Bitcoin</string>

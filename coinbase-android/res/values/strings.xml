@@ -107,7 +107,7 @@
         <item>Vince Mi (https://github.com/vinc3m1)</item>
         <item>dck28 (https://github.com/dck28)</item>
     </string-array>
-    <string name="version_name">2.0.2</string>
+    <string name="version_name">2.1</string>
     <string name="menu_about">About</string>
     <string name="menu_help">Help</string>
     <string name="transfer_recipient">Recipient email or bitcoin address</string>

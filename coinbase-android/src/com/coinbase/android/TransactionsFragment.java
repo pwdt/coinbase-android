@@ -835,6 +835,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     });
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private void _insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
 
     // Step 1
