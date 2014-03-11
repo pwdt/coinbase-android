@@ -110,7 +110,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
                 new BigDecimal(result.optString("btc_to_" + mCurrencyNative)));
 
-        mBalanceNative = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
+        mBalanceNative = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL).toUpperCase(Locale.CANADA);
         updateBalance();
       }
     }
@@ -807,6 +807,17 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   public void insertTransactionAnimated(final int insertAtIndex, final JSONObject transaction, final String category) {
 
+    if (!PlatformUtils.hasHoneycomb()) {
+      // Do not play animation!
+      try {
+        insertTransaction(transaction, createAccountChangeForTransaction(transaction, category));
+      } catch (Exception e) {
+        throw new RuntimeException("Malformed JSON from Coinbase", e);
+      }
+      refreshBalance();
+      return;
+    }
+
     mAnimationPlaying = true;
     getListView().setEnabled(false);
     setRateNoticeState(Constants.RateNoticeState.NOTICE_NOT_YET_SHOWN, false);
@@ -825,16 +836,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   }
 
   private void _insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
-
-    if (!PlatformUtils.hasHoneycomb()) {
-      // Do not play animation!
-      try {
-        insertTransaction(transaction, createAccountChangeForTransaction(transaction, category));
-      } catch (Exception e) {
-        throw new RuntimeException("Malformed JSON from Coinbase", e);
-      }
-      return;
-    }
 
     // Step 1
     // Take a screenshot of the relevant part of the list view and put it over top of the real one
