@@ -260,6 +260,9 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   public void onCreate(Bundle savedInstanceState) {
 
     super.onCreate(savedInstanceState);
+    if (Utils.getPrefsBool(mParent, Constants.KEY_ACCOUNT_TRANSFER_CURRENCY_BTC, false)) {
+      mTransferCurrency = "BTC";
+    }
   }
 
   @Override
@@ -834,6 +837,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     String currency = (String) mTransferCurrencyView.getSelectedItem();
     mTransferCurrency = currency;
+    Utils.putPrefsBool(mParent, Constants.KEY_ACCOUNT_TRANSFER_CURRENCY_BTC, mTransferCurrency.equals("BTC"));
 
     updateNativeCurrency();
   }

@@ -38,6 +38,7 @@ public class Constants {
   public static final String KEY_ACCOUNT_RATE_NOTICE_STATE = "account_%1$d_rate_notice_state";
   public static final String KEY_ACCOUNT_APP_USAGE = "account_%1$d_app_usage";
   public static final String KEY_ACCOUNT_BALANCE_FUZZY = "account_%1$d_balance_fuzzy";
+  public static final String KEY_ACCOUNT_TRANSFER_CURRENCY_BTC = "account_%1$d_transfer_currency_btc";
 
   public static final String KEY_ACCOUNT_PIN = "account_%d_pin";
   public static final String KEY_ACCOUNT_LAST_PIN_ENTRY_TIME = "account_%d_last_pin_entry_time";

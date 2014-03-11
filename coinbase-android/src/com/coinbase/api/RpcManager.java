@@ -3,7 +3,9 @@ package com.coinbase.api;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.coinbase.android.BuildConfig;
 import com.coinbase.android.Constants;
 
 import org.apache.http.HttpResponse;
@@ -150,6 +152,9 @@ public class RpcManager {
     String accessToken = LoginManager.getInstance().getAccessToken(context, account);
     request.addHeader("Authorization", String.format("Bearer %s", accessToken));
 
+    if (BuildConfig.DEBUG) {
+      Log.d("Coinbase", "Executing " + verb + " " + method);
+    }
     HttpResponse response = client.execute(request);
     int code = response.getStatusLine().getStatusCode();
 
