@@ -497,7 +497,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
     } else {
       Log.i("Coinbase", "Closing keyboard");
-      inputMethodManager.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
+      View focus = getCurrentFocus();
+      inputMethodManager.hideSoftInputFromWindow((focus == null ? findViewById(android.R.id.content) : focus).getWindowToken(), 0);
+      getWindow().setSoftInputMode(
+              WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
   }
 

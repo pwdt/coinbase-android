@@ -839,16 +839,25 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Step 1
     // Take a screenshot of the relevant part of the list view and put it over top of the real one
-    Bitmap bitmap = Bitmap.createBitmap(getListView().getWidth(), getListView().getHeight(), Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas (bitmap);
-    getListView().draw(canvas);
-    int heightToCropOff = 0;
-    for (int i = 0; i <= insertAtIndex; i++) {
-      heightToCropOff += getListView().getChildAt(i).getHeight();
-    }
-    int height = getListView().getHeight() - heightToCropOff;
-
+    Bitmap bitmap;
     final FrameLayout root = (FrameLayout) getView().findViewById(R.id.root);
+    int height = 0, heightToCropOff = 0;
+    boolean animateListView = true;
+    if (mListHeaderContainer.getChildCount() > 0) { // Header not pinned
+      bitmap = Bitmap.createBitmap(getListView().getWidth(), getListView().getHeight(), Bitmap.Config.ARGB_8888);
+      Canvas canvas = new Canvas(bitmap);
+      getListView().draw(canvas);
+      for (int i = 0; i <= insertAtIndex; i++) {
+        heightToCropOff += getListView().getChildAt(i).getHeight();
+      }
+      height = getListView().getHeight() - heightToCropOff;
+    } else { // Header pinned
+      bitmap = null; // No list view animation is needed
+      animateListView = false;
+      heightToCropOff = mListHeader.getHeight();
+      height = root.getHeight() - heightToCropOff;
+    }
+
     DisplayMetrics metrics = getResources().getDisplayMetrics();
     final ImageView fakeListView = new ImageView(mParent);
     fakeListView.setImageBitmap(bitmap);
@@ -864,7 +873,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Step 2
     // Create a fake version of the new list item and a background for it to animate onto
-    JSONObject accountChange = new JSONObject();
+    JSONObject accountChange;
     View newListItem;
     try {
       accountChange = createAccountChangeForTransaction(transaction, category);
@@ -887,13 +896,15 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     newListItem.setLayoutParams(itemParams);
 
     final View background = new View(mParent);
-    background.setBackgroundColor(Color.parseColor("#eeeeee"));
-    FrameLayout.LayoutParams bgParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, itemHeight + (2 * getListView().getDividerHeight()));
+    background.setBackgroundColor(animateListView ? Color.parseColor("#eeeeee") : Color.WHITE);
+    FrameLayout.LayoutParams bgParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, height);
     bgParams.topMargin = heightToCropOff;
     background.setLayoutParams(bgParams);
 
     root.addView(background, root.getChildCount());
-    root.addView(fakeListView, root.getChildCount());
+    if (animateListView) {
+      root.addView(fakeListView, root.getChildCount());
+    }
     root.addView(newListItem, root.getChildCount());
 
     // Step 3
@@ -904,7 +915,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     ObjectAnimator itemAnimation = ObjectAnimator.ofFloat(newListItem, "translationX", -metrics.widthPixels, 0);
     ObjectAnimator listAnimation = ObjectAnimator.ofFloat(fakeListView, "translationY", 0, itemHeight);
 
-    set.playSequentially(listAnimation, itemAnimation);
+    if (animateListView) {
+      set.playSequentially(listAnimation, itemAnimation);
+    } else {
+      set.play(itemAnimation);
+    }
     set.setDuration(300);
     final View _newListItem = newListItem;
     set.addListener(new Animator.AnimatorListener() {
