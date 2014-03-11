@@ -123,7 +123,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         mRecipientView.setText("");
         
         // Add new transaction to transactions screen
-        mParent.getTransactionsFragment().insertTransactionAnimated(0, (JSONObject) result[4], "tx");
+        mParent.getTransactionsFragment().insertTransactionAnimated(0, (JSONObject) result[4], type == TransferType.SEND ? "tx" : "request");
         mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
       } else {
 
