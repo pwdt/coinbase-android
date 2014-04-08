@@ -1,6 +1,6 @@
 <resources>
 
-    <color name="wallet_balance_color">#50bf82</color>
+    <color name="wallet_balance_color">#2D65C3</color>
     <color name="wallet_balance_color_invalid">#666666</color>
 
     <style name="wallet_balance_loaded">

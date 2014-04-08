@@ -693,7 +693,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     boolean fuzzy = Utils.getPrefsBool(mParent, Constants.KEY_ACCOUNT_BALANCE_FUZZY, true);
     String formatted = Utils.formatCurrencyAmount(balance, false, fuzzy ? CurrencyType.BTC_FUZZY : CurrencyType.BTC);
-    mBalanceText.setText(Html.fromHtml(String.format("<b>%1$s</b> BTC", formatted)));
+    mBalanceText.setText(String.format("%1$s BTC", formatted));
     mBalanceText.setTag(balance);
   }
 
