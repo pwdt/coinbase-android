@@ -25,6 +25,29 @@
                 android:text="@string/transfer_send_money"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:layout_margin="10dp"/>
+
+            <AutoCompleteTextView
+                android:id="@+id/transfer_money_recipient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/transfer_money_notes"
+                android:layout_alignRight="@+id/transfer_money_notes"
+                android:layout_below="@+id/transfer_money_type"
+                android:layout_marginBottom="10dp"
+                android:ems="10"
+                android:textColor="#000000"
+                android:hint="@string/transfer_recipient"
+                android:inputType="textEmailAddress" >
+
+            </AutoCompleteTextView>
+
+            <View
+                android:id="@+id/transfer_divider_1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/transfer_money_recipient"
+                android:layout_marginTop="-5dp"
+                android:background="#eee" />
     
             <EditText
                 android:id="@+id/transfer_money_amt"
@@ -32,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_toLeftOf="@+id/transfer_money_currency"
-                android:layout_below="@+id/transfer_money_type"
+                android:layout_below="@+id/transfer_money_recipient"
                 android:layout_alignParentLeft="true"
                 android:layout_marginRight="5dp"
                 android:ems="10"
@@ -88,21 +111,6 @@
                 android:inputType="textMultiLine" >
     
             </EditText>
-            
-            <AutoCompleteTextView
-                android:id="@+id/transfer_money_recipient"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/transfer_money_notes"
-                android:layout_alignRight="@+id/transfer_money_notes"
-                android:layout_below="@+id/transfer_money_notes"
-                android:layout_marginTop="10dp"
-                android:ems="10"
-                android:textColor="#000000"
-                android:hint="@string/transfer_recipient"
-                android:inputType="textEmailAddress" >
-    
-            </AutoCompleteTextView>
 
             <!-- Clear button disabled for now -->
             <Button
@@ -118,7 +126,7 @@
                 android:layout_height="50dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentRight="true"
-                android:layout_below="@+id/transfer_money_recipient"
+                android:layout_below="@+id/transfer_money_notes"
                 android:layout_marginTop="15dp"
                 android:textColor="#ffffff"
                 android:text="@string/transfer_button_send"

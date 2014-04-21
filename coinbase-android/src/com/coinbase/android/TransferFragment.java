@@ -241,7 +241,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   private Button mSubmitSend, mSubmitEmail, mSubmitQr, mSubmitNfc, mClearButton;
   private EditText mAmountView, mNotesView;
   private AutoCompleteTextView mRecipientView;
-  private View mRequestDivider;
+  private View mRequestDivider, mRecipientDivider;
 
   private Utils.ContactsAutoCompleteAdapter mAutocompleteAdapter;
 
@@ -336,6 +336,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     mAmountView = (EditText) view.findViewById(R.id.transfer_money_amt);
     mNotesView = (EditText) view.findViewById(R.id.transfer_money_notes);
     mRecipientView = (AutoCompleteTextView) view.findViewById(R.id.transfer_money_recipient);
+    mRecipientDivider = view.findViewById(R.id.transfer_divider_1);
     mRequestDivider = view.findViewById(R.id.transfer_divider_3);
 
     mAutocompleteAdapter = Utils.getEmailAutocompleteAdapter(mParent);
@@ -402,7 +403,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     int currencyIndex = Arrays.asList(mCurrenciesArray).indexOf(mTransferCurrency);
     mTransferCurrencyView.setSelection(currencyIndex == -1 ? 0 : currencyIndex);
 
-    mTransferTypeView.setSelection(mTransferType);
+    switchType(mTransferType);
     mAmountView.setText(mAmount);
     mNotesView.setText(mNotes);
     mRecipientView.setText(mRecipient);
@@ -825,12 +826,15 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     mSubmitNfc.setVisibility(isSend ? View.GONE : View.VISIBLE);
     mRecipientView.setVisibility(isSend ? View.VISIBLE : View.GONE);
     mRequestDivider.setVisibility(isSend ? View.GONE : View.VISIBLE);
+    mRecipientDivider.setVisibility(isSend ? View.VISIBLE : View.GONE);
 
     RelativeLayout.LayoutParams clearParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
     clearParams.addRule(RelativeLayout.BELOW, isSend ? R.id.transfer_money_recipient : R.id.transfer_money_notes);
     clearParams.addRule(RelativeLayout.ALIGN_LEFT, isSend ? R.id.transfer_money_recipient : R.id.transfer_money_notes);
     clearParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
     mClearButton.setLayoutParams(clearParams);
+
+    doFocus();
   }
 
   private void onCurrencyChanged() {
@@ -966,7 +970,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     mTransferCurrency = "BTC";
 
     if(mTransferTypeView != null) {
-      mTransferTypeView.setSelection(0); // SEND
+      switchType(TransferType.SEND.ordinal()); // Send
       mTransferCurrencyView.setSelection(1); // BTC is always second
       mAmountView.setText(amount);
       mNotesView.setText(message);
@@ -974,9 +978,9 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
   }
 
-  public void switchType(boolean isRequest) {
+  public void switchType(int type) {
 
-    mTransferType = isRequest ? 1 : 0;
+    mTransferType = type;
 
     if(mTransferTypeView != null) {
       mTransferTypeView.setSelection(mTransferType);
@@ -991,8 +995,15 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   @Override
   public void onSwitchedTo() {
 
-    // Focus text field
-    mAmountView.requestFocus();
+    doFocus();
+  }
+
+  private void doFocus() {
+    if (mTransferType == TransferType.REQUEST.ordinal()) {
+      mAmountView.requestFocus();
+    } else {
+      mRecipientView.requestFocus();
+    }
   }
 
   @Override

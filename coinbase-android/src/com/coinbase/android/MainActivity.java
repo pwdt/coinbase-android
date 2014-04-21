@@ -773,7 +773,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public void openTransferMenu(boolean isRequest) {
 
     switchTo(FRAGMENT_INDEX_TRANSFER);
-    mTransferFragment.switchType(isRequest);
+    mTransferFragment.switchType(isRequest ? TransferFragment.TransferType.REQUEST.ordinal() : TransferFragment.TransferType.SEND.ordinal());
   }
 
   @Override
