@@ -3,9 +3,9 @@
     android:configure="com.coinbase.android.WidgetChooseCurrencyActivity"
     android:initialLayout="@layout/widget_price"
     android:minHeight="40dp"
-    android:minResizeWidth="180dp"
+    android:minResizeWidth="150dp"
     android:minWidth="180dp"
-    android:previewImage="@drawable/widget_balance_preview"
+    android:previewImage="@drawable/widget_price_preview"
     android:resizeMode="horizontal"
     android:updatePeriodMillis="3600000"
     android:widgetCategory="home_screen|keyguard" >
