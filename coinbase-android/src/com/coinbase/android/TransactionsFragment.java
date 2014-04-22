@@ -268,6 +268,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
             values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
             values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
             values.put(TransactionEntry.COLUMN_NAME_ORDER, i);
+            values.put(TransactionEntry.COLUMN_NAME_STATUS, transaction.optString("status"));
 
             db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
             i++;
@@ -1009,6 +1010,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
         values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, Utils.getActiveAccount(mParent));
         values.put(TransactionEntry.COLUMN_NAME_ORDER, -System.currentTimeMillis());
+        values.put(TransactionEntry.COLUMN_NAME_STATUS, transaction.optString("pending"));
 
         long newId = db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
         System.out.println("Inserted with ID " + newId);

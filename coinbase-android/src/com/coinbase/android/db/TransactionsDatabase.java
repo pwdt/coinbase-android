@@ -20,6 +20,7 @@ public class TransactionsDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_NAME_TIME = "timestamp";
     public static final String COLUMN_NAME_NUMERIC_ID = "numeric_id";
     public static final String COLUMN_NAME_ORDER = "order_num";
+    public static final String COLUMN_NAME_STATUS = "status";
   }
 
   public static final String TEXT_TYPE = " TEXT";
@@ -34,13 +35,14 @@ public class TransactionsDatabase extends SQLiteOpenHelper {
           TransactionEntry.COLUMN_NAME_TRANSACTION_JSON + TEXT_TYPE + COMMA_SEP +
           TransactionEntry.COLUMN_NAME_ACCOUNT + INTEGER_TYPE + COMMA_SEP +
           TransactionEntry.COLUMN_NAME_ORDER + INTEGER_TYPE + COMMA_SEP +
+          TransactionEntry.COLUMN_NAME_STATUS + TEXT_TYPE + COMMA_SEP +
           TransactionEntry.COLUMN_NAME_TIME + INTEGER_TYPE +
           ")";
 
   public static final String SQL_DELETE_ENTRIES =
       "DROP TABLE IF EXISTS " + TransactionEntry.TABLE_NAME;
 
-  public static final int DATABASE_VERSION = 11;
+  public static final int DATABASE_VERSION = 12;
   public static final String DATABASE_NAME = "transactions";
 
   public TransactionsDatabase(Context context) {

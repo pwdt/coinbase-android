@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -427,5 +429,14 @@ public class Utils {
               (android.text.ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
       clipboard.setText(text);
     }
+  }
+
+  public static boolean isConnectedOrConnecting(Context c) {
+    ConnectivityManager cm =
+            (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
+    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+    boolean isConnected = activeNetwork != null &&
+            activeNetwork.isConnectedOrConnecting();
+    return isConnected;
   }
 }

@@ -31,6 +31,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coinbase.android.delayedtx.DelayedTransaction;
+import com.coinbase.android.delayedtx.DelayedTransactionDialogFragment;
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
@@ -498,6 +500,13 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       return;
     }
     mLastPressedButton = null;
+
+    if(!Utils.isConnectedOrConnecting(mParent)) {
+      // Internet is not available
+      // Show error message and display option to do a delayed transaction
+      new DelayedTransactionDialogFragment(new DelayedTransaction()).show(getFragmentManager(), "delayed_send");
+      return;
+    }
 
     Object btcAmount = getBtcAmount();
     if(btcAmount == null || btcAmount == Boolean.FALSE) {
