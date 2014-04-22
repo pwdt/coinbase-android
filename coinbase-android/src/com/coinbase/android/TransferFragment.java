@@ -504,7 +504,9 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     if(!Utils.isConnectedOrConnecting(mParent)) {
       // Internet is not available
       // Show error message and display option to do a delayed transaction
-      new DelayedTransactionDialogFragment(new DelayedTransaction()).show(getFragmentManager(), "delayed_send");
+      new DelayedTransactionDialogFragment(
+              new DelayedTransaction(DelayedTransaction.Type.SEND, mAmount, mRecipient, mNotes))
+              .show(getFragmentManager(), "delayed_send");
       return;
     }
 
