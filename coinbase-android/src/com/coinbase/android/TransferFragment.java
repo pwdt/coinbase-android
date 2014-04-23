@@ -99,7 +99,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     protected Object[] doInBackground(Object... params) {
 
       this.params = params;
-      return doTransfer((TransferType) params[0], (String) params[1], (String) params[2], (String) params[3], (String) params[4]);
+      return doTransfer((TransferType) params[0], (String) params[1], (String) params[2], (String) params[3], (String) params[4], (String) params[5]);
     }
 
     protected void onPostExecute(Object[] result) {
@@ -141,8 +141,9 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
           b.putSerializable("type", (TransferType) params[0]);
           b.putString("amount", (String) params[1]);
-          b.putString("notes", (String) params[2]);
-          b.putString("toFrom", (String) params[3]);
+          b.putString("currency", (String) params[2]);
+          b.putString("notes", (String) params[3]);
+          b.putString("toFrom", (String) params[4]);
           b.putString("feeAmount", neededFee);
 
           dialog.setArguments(b);
@@ -160,6 +161,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       final TransferType type = (TransferType) getArguments().getSerializable("type");
       final String amount = getArguments().getString("amount"),
+          currency = getArguments().getString("currency"),
           toFrom = getArguments().getString("toFrom"),
           notes = getArguments().getString("notes");
       final String feeAmount = getArguments().getString("feeAmount");
@@ -176,7 +178,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         }
       }
 
-      String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount), toFrom, feeAmount);
+      String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount), toFrom, currency, feeAmount);
 
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
       builder.setMessage(message)
@@ -187,7 +189,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
           TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
 
           if(parent != null) {
-            parent.startTransferTask(type, amount, notes, toFrom, feeAmount);
+            parent.startTransferTask(type, amount, currency, notes, toFrom, feeAmount);
           }
         }
       })
@@ -505,13 +507,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       // Internet is not available
       // Show error message and display option to do a delayed transaction
       new DelayedTransactionDialogFragment(
-              new DelayedTransaction(DelayedTransaction.Type.SEND, mAmount, mRecipient, mNotes))
+              new DelayedTransaction(DelayedTransaction.Type.SEND, getAmount(), mTransferCurrency, mRecipient, mNotes))
               .show(getFragmentManager(), "delayed_send");
-      return;
-    }
-
-    Object btcAmount = getBtcAmount();
-    if(btcAmount == null || btcAmount == Boolean.FALSE) {
       return;
     }
 
@@ -520,7 +517,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     Bundle b = new Bundle();
 
     b.putSerializable("type", TransferType.values()[mTransferType]);
-    b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
+    b.putString("amount", getAmount());
+    b.putString("currency", mTransferCurrency);
     b.putString("notes", mNotes);
     b.putString("toFrom", mRecipient);
     b.putString("feeAmount", null);
@@ -544,17 +542,13 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
     mLastPressedButton = null;
 
-    Object btcAmount = getBtcAmount();
-    if(btcAmount == null || btcAmount == Boolean.FALSE) {
-      return;
-    }
-
     TransferEmailPromptFragment dialog = new TransferEmailPromptFragment();
 
     Bundle b = new Bundle();
 
     b.putSerializable("type", TransferType.values()[mTransferType]);
-    b.putString("amount", ((BigDecimal) btcAmount).toPlainString());
+    b.putString("amount", getAmount());
+    b.putString("currency", mTransferCurrency);
     b.putString("notes", mNotes);
 
     dialog.setArguments(b);
@@ -700,29 +694,32 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     dialog.show(getFragmentManager(), "requestEmail");
   }
 
-  private Object getBtcAmount() {
+  private String getAmount() {
 
     if(mAmount == null || "".equals(mAmount) || ".".equals(mAmount)) {
-      return null;
+      return "0";
+    } else {
+      return mAmount;
     }
+  }
 
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String nativeCurrency = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-        "usd").toLowerCase(Locale.CANADA);
+  private Object getBtcAmount() {
 
+    String amount = getAmount();
     boolean fromBitcoin = "BTC".equalsIgnoreCase(mTransferCurrency);
-    String format = fromBitcoin ? "%s_to_" + nativeCurrency.toLowerCase(Locale.CANADA) : "%s_to_btc";
-    String key = String.format(format, mTransferCurrency.toLowerCase(Locale.CANADA));
+    if (fromBitcoin) {
+      return new BigDecimal(amount);
+    } else {
+      String key = String.format("%s_to_btc", mTransferCurrency.toLowerCase(Locale.CANADA));
 
-    if(!fromBitcoin && mNativeExchangeRates == null) {
-      Toast.makeText(mParent, R.string.exchange_rate_error, Toast.LENGTH_SHORT).show();
-      return Boolean.FALSE;
+      if (mNativeExchangeRates == null) {
+        Toast.makeText(mParent, R.string.exchange_rate_error, Toast.LENGTH_SHORT).show();
+        return Boolean.FALSE;
+      }
+
+      BigDecimal result = new BigDecimal(amount).multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
+      return result;
     }
-
-    BigDecimal amount = new BigDecimal(mAmount);
-    BigDecimal result = fromBitcoin ? amount : amount.multiply(new BigDecimal(mNativeExchangeRates.optString(key, "0")));
-    return result;
   }
 
   private String generateRequestUri() {
@@ -857,15 +854,16 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     updateNativeCurrency();
   }
 
-  protected void startTransferTask(TransferType type, String amount, String notes, String toFrom, String feeAmount) {
+  protected void startTransferTask(TransferType type, String amount, String currency, String notes, String toFrom, String feeAmount) {
 
-    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, notes, toFrom, feeAmount);
+    Utils.runAsyncTaskConcurrently(new DoTransferTask(), type, amount, currency, notes, toFrom, feeAmount);
   }
 
-  private Object[] doTransfer(TransferType type, String amount, String notes, String toFrom, String feeAmount) {
+  private Object[] doTransfer(TransferType type, String amount, String currency, String notes, String toFrom, String feeAmount) {
 
     List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
-    params.add(new BasicNameValuePair("transaction[amount]", amount));
+    params.add(new BasicNameValuePair("transaction[amount_string]", amount));
+    params.add(new BasicNameValuePair("transaction[amount_currency_iso]", currency));
 
     if(notes != null && !"".equals(notes)) {
       params.add(new BasicNameValuePair("transaction[notes]", notes));
@@ -887,7 +885,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
       if(success) {
 
-        return new Object[] { true, amount, type, toFrom, transaction };
+        String amountBtc = transaction.optJSONObject("amount").optString("amount");
+        return new Object[] { true, Utils.formatCurrencyAmount(amountBtc, true), type, toFrom, transaction };
       } else {
 
         JSONArray errors = response.getJSONArray("errors");

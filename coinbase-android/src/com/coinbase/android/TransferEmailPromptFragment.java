@@ -22,10 +22,11 @@ public class TransferEmailPromptFragment extends DialogFragment {
 
     final TransferType type = (TransferType) getArguments().getSerializable("type");
     final String amount = getArguments().getString("amount"),
+        currency = getArguments().getString("currency"),
         notes = getArguments().getString("notes");
 
     int messageResource = R.string.transfer_email_prompt_text;
-    String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount));
+    String message = String.format(getString(messageResource), Utils.formatCurrencyAmount(amount), currency);
 
     View view = View.inflate(getActivity(), R.layout.transfer_email_prompt, null);
     TextView messageView = (TextView) view.findViewById(R.id.transfer_email_prompt_text);
@@ -50,7 +51,7 @@ public class TransferEmailPromptFragment extends DialogFragment {
         TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
 
         if(parent != null) {
-          parent.startTransferTask(type, amount, notes, field.getText().toString(), null);
+          parent.startTransferTask(type, amount, currency, notes, field.getText().toString(), null);
         }
       }
     });
