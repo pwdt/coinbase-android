@@ -2,6 +2,8 @@ package com.coinbase.android;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coinbase.android.db.DatabaseObject;
+import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
@@ -348,6 +351,9 @@ public class TransactionDetailsFragment extends Fragment {
     } else if("pending".equals(transactionStatus)) {
       readable = getString(R.string.transaction_status_pending);
       background = R.drawable.transaction_pending;
+    } else if("delayed".equals(transactionStatus)) {
+      readable = getString(R.string.transaction_status_delayed);
+      background = R.drawable.transaction_delayed;
     }
     status.setText(readable);
     status.setBackgroundResource(background);
@@ -365,7 +371,18 @@ public class TransactionDetailsFragment extends Fragment {
     boolean senderOrRecipientIsExternal = data.optJSONObject("sender") == null || data.optJSONObject("recipient") == null;
     negative.setTypeface(FontManager.getFont(getActivity(), "Roboto-Light"));
     positive.setTypeface(FontManager.getFont(getActivity(), "Roboto-Light"));
-    if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
+    if("delayed".equals(transactionStatus)) {
+      // Transaction has not actually been sent - show cancel button
+
+      positive.setText(R.string.transactiondetails_delayed_cancel);
+      negative.setVisibility(View.GONE);
+      positive.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          cancelDelayedTransaction(transactionId);
+        }
+      });
+    } else if(!isRequest || senderOrRecipientIsExternal || !"pending".equals(transactionStatus)) {
       // No actions
       actions.setVisibility(View.GONE);
     } else if(sentToMe) {
@@ -455,4 +472,25 @@ public class TransactionDetailsFragment extends Fragment {
     }
   }
 
+  private void cancelDelayedTransaction(String transactionId) {
+
+    // Delete transaction from database and update transactions list
+    DatabaseObject db = DatabaseObject.getInstance();
+    Context c = getActivity();
+    synchronized(db.databaseLock) {
+      db.delete(c, TransactionEntry.TABLE_NAME, TransactionEntry._ID + " = ?", new String[] { transactionId });
+    }
+
+    // Show toast
+    Toast.makeText(c, R.string.transactiondetails_delayed_canceled, Toast.LENGTH_SHORT).show();
+
+    // Return to transactions list
+    if (getActivity() instanceof MainActivity) {
+      ((MainActivity) getActivity()).refresh();
+      ((TransactionsFragment) getParentFragment()).loadTransactionsList();
+      ((TransactionsFragment) getParentFragment()).hideDetails(true);
+    } else {
+      getActivity().finish();
+    }
+  }
 }

@@ -178,7 +178,9 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
         mAmount.setText(null);
 
         // Sync transactions
-        mParent.getTransactionsFragment().insertTransactionAnimated(0, (JSONObject) result[3], "transfer");
+        JSONObject tx = (JSONObject) result[3];
+        Log.i("Coinbase", "TX: " + tx);
+        mParent.getTransactionsFragment().insertTransactionAnimated(0, tx, "transfer", tx.optString("status"));
         Utils.incrementPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE);
         mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
 
@@ -542,6 +544,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
           transaction = transaction.getJSONObject("transaction");
         } catch (Exception e) {
           Log.e("Coinbase", "Could not load transaction for new transfer");
+          Log.e("Coinbase", response.toString(4));
           transaction = null;
           e.printStackTrace();
         }

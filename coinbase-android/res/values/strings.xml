@@ -254,4 +254,7 @@
     <string name="delayed_tx_dialog_message">You don\'t have an internet connection right now. Coinbase can remember this transaction and automatically send it when you reconnect to the internet. Send this transaction when you reconnect?</string>
     <string name="delayed_tx_dialog_ok">Send when I reconnect</string>
     <string name="delayed_tx_dialog_cancel">Cancel</string>
+    <string name="transaction_status_delayed">UNSENT</string>
+    <string name="transactiondetails_delayed_cancel">Cancel</string>
+    <string name="transactiondetails_delayed_canceled">Cancelled.</string>
 </resources>

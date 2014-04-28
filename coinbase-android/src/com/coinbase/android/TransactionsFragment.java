@@ -268,7 +268,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
             values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
             values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, activeAccount);
             values.put(TransactionEntry.COLUMN_NAME_ORDER, i);
-            values.put(TransactionEntry.COLUMN_NAME_STATUS, transaction.optString("status"));
+            values.put(TransactionEntry.COLUMN_NAME_STATUS, transaction.optBoolean("confirmed") ? "complete" : "pending");
 
             db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
             i++;
@@ -352,9 +352,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     @Override
     public boolean setViewValue(View arg0, Cursor arg1, int arg2) {
+
       try {
-        JSONObject item = new JSONObject(new JSONTokener(arg1.getString(arg2)));
-        return setViewValue(arg0, item);
+        return setViewValue(arg0, arg1.getString(arg2));
       } catch (JSONException e) {
         // Malformed transaction JSON.
         Log.e("Coinbase", "Corrupted database entry! " + arg1.getInt(arg1.getColumnIndex(TransactionEntry._ID)));
@@ -364,19 +364,47 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       }
     }
 
-    public boolean setViewValue(View arg0, JSONObject item) throws JSONException {
+    public boolean setViewValue(View arg0, String item) throws JSONException {
+
+      JSONObject json = null;
+      if (arg0.getId() != R.id.transaction_status) {
+        json = new JSONObject(new JSONTokener(item));
+      }
 
         switch(arg0.getId()) {
 
+          case R.id.transaction_status:
+            String status = item.toLowerCase(Locale.CANADA);
+            String readable;
+            int scolor;
+            if (status.equals("complete")) {
+              readable = getString(R.string.transaction_status_complete);
+              scolor = R.color.transaction_inlinestatus_complete;
+            } else if (status.equals("pending")) {
+              readable = getString(R.string.transaction_status_pending);
+              scolor = R.color.transaction_inlinestatus_pending;
+            } else if (status.equals("delayed")) {
+              readable = getString(R.string.transaction_status_delayed);
+              scolor = R.color.transaction_inlinestatus_delayed;
+            } else {
+              readable = status;
+              scolor = R.color.transaction_inlinestatus_complete;
+            }
+
+            ((TextView) arg0).setText(readable);
+            ((TextView) arg0).setTextColor(getResources().getColor(scolor));
+            ((TextView) arg0).setTypeface(FontManager.getFont(mParent, "RobotoCondensed-Regular"));
+            return true;
+
           case R.id.transaction_title:
 
-            ((TextView) arg0).setText(Utils.generateTransactionSummary(mParent, item));
+            ((TextView) arg0).setText(Utils.generateTransactionSummary(mParent, json));
             ((TextView) arg0).setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
             return true;
 
           case R.id.transaction_amount:
 
-            String amount = item.getJSONObject("amount").getString("amount");
+            String amount = json.getJSONObject("amount").getString("amount");
             String balanceString = Utils.formatCurrencyAmount(amount);
             if(balanceString.startsWith("-")) {
               balanceString = balanceString.substring(1);
@@ -388,25 +416,6 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
             ((TextView) arg0).setText(balanceString);
             ((TextView) arg0).setTextColor(getResources().getColor(color));
-            return true;
-
-          case R.id.transaction_status:
-
-            boolean confirmed = item.optBoolean("confirmed");
-
-            String readable;
-            int scolor;
-            if(confirmed) {
-              readable = getString(R.string.transaction_status_complete);
-              scolor = R.color.transaction_inlinestatus_complete;
-            } else {
-              readable = getString(R.string.transaction_status_pending);
-              scolor = R.color.transaction_inlinestatus_pending;
-            }
-
-            ((TextView) arg0).setText(readable);
-            ((TextView) arg0).setTextColor(getResources().getColor(scolor));
-            ((TextView) arg0).setTypeface(FontManager.getFont(mParent, "RobotoCondensed-Regular"));
             return true;
         }
 
@@ -449,7 +458,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         }
 
         String[] from = { TransactionEntry.COLUMN_NAME_JSON, TransactionEntry.COLUMN_NAME_JSON,
-                          TransactionEntry.COLUMN_NAME_JSON, TransactionEntry.COLUMN_NAME_JSON };
+                          TransactionEntry.COLUMN_NAME_STATUS, TransactionEntry.COLUMN_NAME_JSON };
         int[] to = { R.id.transaction_title, R.id.transaction_amount,
                      R.id.transaction_status, R.id.transaction_currency };
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(mParent, R.layout.fragment_transactions_item, result,
@@ -813,12 +822,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
   }
 
-  public void insertTransactionAnimated(final int insertAtIndex, final JSONObject transaction, final String category) {
+  public void insertTransactionAnimated(final int insertAtIndex, final JSONObject transaction, final String category, final String status) {
 
     if (!PlatformUtils.hasHoneycomb()) {
       // Do not play animation!
       try {
-        insertTransaction(transaction, createAccountChangeForTransaction(transaction, category));
+        insertTransaction(transaction, createAccountChangeForTransaction(transaction, category), status);
       } catch (Exception e) {
         throw new RuntimeException("Malformed JSON from Coinbase", e);
       }
@@ -836,7 +845,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         getListView().setSelection(0);
         getListView().postDelayed(new Runnable() {
           public void run() {
-            _insertTransactionAnimated(insertAtIndex, transaction, category);
+            _insertTransactionAnimated(insertAtIndex, transaction, category, status);
           }
         }, 500);
       }
@@ -844,7 +853,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-  private void _insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category) {
+  private void _insertTransactionAnimated(int insertAtIndex, JSONObject transaction, String category, String status) {
 
     // Step 1
     // Take a screenshot of the relevant part of the list view and put it over top of the real one
@@ -890,11 +899,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       newListItem = View.inflate(mParent, R.layout.fragment_transactions_item, null);
       TransactionViewBinder binder = new TransactionViewBinder();
       for (int i : new int[] { R.id.transaction_title, R.id.transaction_amount,
-              R.id.transaction_status, R.id.transaction_currency }) {
+              R.id.transaction_currency }) {
         if (newListItem.findViewById(i) != null) {
-          binder.setViewValue(newListItem.findViewById(i), accountChange);
+          binder.setViewValue(newListItem.findViewById(i), accountChange.toString());
         }
       }
+      binder.setViewValue(newListItem.findViewById(R.id.transaction_status), status);
       newListItem.setBackgroundColor(Color.WHITE);
     } catch (JSONException e) {
       throw new RuntimeException("Malformed JSON from Coinbase", e);
@@ -960,12 +970,12 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Step 4
     // Now that the animation is started, update the actual list values behind-the-scenes
-    insertTransaction(transaction, accountChange);
+    insertTransaction(transaction, accountChange, status);
   }
 
   private JSONObject createAccountChangeForTransaction(JSONObject transaction, String category) throws JSONException {
     JSONObject accountChange = new JSONObject();
-    accountChange.put("transaction_id", transaction.getString("id"));
+    accountChange.put("transaction_id", transaction.optString("id"));
     accountChange.put("created_at", transaction.getString("created_at"));
     accountChange.put("confirmed", !transaction.getString("status").equals("pending"));
     accountChange.put("amount", transaction.getJSONObject("amount"));
@@ -983,7 +993,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     return accountChange;
   }
 
-  private void insertTransaction(JSONObject transaction, JSONObject accountChange) {
+  private void insertTransaction(JSONObject transaction, JSONObject accountChange, String status) {
     DatabaseObject db = DatabaseObject.getInstance();
     synchronized(db.databaseLock) {
       db.beginTransaction(mParent);
@@ -1010,7 +1020,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
         values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, Utils.getActiveAccount(mParent));
         values.put(TransactionEntry.COLUMN_NAME_ORDER, -System.currentTimeMillis());
-        values.put(TransactionEntry.COLUMN_NAME_STATUS, transaction.optString("pending"));
+        values.put(TransactionEntry.COLUMN_NAME_STATUS, status);
 
         long newId = db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
         System.out.println("Inserted with ID " + newId);
@@ -1025,7 +1035,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-  private void loadTransactionsList() {
+  public void loadTransactionsList() {
     if (PlatformUtils.hasHoneycomb()) {
       new LoadTransactionsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     } else {

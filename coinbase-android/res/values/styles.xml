@@ -18,6 +18,7 @@
 
     <color name="transaction_inlinestatus_complete">#9196aa</color>
     <color name="transaction_inlinestatus_pending">#f89406</color>
+    <color name="transaction_inlinestatus_delayed">#3882cd</color>
 
     <style name="TransactionDetailsLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:textColor">@color/transactiondetails_label</item>
