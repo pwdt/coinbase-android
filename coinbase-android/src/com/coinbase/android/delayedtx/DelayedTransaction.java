@@ -35,14 +35,24 @@ public class DelayedTransaction {
     this.notes = notes;
   }
 
+  public String getCategory() {
+    if (type == Type.BUY || type == Type.SELL) {
+      return "transfer";
+    } else {
+      return "tx";
+    }
+  }
+
   public JSONObject createTransaction(Context c) throws JSONException {
     JSONObject tx = new JSONObject();
     tx.put("id", "delayed-" + System.currentTimeMillis());
     tx.put("created_at", ISO8601.now());
     tx.put("request", false);
-    tx.put("amount", new JSONObject().put("amount", amount).put("currency", currency));
     tx.put("status", "delayed");
     tx.put("notes", notes);
+
+    String amountWithSign = (type == Type.SELL || type == Type.SEND) ? ("-" + amount) : amount;
+    tx.put("amount", new JSONObject().put("amount", amountWithSign).put("currency", currency));
 
     if (otherUser.startsWith("1") && !otherUser.contains("@")) {
       tx.put("recipient_address", otherUser);
@@ -51,6 +61,15 @@ public class DelayedTransaction {
     }
     tx.put("sender", new JSONObject().put("id",
             Utils.getPrefsString(c, Constants.KEY_ACCOUNT_ID, null)));
+
+    // delayed TX specific information
+    JSONObject dtx = new JSONObject();
+    dtx.put("type", type.toString());
+    dtx.put("amount", amount);
+    dtx.put("currency", currency);
+    dtx.put("otherUser", otherUser);
+    dtx.put("notes", notes);
+    tx.put("delayed_transaction", dtx);
 
     return tx;
   }

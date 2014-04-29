@@ -100,7 +100,7 @@
         android:layout_alignParentLeft="true"
         android:textColor="#FFFFFF"
         android:text="@string/transactions_refresh_error"
-        android:background="#B30000"
+        android:background="@color/transactions_sync_error_critical"
         android:padding="10dp"
         android:gravity="center"
         android:textStyle="bold"

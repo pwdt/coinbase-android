@@ -20,6 +20,9 @@
     <color name="transaction_inlinestatus_pending">#f89406</color>
     <color name="transaction_inlinestatus_delayed">#3882cd</color>
 
+    <color name="transactions_sync_error_critical">#B30000</color>
+    <color name="transactions_sync_error_calm">#ff98aec9</color>
+
     <style name="TransactionDetailsLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:textColor">@color/transactiondetails_label</item>
         <item name="android:textStyle">bold</item>
