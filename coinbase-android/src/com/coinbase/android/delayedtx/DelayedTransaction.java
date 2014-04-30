@@ -1,6 +1,7 @@
 package com.coinbase.android.delayedtx;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.coinbase.android.Constants;
 import com.coinbase.android.ISO8601;
@@ -35,9 +36,21 @@ public class DelayedTransaction {
     this.notes = notes;
   }
 
+  public DelayedTransaction(JSONObject txJson) {
+    Log.v("Coinbase", txJson.toString());
+    txJson = txJson.optJSONObject("delayed_transaction");
+    this.type = Type.valueOf(txJson.optString("type"));
+    this.amount = txJson.optString("amount");
+    this.currency = txJson.optString("currency");
+    this.otherUser = txJson.optString("otherUser");
+    this.notes = txJson.optString("notes");
+  }
+
   public String getCategory() {
     if (type == Type.BUY || type == Type.SELL) {
       return "transfer";
+    } else if (type == Type.REQUEST) {
+      return "request";
     } else {
       return "tx";
     }
@@ -47,7 +60,7 @@ public class DelayedTransaction {
     JSONObject tx = new JSONObject();
     tx.put("id", "delayed-" + System.currentTimeMillis());
     tx.put("created_at", ISO8601.now());
-    tx.put("request", false);
+    tx.put("request", type == Type.REQUEST);
     tx.put("status", "delayed");
     tx.put("notes", notes);
 

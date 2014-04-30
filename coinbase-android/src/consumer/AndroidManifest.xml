@@ -60,6 +60,13 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
+        <receiver android:name="com.coinbase.android.delayedtx.ConnectivityChangeReceiver"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
+        <service android:name="com.coinbase.android.delayedtx.DelayedTxSenderService"></service>
     </application>
 
 </manifest>

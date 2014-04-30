@@ -2,7 +2,9 @@ package com.coinbase.android.delayedtx;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 
@@ -38,13 +40,16 @@ public class DelayedTransactionDialogFragment extends DialogFragment {
                   MainActivity parent = ((MainActivity) getActivity());
                   TransactionsFragment transactionsFragment = parent.getTransactionsFragment();
                   JSONObject json = delayedTransaction.createTransaction(getActivity());
-                  transactionsFragment.insertTransactionAnimated(0, json, "tx", "delayed");
+                  transactionsFragment.insertTransactionAnimated(0, json, delayedTransaction.getCategory(), "delayed");
                   parent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
                 } catch (JSONException e) {
                   throw new RuntimeException(e);
                 }
 
-                // TODO enable broadcast receiver
+                // Enable broadcast receiver
+                PackageManager pm = getActivity().getPackageManager();
+                pm.setComponentEnabledSetting(new ComponentName(getActivity(), ConnectivityChangeReceiver.class),
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
               }
             })
             .setNegativeButton(R.string.delayed_tx_dialog_cancel, new DialogInterface.OnClickListener() {

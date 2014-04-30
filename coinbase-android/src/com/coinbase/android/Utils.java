@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -24,6 +25,8 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.FrameLayout;
 
+import com.coinbase.android.db.DatabaseObject;
+import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.api.RpcManager;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -40,6 +43,7 @@ import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -438,5 +442,65 @@ public class Utils {
     boolean isConnected = activeNetwork != null &&
             activeNetwork.isConnectedOrConnecting();
     return isConnected;
+  }
+
+  public static JSONObject createAccountChangeForTransaction(Context c, JSONObject transaction, String category) throws JSONException {
+    JSONObject accountChange = new JSONObject();
+    accountChange.put("transaction_id", transaction.optString("id"));
+    accountChange.put("created_at", transaction.getString("created_at"));
+    accountChange.put("confirmed", !transaction.getString("status").equals("pending"));
+    accountChange.put("amount", transaction.getJSONObject("amount"));
+    JSONObject cache = new JSONObject();
+    cache.put("category", category);
+    boolean thisUserSender = Utils.getPrefsString(c, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
+    JSONObject otherUser = transaction.optJSONObject(thisUserSender ? "recipient" : "sender");
+    if (otherUser == null) {
+      otherUser = new JSONObject();
+      otherUser.put("id", null);
+      otherUser.put("name", "an external account");
+    }
+    cache.put("other_user", otherUser);
+    accountChange.put("cache", cache);
+    accountChange.put("delayed_transaction", transaction.optJSONObject("delayed_transaction"));
+    return accountChange;
+  }
+
+  public static void insertTransaction(Context c, JSONObject transaction, JSONObject accountChange, String status) {
+    DatabaseObject db = DatabaseObject.getInstance();
+    synchronized(db.databaseLock) {
+      db.beginTransaction(c);
+      try {
+        ContentValues values = new ContentValues();
+
+        String createdAtStr = transaction.optString("created_at", null);
+        long createdAt;
+        try {
+          if(createdAtStr != null) {
+            createdAt = ISO8601.toCalendar(createdAtStr).getTimeInMillis();
+          } else {
+            createdAt = -1;
+          }
+        } catch (ParseException e) {
+          // Error parsing createdAt
+          e.printStackTrace();
+          createdAt = -1;
+        }
+
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_TRANSACTION_JSON, transaction.toString());
+        values.put(TransactionsDatabase.TransactionEntry._ID, transaction.getString("id"));
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_JSON, accountChange.toString());
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_TIME, createdAt);
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_ACCOUNT, Utils.getActiveAccount(c));
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_ORDER, -System.currentTimeMillis());
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_STATUS, status);
+
+        long newId = db.insert(c, TransactionsDatabase.TransactionEntry.TABLE_NAME, null, values);
+        db.setTransactionSuccessful(c);
+      } catch (JSONException e) {
+        throw new RuntimeException("Malformed JSON from Coinbase", e);
+      } finally {
+        db.endTransaction(c);
+      }
+    }
   }
 }

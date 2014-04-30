@@ -730,6 +730,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }).start();
 
     // Refresh
+    mTransactionsFragment.loadTransactionsList();
+    ((CoinbaseApplication) getApplication()).addMainActivity(this);
     if((System.currentTimeMillis() - mLastRefreshTime) > RESUME_REFRESH_INTERVAL) {
       refresh();
     }
@@ -762,6 +764,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
 
     mPendingPinReturn = false;
+    ((CoinbaseApplication) getApplication()).removeMainActivity(this);
 
     // Since we manually opened the keyboard, we must close it when switching
     // away from the app

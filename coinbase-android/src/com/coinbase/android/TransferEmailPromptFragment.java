@@ -12,6 +12,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 
 import com.coinbase.android.TransferFragment.TransferType;
+import com.coinbase.android.delayedtx.DelayedTransaction;
+import com.coinbase.android.delayedtx.DelayedTransactionDialogFragment;
 
 public class TransferEmailPromptFragment extends DialogFragment {
   
@@ -49,9 +51,19 @@ public class TransferEmailPromptFragment extends DialogFragment {
 
         // Complete transfer
         TransferFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getTransferFragment();
+        String recipient = field.getText().toString();
 
         if(parent != null) {
-          parent.startTransferTask(type, amount, currency, notes, field.getText().toString(), null);
+          if(!Utils.isConnectedOrConnecting(getActivity())) {
+            // Internet is not available
+            // Show error message and display option to do a delayed transaction
+            new DelayedTransactionDialogFragment(
+                    new DelayedTransaction(DelayedTransaction.Type.REQUEST, amount, currency, recipient, notes))
+                    .show(getFragmentManager(), "delayed_request");
+            return;
+          } else {
+            parent.startTransferTask(type, amount, currency, notes, recipient, null);
+          }
         }
       }
     });

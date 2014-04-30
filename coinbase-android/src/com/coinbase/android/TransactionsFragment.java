@@ -45,6 +45,7 @@ import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
+import com.coinbase.android.delayedtx.DelayedTxSenderService;
 import com.coinbase.android.util.InsertedItemListAdapter;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
@@ -228,7 +229,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
           if(startPage == 0) {
             // Remove all old transactions
-            int deleted = db.delete(mParent, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NAME_ACCOUNT + " = ?", new String[] { Integer.toString(activeAccount) });
+            int deleted = db.delete(mParent, TransactionEntry.TABLE_NAME,
+                    TransactionEntry.COLUMN_NAME_ACCOUNT + " = ? AND " + TransactionEntry.COLUMN_NAME_STATUS + " != ?",
+                    new String[] { Integer.toString(activeAccount), "delayed" });
             Log.d("Coinbase", deleted + " rows deleted.");
           }
 
@@ -353,6 +356,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
             new AccountInvalidDialogFragment().show(getFragmentManager(), "accountinvalid");
           }
         }
+      } else {
+        // Successful sync. This is a good time to check for any left over delayed TX.
+        mParent.startService(new Intent(mParent, DelayedTxSenderService.class));
       }
 
       mSyncTask = null;
@@ -839,7 +845,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     if (!PlatformUtils.hasHoneycomb()) {
       // Do not play animation!
       try {
-        insertTransaction(transaction, createAccountChangeForTransaction(transaction, category), status);
+        Utils.insertTransaction(mParent, transaction, Utils.createAccountChangeForTransaction(mParent, transaction, category), status);
+        loadTransactionsList();
       } catch (Exception e) {
         throw new RuntimeException("Malformed JSON from Coinbase", e);
       }
@@ -906,7 +913,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     JSONObject accountChange;
     View newListItem;
     try {
-      accountChange = createAccountChangeForTransaction(transaction, category);
+      accountChange = Utils.createAccountChangeForTransaction(mParent, transaction, category);
 
       newListItem = View.inflate(mParent, R.layout.fragment_transactions_item, null);
       TransactionViewBinder binder = new TransactionViewBinder();
@@ -982,67 +989,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Step 4
     // Now that the animation is started, update the actual list values behind-the-scenes
-    insertTransaction(transaction, accountChange, status);
-  }
-
-  private JSONObject createAccountChangeForTransaction(JSONObject transaction, String category) throws JSONException {
-    JSONObject accountChange = new JSONObject();
-    accountChange.put("transaction_id", transaction.optString("id"));
-    accountChange.put("created_at", transaction.getString("created_at"));
-    accountChange.put("confirmed", !transaction.getString("status").equals("pending"));
-    accountChange.put("amount", transaction.getJSONObject("amount"));
-    JSONObject cache = new JSONObject();
-    cache.put("category", category);
-    boolean thisUserSender = Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
-    JSONObject otherUser = transaction.optJSONObject(thisUserSender ? "recipient" : "sender");
-    if (otherUser == null) {
-      otherUser = new JSONObject();
-      otherUser.put("id", null);
-      otherUser.put("name", "an external account");
-    }
-    cache.put("other_user", otherUser);
-    accountChange.put("cache", cache);
-    return accountChange;
-  }
-
-  private void insertTransaction(JSONObject transaction, JSONObject accountChange, String status) {
-    DatabaseObject db = DatabaseObject.getInstance();
-    synchronized(db.databaseLock) {
-      db.beginTransaction(mParent);
-      try {
-        ContentValues values = new ContentValues();
-
-        String createdAtStr = transaction.optString("created_at", null);
-        long createdAt;
-        try {
-          if(createdAtStr != null) {
-            createdAt = ISO8601.toCalendar(createdAtStr).getTimeInMillis();
-          } else {
-            createdAt = -1;
-          }
-        } catch (ParseException e) {
-          // Error parsing createdAt
-          e.printStackTrace();
-          createdAt = -1;
-        }
-
-        values.put(TransactionEntry.COLUMN_NAME_TRANSACTION_JSON, transaction.toString());
-        values.put(TransactionEntry._ID, transaction.getString("id"));
-        values.put(TransactionEntry.COLUMN_NAME_JSON, accountChange.toString());
-        values.put(TransactionEntry.COLUMN_NAME_TIME, createdAt);
-        values.put(TransactionEntry.COLUMN_NAME_ACCOUNT, Utils.getActiveAccount(mParent));
-        values.put(TransactionEntry.COLUMN_NAME_ORDER, -System.currentTimeMillis());
-        values.put(TransactionEntry.COLUMN_NAME_STATUS, status);
-
-        long newId = db.insert(mParent, TransactionEntry.TABLE_NAME, null, values);
-        System.out.println("Inserted with ID " + newId);
-        db.setTransactionSuccessful(mParent);
-      } catch (JSONException e) {
-        throw new RuntimeException("Malformed JSON from Coinbase", e);
-      } finally {
-        db.endTransaction(mParent);
-      }
-    }
+    Utils.insertTransaction(mParent, transaction, accountChange, status);
     loadTransactionsList();
   }
 

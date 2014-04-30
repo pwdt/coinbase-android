@@ -258,4 +258,9 @@
     <string name="transaction_status_delayed">UNSENT</string>
     <string name="transactiondetails_delayed_cancel">Cancel</string>
     <string name="transactiondetails_delayed_canceled">Cancelled.</string>
+    <string name="delayed_notification_success_request">Requested %2$s %3$s from %1$s</string>
+    <string name="delayed_notification_success_send">Sent %2$s %3$s to %1$s</string>
+    <string name="delayed_notification_success_subtitle">Transaction successfully sent.</string>
+    <string name="delayed_notification_failure_request">Could not request from %1$s</string>
+    <string name="delayed_notification_failure_send">Could not send to %1$s</string>
 </resources>
