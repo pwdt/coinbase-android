@@ -730,7 +730,9 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }).start();
 
     // Refresh
-    mTransactionsFragment.loadTransactionsList();
+    if (mTransactionsFragment != null) {
+      mTransactionsFragment.loadTransactionsList();
+    }
     ((CoinbaseApplication) getApplication()).addMainActivity(this);
     if((System.currentTimeMillis() - mLastRefreshTime) > RESUME_REFRESH_INTERVAL) {
       refresh();

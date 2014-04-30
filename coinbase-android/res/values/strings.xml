@@ -263,4 +263,7 @@
     <string name="delayed_notification_success_subtitle">Transaction successfully sent.</string>
     <string name="delayed_notification_failure_request">Could not request from %1$s</string>
     <string name="delayed_notification_failure_send">Could not send to %1$s</string>
+    <string name="pos_tip_title">Total: &lt;b>%1$s %2$s&lt;/b></string>
+    <string name="pos_tip_button">Tip &lt;b>%1$s%%&lt;/b></string>
+    <string name="pos_tip_custom">Tip custom amount</string>
 </resources>

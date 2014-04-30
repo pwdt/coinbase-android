@@ -18,7 +18,9 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -295,6 +298,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private static final int INDEX_LOADING = 1;
   private static final int INDEX_ACCEPT = 2;
   private static final int INDEX_RESULT = 3;
+  private static final int INDEX_ADD_TIP = 4;
   private static final int CHECK_PERIOD = 2000;
 
   private MainActivity mParent;
@@ -315,6 +319,9 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private TextView mResultStatus, mResultMessage;
   private Button mResultOK;
 
+  private TextView mTipTitle;
+  private Button mTipCustom;
+
   private View[] mHeaders;
   private TextView[] mHeaderTitles;
   private ImageView[] mHeaderLogos;
@@ -322,6 +329,8 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   private Timer mCheckStatusTimer = null;
   private CreateButtonTask mCreatingTask = null;
+
+  private boolean mTippingEnabled = true;
 
   @Override
   public void onSwitchedTo() {
@@ -355,6 +364,15 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mFlipper.setDisplayedChild(INDEX_MAIN);
     mAmount.requestFocus();
     setKeyboardVisible(true);
+  }
+
+  private void goToAddTip(String amount, String currency) {
+
+    CharSequence title = getString(R.string.pos_tip_title);
+    title = Html.fromHtml(String.format((String)title, amount, currency));
+    mTipTitle.setText(title);
+    mFlipper.setDisplayedChild(INDEX_ADD_TIP);
+    setKeyboardVisible(false);
   }
 
   @Override
@@ -423,11 +441,13 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
           return;
         }
 
-        mFlipper.setDisplayedChild(INDEX_LOADING);
-        mCreatingTask = new CreateButtonTask();
-        mCreatingTask.execute(mAmount.getText().toString(),
-                (String) mCurrency.getSelectedItem(), mNotes.getText().toString());
-        mAmount.setText(null);
+        String amount = mAmount.getText().toString(), currency =
+                (String) mCurrency.getSelectedItem();
+        if (mTippingEnabled) {
+          goToAddTip(amount, currency);
+        } else {
+          startLoading(amount, currency);
+        }
       }
     });
     mAcceptCancel.setOnClickListener(new View.OnClickListener() {
@@ -461,7 +481,8 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       }});
 
     // Headers
-    int[] headers = { R.id.pos_accept_header, R.id.pos_main_header, R.id.pos_result_header };
+    int[] headers = { R.id.pos_accept_header, R.id.pos_main_header, R.id.pos_result_header,
+      R.id.pos_add_tip_header };
 
     mHeaders = new View[headers.length];
     mHeaderTitles = new TextView[headers.length];
@@ -476,7 +497,50 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       mHeaderLogos[i].setImageDrawable(null);
     }
 
+    // Tip
+    mTipTitle = (TextView) view.findViewById(R.id.pos_add_tip_title);
+    mTipCustom = (Button) view.findViewById(R.id.pos_add_tip_custom);
+    mTipTitle.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    List<Button> tipButtons = new ArrayList<Button>();
+    ViewGroup buttons1 = (ViewGroup) view.findViewById(R.id.pos_add_tip_buttons_1);
+    for (int i = 0; i < buttons1.getChildCount(); i++) {
+      tipButtons.add((Button) buttons1.getChildAt(i));
+    }
+    ViewGroup buttons2 = (ViewGroup) view.findViewById(R.id.pos_add_tip_buttons_2);
+    for (int i = 0; i < buttons2.getChildCount(); i++) {
+      tipButtons.add((Button) buttons2.getChildAt(i));
+    }
+
+    String btnText = getString(R.string.pos_tip_button);
+    for (Button tipButton : tipButtons) {
+      String percent = (String) tipButton.getTag();
+      tipButton.setText(Html.fromHtml(String.format(btnText, percent)));
+      tipButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+
+          BigDecimal amount = new BigDecimal(mAmount.getText().toString());
+          amount = amount.multiply(new BigDecimal("1." + view.getTag()), MathContext.DECIMAL128);
+          startLoading(amount.toPlainString(), (String) mCurrency.getSelectedItem());
+        }
+      });
+    }
+    mTipCustom.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    mTipCustom.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+
+      }
+    });
+
     return view;
+  }
+
+  private void startLoading(String amount, String currency) {
+    mFlipper.setDisplayedChild(INDEX_LOADING);
+    mCreatingTask = new CreateButtonTask();
+    mCreatingTask.execute(amount, currency, mNotes.getText().toString());
+    mAmount.setText(null);
   }
 
   private void initializeCurrencySpinner() {

@@ -210,6 +210,63 @@
                     android:background="@drawable/button_secondary">
                 </Button>
             </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/pos_add_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/layout_padding"
+                android:background="@drawable/fragment_transactiondetails_bg">
+
+                <include layout="@layout/fragment_point_of_sale_header"
+                         android:id="@+id/pos_add_tip_header" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="11pt"
+                    android:padding="15dp"
+                    android:id="@+id/pos_add_tip_title"
+                    android:layout_below="@+id/pos_add_tip_header"
+                    android:gravity="center" />
+
+                <LinearLayout
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/pos_add_tip_buttons_1"
+                    android:layout_below="@+id/pos_add_tip_title">
+                    <Button
+                        style="@style/PointOfSaleTipButton"
+                        android:tag="5"/>
+                    <Button
+                        style="@style/PointOfSaleTipButton"
+                        android:tag="10"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/pos_add_tip_buttons_2"
+                    android:layout_below="@+id/pos_add_tip_buttons_1">
+                    <Button
+                        style="@style/PointOfSaleTipButton"
+                        android:tag="15"/>
+                    <Button
+                        style="@style/PointOfSaleTipButton"
+                        android:tag="20"/>
+                </LinearLayout>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:background="@drawable/button_secondary"
+                    android:text="@string/pos_tip_custom"
+                    android:layout_height="50dp"
+                    android:layout_below="@+id/pos_add_tip_buttons_2"
+                    android:id="@+id/pos_add_tip_custom"/>
+
+            </RelativeLayout>
         </ViewFlipper>
     
     </ScrollView>
