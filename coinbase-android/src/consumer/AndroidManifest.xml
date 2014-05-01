@@ -2,6 +2,8 @@
 
     <!-- Consumer version includes QR scanner -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Used for delayed transactions -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
     <application>
