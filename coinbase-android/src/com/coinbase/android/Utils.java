@@ -465,7 +465,12 @@ public class Utils {
     return accountChange;
   }
 
+
   public static void insertTransaction(Context c, JSONObject transaction, JSONObject accountChange, String status) {
+    insertTransaction(c, transaction, accountChange, status, Utils.getActiveAccount(c));
+  }
+
+  public static void insertTransaction(Context c, JSONObject transaction, JSONObject accountChange, String status, int account) {
     DatabaseObject db = DatabaseObject.getInstance();
     synchronized(db.databaseLock) {
       db.beginTransaction(c);
@@ -490,7 +495,7 @@ public class Utils {
         values.put(TransactionsDatabase.TransactionEntry._ID, transaction.getString("id"));
         values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_JSON, accountChange.toString());
         values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_TIME, createdAt);
-        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_ACCOUNT, Utils.getActiveAccount(c));
+        values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_ACCOUNT, account);
         values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_ORDER, -System.currentTimeMillis());
         values.put(TransactionsDatabase.TransactionEntry.COLUMN_NAME_STATUS, status);
 

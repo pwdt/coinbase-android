@@ -60,11 +60,13 @@ public class DelayedTxSenderService extends Service {
     List<JSONObject> txToSend = new ArrayList<JSONObject>();
     synchronized(db.databaseLock) {
       db.beginTransaction(this);
-      Cursor c = db.query(this, TransactionsDatabase.TransactionEntry.TABLE_NAME, new String[] { TransactionsDatabase.TransactionEntry.COLUMN_NAME_JSON },
+      Cursor c = db.query(this, TransactionsDatabase.TransactionEntry.TABLE_NAME,
+              new String[] { TransactionsDatabase.TransactionEntry.COLUMN_NAME_JSON, TransactionsDatabase.TransactionEntry.COLUMN_NAME_ACCOUNT},
               TransactionsDatabase.TransactionEntry.COLUMN_NAME_STATUS + " = ?", new String[] { "delayed" }, null, null, null);
       while (c.moveToNext()) {
         try {
           JSONObject tx = new JSONObject(c.getString(c.getColumnIndex(TransactionsDatabase.TransactionEntry.COLUMN_NAME_JSON)));
+          tx.put("account", c.getInt(c.getColumnIndex(TransactionsDatabase.TransactionEntry.COLUMN_NAME_ACCOUNT)));
           txToSend.add(tx);
         } catch (JSONException e) {
           continue;
@@ -83,6 +85,7 @@ public class DelayedTxSenderService extends Service {
         if ((tx.type == DelayedTransaction.Type.SEND) || (tx.type == DelayedTransaction.Type.REQUEST)) {
 
           // Make request
+          int account = txJson.getInt("account");
           List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
           params.add(new BasicNameValuePair("transaction[amount_string]", tx.amount));
           params.add(new BasicNameValuePair("transaction[amount_currency_iso]", tx.currency));
@@ -94,8 +97,8 @@ public class DelayedTxSenderService extends Service {
           params.add(new BasicNameValuePair(
                   String.format("transaction[%s]", tx.type == DelayedTransaction.Type.SEND ? "to" : "from"), tx.otherUser));
 
-          JSONObject response = RpcManager.getInstance().callPost(this,
-                  String.format("transactions/%s_money", tx.type.toString().toLowerCase(Locale.CANADA)), params);
+          JSONObject response = RpcManager.getInstance().callPostOverrideAccount(this,
+                  String.format("transactions/%s_money", tx.type.toString().toLowerCase(Locale.CANADA)), params, account);
 
           // Request was successfully sent! (Actual send/request may not have been successful, but that's not important.)
           successfullySent++;
@@ -107,7 +110,8 @@ public class DelayedTxSenderService extends Service {
           if (response.optBoolean("success")) {
             JSONObject transaction = response.getJSONObject("transaction");
             Utils.insertTransaction(this, transaction,
-                    Utils.createAccountChangeForTransaction(this, transaction, tx.getCategory()), transaction.getString("status"));
+                    Utils.createAccountChangeForTransaction(this, transaction, tx.getCategory()),
+                    transaction.getString("status"), account);
           }
         } else {
           // Unimplemented
@@ -177,7 +181,7 @@ public class DelayedTxSenderService extends Service {
 
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(this)
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setSmallIcon(R.drawable.ic_notif_delayed)
             .setContentTitle(title)
             .setContentText(description)
             .setAutoCancel(true);

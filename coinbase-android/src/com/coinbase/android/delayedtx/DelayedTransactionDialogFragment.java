@@ -38,6 +38,7 @@ public class DelayedTransactionDialogFragment extends DialogFragment {
                 // Insert delayed tx into database and animate onto transactions page
                 try {
                   MainActivity parent = ((MainActivity) getActivity());
+                  parent.getTransferFragment().clearForm();
                   TransactionsFragment transactionsFragment = parent.getTransactionsFragment();
                   JSONObject json = delayedTransaction.createTransaction(getActivity());
                   transactionsFragment.insertTransactionAnimated(0, json, delayedTransaction.getCategory(), "delayed");

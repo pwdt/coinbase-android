@@ -423,11 +423,16 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           case R.id.transaction_amount:
 
             String amount = json.getJSONObject("amount").getString("amount");
+            String currency = json.getJSONObject("amount").getString("currency");
             String balanceString = Utils.formatCurrencyAmount(amount);
             if(balanceString.startsWith("-")) {
               balanceString = balanceString.substring(1);
             }
-            balanceString = "\u0E3F" + balanceString;
+            if ("BTC".equals(currency)) {
+              balanceString = "\u0E3F" + balanceString;
+            } else {
+              balanceString = balanceString + " " + currency;
+            }
 
             int sign = new BigDecimal(amount).compareTo(BigDecimal.ZERO);
             int color = sign == -1 ? R.color.transaction_negative : (sign == 0 ? R.color.transaction_neutral : R.color.transaction_positive);

@@ -77,6 +77,11 @@ public class RpcManager {
     return call(context, method, RequestVerb.POST, params);
   }
 
+  public JSONObject callPostOverrideAccount(Context context, String method, Collection<BasicNameValuePair> params, int account) throws IOException, JSONException {
+
+    return call(context, method, RequestVerb.POST, params, true, account);
+  }
+
   public JSONObject callPut(Context context, String method, Collection<BasicNameValuePair> params) throws IOException, JSONException {
 
     return call(context, method, RequestVerb.PUT, params);

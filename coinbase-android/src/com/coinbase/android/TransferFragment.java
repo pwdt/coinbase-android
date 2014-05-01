@@ -120,9 +120,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         Toast.makeText(mParent, text, Toast.LENGTH_SHORT).show();
 
         // Clear form
-        mAmountView.setText("");
-        mNotesView.setText("");
-        mRecipientView.setText("");
+        clearForm();
         
         // Add new transaction to transactions screen
         JSONObject tx = (JSONObject) result[4];
@@ -458,9 +456,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       @Override
       public void onClick(View v) {
 
-        mAmountView.setText("");
-        mNotesView.setText("");
-        mRecipientView.setText("");
+        clearForm();
       }
     });
 
@@ -605,6 +601,12 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
     // After using a receive address, generate a new one for next time.
     mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+  }
+
+  public void clearForm() {
+    mAmountView.setText("");
+    mNotesView.setText("");
+    mRecipientView.setText("");
   }
 
   private void updateNativeCurrency() {
