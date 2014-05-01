@@ -266,6 +266,44 @@
                     android:layout_below="@+id/pos_add_tip_buttons_2"
                     android:id="@+id/pos_add_tip_custom"/>
 
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/pos_add_tip_custom"
+                    android:id="@+id/pos_add_tip_custom_container"
+                    android:layout_centerHorizontal="true"
+                    android:paddingBottom="10dp">
+
+                    <EditText
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/pos_tip_custom_hint"
+                        android:textSize="9pt"
+                        android:id="@+id/pos_add_tip_custom_field"
+                        android:visibility="gone"
+                        android:layout_alignParentLeft="true"
+                        android:inputType="number"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="9pt"
+                        android:id="@+id/pos_add_tip_custom_text"
+                        android:layout_toRightOf="@+id/pos_add_tip_custom_field"
+                        android:layout_alignBaseline="@+id/pos_add_tip_custom_field"
+                        android:visibility="gone"
+                        />
+                </RelativeLayout>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:background="@drawable/button_primary"
+                    android:text="@string/pos_tip_custom_confirm"
+                    android:layout_height="50dp"
+                    android:layout_below="@+id/pos_add_tip_custom_container"
+                    android:id="@+id/pos_add_tip_custom_confirm"
+                    android:visibility="gone"
+                    android:textColor="#ffffff"/>
+
             </RelativeLayout>
         </ViewFlipper>
     

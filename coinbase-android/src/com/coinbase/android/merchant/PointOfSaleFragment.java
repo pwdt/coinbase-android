@@ -17,12 +17,15 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -320,7 +323,9 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
   private Button mResultOK;
 
   private TextView mTipTitle;
-  private Button mTipCustom;
+  private Button mTipCustom, mTipCustomConfirm;
+  private EditText mTipCustomField;
+  private TextView mTipCustomText;
 
   private View[] mHeaders;
   private TextView[] mHeaderTitles;
@@ -329,8 +334,6 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   private Timer mCheckStatusTimer = null;
   private CreateButtonTask mCreatingTask = null;
-
-  private boolean mTippingEnabled = true;
 
   @Override
   public void onSwitchedTo() {
@@ -443,7 +446,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
         String amount = mAmount.getText().toString(), currency =
                 (String) mCurrency.getSelectedItem();
-        if (mTippingEnabled) {
+        if (Utils.getPrefsBool(mParent, Constants.KEY_ACCOUNT_ENABLE_TIPPING, false)) {
           goToAddTip(amount, currency);
         } else {
           startLoading(amount, currency);
@@ -500,7 +503,13 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     // Tip
     mTipTitle = (TextView) view.findViewById(R.id.pos_add_tip_title);
     mTipCustom = (Button) view.findViewById(R.id.pos_add_tip_custom);
+    mTipCustomConfirm = (Button) view.findViewById(R.id.pos_add_tip_custom_confirm);
+    mTipCustomField = (EditText) view.findViewById(R.id.pos_add_tip_custom_field);
+    mTipCustomText = (TextView) view.findViewById(R.id.pos_add_tip_custom_text);
     mTipTitle.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    mTipCustomConfirm.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    mTipCustomField.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+    mTipCustomText.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
     List<Button> tipButtons = new ArrayList<Button>();
     ViewGroup buttons1 = (ViewGroup) view.findViewById(R.id.pos_add_tip_buttons_1);
     for (int i = 0; i < buttons1.getChildCount(); i++) {
@@ -519,9 +528,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
         @Override
         public void onClick(View view) {
 
-          BigDecimal amount = new BigDecimal(mAmount.getText().toString());
-          amount = amount.multiply(new BigDecimal("1." + view.getTag()), MathContext.DECIMAL128);
-          startLoading(amount.toPlainString(), (String) mCurrency.getSelectedItem());
+          startLoading(calculateTipAmount((String) view.getTag(), true).toPlainString(), (String) mCurrency.getSelectedItem());
         }
       });
     }
@@ -529,14 +536,68 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     mTipCustom.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+        mTipCustomConfirm.setVisibility(View.VISIBLE);
+        mTipCustomField.setVisibility(View.VISIBLE);
+        mTipCustomText.setVisibility(View.VISIBLE);
+        view.setVisibility(View.GONE);
+        mTipCustomField.requestFocus();
+        setKeyboardVisible(true);
+      }
+    });
+    mTipCustomField.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+      }
 
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        updateCustomTipText();
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+      }
+    });
+    mTipCustomConfirm.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        startLoading(
+                calculateTipAmount(mTipCustomField.getText().toString(), true).toPlainString(),
+                (String) mCurrency.getSelectedItem());
       }
     });
 
+    updateCustomTipText();
     return view;
   }
 
+  private BigDecimal calculateTipAmount(String percent, boolean forTotal) {
+    if ("".equals(percent)) {
+      percent = "0";
+    }
+    BigDecimal p = new BigDecimal(percent).multiply(new BigDecimal("0.01"));
+    if (forTotal) {
+      p = p.add(new BigDecimal("1"));
+    }
+    String amountText = mAmount.getText().toString();
+    BigDecimal amount = new BigDecimal("".equals(amountText) ? "0" : amountText);
+    amount = amount.multiply(p, MathContext.DECIMAL128);
+    return amount;
+  }
+
+  private void updateCustomTipText() {
+    BigDecimal amount = calculateTipAmount(mTipCustomField.getText().toString(), false);
+    //amount.setScale(2, BigDecimal.ROUND_UP);
+    mTipCustomText.setText(getString(R.string.pos_tip_custom_text, amount.toPlainString(), mCurrency.getSelectedItem()));
+  }
+
   private void startLoading(String amount, String currency) {
+
+    mTipCustomConfirm.setVisibility(View.GONE);
+    mTipCustomField.setVisibility(View.GONE);
+    mTipCustomText.setVisibility(View.GONE);
+    mTipCustom.setVisibility(View.VISIBLE);
+    mTipCustomField.setText(null);
     mFlipper.setDisplayedChild(INDEX_LOADING);
     mCreatingTask = new CreateButtonTask();
     mCreatingTask.execute(amount, currency, mNotes.getText().toString());

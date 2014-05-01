@@ -677,6 +677,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     boolean kioskMode = Utils.inKioskMode(this);
     menu.findItem(R.id.menu_kiosk_mode).setVisible(BuildConfig.type == BuildType.MERCHANT);
     menu.findItem(R.id.menu_kiosk_mode).setTitle(kioskMode ? R.string.menu_kiosk_mode_disable : R.string.menu_kiosk_mode_enable);
+
+    boolean enableTipping = Utils.getPrefsBool(this, Constants.KEY_ACCOUNT_ENABLE_TIPPING, false);
+    menu.findItem(R.id.menu_tip).setVisible(BuildConfig.type == BuildType.MERCHANT);
+    menu.findItem(R.id.menu_tip).setTitle(enableTipping ? R.string.menu_tip_disable : R.string.menu_tip_enable);
+
     menu.findItem(R.id.menu_help).setVisible(!kioskMode);
     menu.findItem(R.id.menu_about).setVisible(!kioskMode);
     menu.findItem(R.id.menu_sign_out).setVisible(!kioskMode);
@@ -838,6 +843,26 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
               }
             }).create().show();
         }
+        return true;
+      case R.id.menu_tip:
+        new AlertDialog.Builder(this).setTitle(R.string.pos_tip_enable_title)
+                .setMessage(R.string.pos_tip_enable_text)
+                .setPositiveButton(R.string.pos_tip_enable_yes, new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialog, int which) {
+
+                    Utils.putPrefsBool(MainActivity.this,
+                            Constants.KEY_ACCOUNT_ENABLE_TIPPING, true);
+                  }
+                })
+                .setNegativeButton(R.string.pos_tip_enable_no, new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialog, int which) {
+
+                    Utils.putPrefsBool(MainActivity.this,
+                            Constants.KEY_ACCOUNT_ENABLE_TIPPING, false);
+                  }
+                }).create().show();
         return true;
       case android.R.id.home:
         if(mInTransactionDetailsMode) {

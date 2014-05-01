@@ -23,6 +23,11 @@
         android:title="@string/menu_kiosk_mode_enable">
     </item>
     <item
+        android:id="@+id/menu_tip"
+        android:showAsAction="never"
+        android:title="@string/menu_tip_enable">
+    </item>
+    <item
         android:id="@+id/menu_sign_out"
         android:showAsAction="never"
         android:title="@string/menu_sign_out">
