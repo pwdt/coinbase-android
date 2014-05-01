@@ -439,7 +439,8 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       public void onClick(View v) {
 
         if (mFlipper.getDisplayedChild() != INDEX_MAIN) return;
-        if ("".equals(mAmount.getText().toString())) {
+        if ("".equals(mAmount.getText().toString()) ||
+                ".".equals(mAmount.getText().toString())) {
           Toast.makeText(mParent, R.string.pos_empty_amount, Toast.LENGTH_SHORT).show();
           return;
         }
@@ -580,7 +581,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       p = p.add(new BigDecimal("1"));
     }
     String amountText = mAmount.getText().toString();
-    BigDecimal amount = new BigDecimal("".equals(amountText) ? "0" : amountText);
+    BigDecimal amount = new BigDecimal(("".equals(amountText) || ".".equals(amountText)) ? "0" : amountText);
     amount = amount.multiply(p, MathContext.DECIMAL128);
     return amount;
   }
