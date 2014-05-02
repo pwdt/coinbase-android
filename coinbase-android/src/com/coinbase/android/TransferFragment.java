@@ -125,6 +125,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         // Add new transaction to transactions screen
         JSONObject tx = (JSONObject) result[4];
         mParent.getTransactionsFragment().insertTransactionAnimated(0, tx, type == TransferType.SEND ? "tx" : "request", tx.optString("status"));
+        Utils.incrementPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE);
         mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
       } else {
 
