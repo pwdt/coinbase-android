@@ -452,7 +452,7 @@ public class Utils {
     accountChange.put("amount", transaction.getJSONObject("amount"));
     JSONObject cache = new JSONObject();
     cache.put("category", category);
-    boolean thisUserSender = Utils.getPrefsString(c, Constants.KEY_ACCOUNT_ID, null).equals(transaction.getJSONObject("sender").getString("id"));
+    boolean thisUserSender = Utils.getPrefsString(c, Constants.KEY_ACCOUNT_ID, "").equals(transaction.getJSONObject("sender").getString("id"));
     JSONObject otherUser = transaction.optJSONObject(thisUserSender ? "recipient" : "sender");
     if (otherUser == null) {
       otherUser = new JSONObject();
