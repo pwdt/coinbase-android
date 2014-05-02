@@ -341,11 +341,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         if (Utils.isConnectedOrConnecting(mParent)) {
           // Problem
           mSyncErrorView.setText(R.string.transactions_refresh_error);
-          mSyncErrorView.setBackgroundColor(getResources().getColor(R.color.transactions_sync_error_critical));
+          mSyncErrorView.setBackgroundColor(mParent.getResources().getColor(R.color.transactions_sync_error_critical));
         } else {
           // Internet is just disconnected
           mSyncErrorView.setText(R.string.transactions_internet_error);
-          mSyncErrorView.setBackgroundColor(getResources().getColor(R.color.transactions_sync_error_calm));
+          mSyncErrorView.setBackgroundColor(mParent.getResources().getColor(R.color.transactions_sync_error_calm));
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
