@@ -44,6 +44,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class AccountSettingsFragment extends ListFragment implements CoinbaseFragment {
@@ -200,6 +202,67 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
           // Update user
           ((MainActivity) getActivity()).getAccountSettingsFragment().updateUser(userUpdateParam, data[selected], key);
+        }
+      });
+
+      b.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+          // Do nothing
+        }
+      });
+
+      return b.create();
+    }
+  }
+
+  public static class TimeZonesDialogFragment extends DialogFragment {
+
+    int selected = -1;
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+      AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
+
+      // Load list of time zones
+      String[] timeZones;
+      String[] displayTimeZones;
+      try {
+        String jsonString = Utils.convertStreamToString(getResources().openRawResource(R.raw.time_zones));
+        JSONArray json = new JSONArray(jsonString);
+        timeZones = new String[json.length()];
+        displayTimeZones = new String[json.length()];
+        for (int i = 0; i < json.length(); i++) {
+          JSONArray values = json.getJSONArray(i);
+          timeZones[i] = values.getString(0);
+          displayTimeZones[i] = values.getString(1);
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
+      final String[] data = timeZones;
+      selected = Arrays.asList(data).indexOf(getArguments().getString("selected"));
+
+      b.setSingleChoiceItems(displayTimeZones, selected, new DialogInterface.OnClickListener() {
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+
+          selected = which;
+        }
+      });
+
+      b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+
+          // Update user
+          ((MainActivity) getActivity()).getAccountSettingsFragment().updateUser("time_zone",
+                  data[selected], Constants.KEY_ACCOUNT_TIME_ZONE);
         }
       });
 
@@ -549,7 +612,11 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       f.show(getFragmentManager(), "prompt");
     } else if("time_zone".equals(data[2])) {
       // Show list of time zones
-      // Not currently implemented
+      TimeZonesDialogFragment d = new TimeZonesDialogFragment();
+      Bundle args = new Bundle();
+      args.putString("selected", Utils.getPrefsString(mParent, Constants.KEY_ACCOUNT_TIME_ZONE, null));
+      d.setArguments(args);
+      d.show(getFragmentManager(), "time_zone");
     } else if("native_currency".equals(data[2])) {
 
       // Show list of currencies
