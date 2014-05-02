@@ -275,4 +275,6 @@
     <string name="menu_tip_disable">Disable tip prompt</string>
     <string name="pos_tip_enable_yes">Enable</string>
     <string name="pos_tip_enable_no">Disable</string>
+    <string name="transfer_fxrate_loading">Loading exchange rate...</string>
+    <string name="transfer_fxrate_failure">Exchange rate not available</string>
 </resources>

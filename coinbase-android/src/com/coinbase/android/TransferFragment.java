@@ -231,6 +231,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         mNativeExchangeRates = result;
         mNativeExchangeRateTime = System.currentTimeMillis();
         doNativeCurrencyUpdate();
+      } else {
+        mNativeAmount.setText(R.string.transfer_fxrate_failure);
       }
     }
 
@@ -620,7 +622,13 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
         return;
       }
 
-      refreshExchangeRate();
+      if (Utils.isConnectedOrConnecting(mParent)) {
+        mNativeAmount.setText(R.string.transfer_fxrate_loading);
+        refreshExchangeRate();
+      } else {
+        // No point in trying to load FX rate
+        mNativeAmount.setText(R.string.transfer_fxrate_failure);
+      }
     } else {
       doNativeCurrencyUpdate();
     }
