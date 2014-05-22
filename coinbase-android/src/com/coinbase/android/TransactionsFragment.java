@@ -1136,4 +1136,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       // Not used
     }
   }
+
+  @Override
+  public String getTitle() {
+    return getString(R.string.title_transactions);
+  }
 }

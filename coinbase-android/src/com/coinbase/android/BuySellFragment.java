@@ -609,4 +609,9 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
   public void onPINPromptSuccessfulReturn() {
     submit();
   }
+
+  @Override
+  public String getTitle() {
+    return getString(R.string.title_buysell);
+  }
 }

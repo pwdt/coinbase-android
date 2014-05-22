@@ -31,6 +31,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coinbase.android.event.UserDataUpdatedEvent;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.api.LoginManager;
@@ -88,7 +89,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     protected void onPostExecute(Boolean result) {
 
       setListAdapter(new PreferenceListAdapter());
-      mParent.refreshProfileView();
+      Utils.bus().post(new UserDataUpdatedEvent());
     }
 
   }
@@ -710,5 +711,10 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
       editItem(mPinItem);
       mPinItem = -1;
     }
+  }
+
+  @Override
+  public String getTitle() {
+    return getString(R.string.title_account);
   }
 }

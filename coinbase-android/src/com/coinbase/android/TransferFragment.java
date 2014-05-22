@@ -1049,4 +1049,9 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       }
     }
   }
+
+  @Override
+  public String getTitle() {
+    return getString(R.string.title_transfer);
+  }
 }

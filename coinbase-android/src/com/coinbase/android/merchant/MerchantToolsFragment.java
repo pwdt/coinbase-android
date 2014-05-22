@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.coinbase.android.CoinbaseFragment;
+import com.coinbase.android.R;
 
 public class MerchantToolsFragment extends Fragment implements CoinbaseFragment {
 
@@ -23,6 +24,11 @@ public class MerchantToolsFragment extends Fragment implements CoinbaseFragment 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     return new View(getActivity());
+  }
+
+  @Override
+  public String getTitle() {
+    return "not yet implemented";
   }
 
 }

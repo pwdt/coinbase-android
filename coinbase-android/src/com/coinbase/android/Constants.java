@@ -9,8 +9,6 @@ public class Constants {
     SHOULD_SHOW_NOTICE,
     NOTICE_DISMISSED;
   }
-
-  public static final boolean DEBUG_BUILD = false;
   
   public static final String KEY_ACTIVE_ACCOUNT = "active_account";
   public static final String KEY_MAX_ACCOUNT = "max_account";

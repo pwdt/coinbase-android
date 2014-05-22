@@ -41,6 +41,7 @@ import android.widget.BaseAdapter;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SlidingDrawer;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -49,11 +50,16 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.android.CoinbaseActivity.RequiresAuthentication;
 import com.coinbase.android.CoinbaseActivity.RequiresPIN;
+import com.coinbase.android.event.SectionSelectedEvent;
 import com.coinbase.android.merchant.MerchantKioskHomeActivity;
 import com.coinbase.android.merchant.MerchantKioskModeService;
 import com.coinbase.android.merchant.MerchantToolsFragment;
 import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.android.pin.PINSettingDialogFragment;
+import com.coinbase.android.ui.Mintent;
+import com.coinbase.android.ui.SignOutFragment;
+import com.coinbase.android.ui.SlidingDrawerFragment;
+import com.coinbase.android.util.Section;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
 import com.justinschultz.pusherclient.Pusher;
@@ -78,32 +84,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   private static final long RESUME_REFRESH_INTERVAL = 1 * 60 * 1000;
 
-  public static class SignOutFragment extends DialogFragment {
-
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-      AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-      builder.setMessage(R.string.sign_out_confirm);
-
-      builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          // Sign out
-          ((MainActivity) getActivity()).changeAccount(-1);
-        }
-      });
-
-      builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          // Dismiss
-        }
-      });
-
-      return builder.create();
-    }
-  }
-
   public static final int NUM_FRAGMENTS = 6;
   public static final int FRAGMENT_INDEX_TRANSACTIONS = 0;
   public static final int FRAGMENT_INDEX_TRANSFER = 1;
@@ -112,30 +92,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public static final int FRAGMENT_INDEX_MERCHANT_TOOLS = 4;
   public static final int FRAGMENT_INDEX_POINT_OF_SALE = 5;
 
-  private int[] mFragmentTitles = new int[] {
-                                             R.string.title_transactions,
-                                             R.string.title_transfer,
-                                             R.string.title_buysell,
-                                             R.string.title_account,
-                                             R.string.title_merchant_tools,
-                                             R.string.title_point_of_sale,
-  };
-  private int[] mFragmentIcons = new int[] {
-                                            R.drawable.ic_action_transactions,
-                                            R.drawable.ic_action_transfer,
-                                            R.drawable.ic_action_buysell,
-                                            R.drawable.ic_action_account,
-                                            R.drawable.ic_action_merchant_tools,
-                                            R.drawable.ic_action_point_of_sale,
-  };
-  private boolean[] mFragmentHasSpacerAfter = new boolean[] {
-                                                             false,
-                                                             false,
-                                                             false,
-                                                             false,
-                                                             false,
-                                                             false,
-  };
   private boolean[] mFragmentKeyboardPreferredStatus = new boolean[] {
                                                                       false,
                                                                       true,
@@ -144,14 +100,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
                                                                       false,
                                                                       true,
   };
-  private boolean[] mFragmentVisible = new boolean[] {
-          BuildConfig.type == BuildType.CONSUMER,
-          BuildConfig.type == BuildType.CONSUMER,
-          BuildConfig.type == BuildType.CONSUMER,
-          BuildConfig.type == BuildType.CONSUMER,
-          false,
-          BuildConfig.type == BuildType.MERCHANT,
-  };
+
   private CoinbaseFragment[] mFragments = new CoinbaseFragment[NUM_FRAGMENTS];
 
   ViewFlipper mViewFlipper;
@@ -166,8 +115,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   ActionBarDrawerToggle mDrawerToggle;
   Pusher mPusher;
   MenuItem mRefreshItem;
-  ListView mMenuListView;
-  View mMenuProfileView;
   boolean mRefreshItemState = false;
   boolean mPinSlidingMenu = false;
   long mLastRefreshTime = -1;
@@ -225,36 +172,16 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
 
     // Set up Sliding Menu list
-    mMenuListView = (ListView) findViewById(R.id.drawer);
+    Fragment slidingDrawer = (SlidingDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.drawer);
     if (BuildConfig.type == BuildType.MERCHANT && mPinSlidingMenu) {
-      mMenuListView.setVisibility(View.GONE);
+      // Hide sliding menu
+      slidingDrawer.getView().setVisibility(View.GONE);
       findViewById(R.id.activity_main_divider).setVisibility(View.GONE);
     }
-    createProfileView();
     int shortestWidth = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
     int dWidthCalc = (int) (shortestWidth * (3.0/4.0)),
             dWidthMax = getResources().getDimensionPixelSize(R.dimen.drawer_max_width);
-    mMenuListView.getLayoutParams().width = Math.min(dWidthCalc, dWidthMax);
-    mMenuListView.addHeaderView(mMenuProfileView);
-    mMenuListView.setAdapter(new SectionsListAdapter());
-    mMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-      @Override
-      public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-                              long arg3) {
-
-        if(arg2 == 0) {
-          // Switch account
-          new AccountsFragment().show(getSupportFragmentManager(), "accounts");
-          return;
-        }
-
-        int fragment = (Integer) mMenuListView.getAdapter().getItem(arg2);
-        if(fragment != -1) {
-          switchTo(fragment);
-        }
-      }
-    });
+    slidingDrawer.getView().getLayoutParams().width = Math.min(dWidthCalc, dWidthMax);
 
     // Refresh everything on app launch
     new Thread(new Runnable() {
@@ -273,107 +200,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     onNewIntent(getIntent());
   }
 
-  /*
-   * http://www.curious-creature.org/2012/12/11/android-recipe-1-image-with-rounded-corners/
-   */
-  public static class AvatarDrawable extends Drawable {
-
-    private final RectF mRect = new RectF();
-    private final Bitmap mOriginalBitmap;
-    private final Paint mPaint;
-
-    AvatarDrawable(Bitmap bitmap) {
-
-      mOriginalBitmap = bitmap;
-
-      mPaint = new Paint();
-      mPaint.setAntiAlias(true);
-
-    }
-
-    @Override
-    protected void onBoundsChange(Rect bounds) {
-      super.onBoundsChange(bounds);
-
-      BitmapShader shader = new BitmapShader(Bitmap.createScaledBitmap(mOriginalBitmap, bounds.width(), bounds.height(), true),
-              Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-      mPaint.setShader(shader);
-
-      mRect.set(0, 0, bounds.width(), bounds.height());
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-      canvas.drawRoundRect(mRect, mRect.width() / 2, mRect.height() / 2, mPaint);
-    }
-
-    @Override
-    public int getOpacity() {
-      return PixelFormat.TRANSLUCENT;
-    }
-
-    @Override
-    public void setAlpha(int alpha) {
-      mPaint.setAlpha(alpha);
-    }
-
-    @Override
-    public void setColorFilter(ColorFilter cf) {
-      mPaint.setColorFilter(cf);
-    }       
-  }
-
-  private class LoadAvatarTask extends AsyncTask<String, Void, Bitmap> {
-
-    @Override
-    protected Bitmap doInBackground(String... arg0) {
-
-      try {
-        String url = String.format("https://secure.gravatar.com/avatar/%1$s?s=100&d=https://coinbase.com/assets/avatar.png",
-                Utils.md5(arg0[0].toLowerCase(Locale.CANADA).trim()));
-        Log.i("Coinbase", "Loading avatar " + url);
-        return BitmapFactory.decodeStream(new URL(url).openStream());
-      } catch (Exception e) {
-        Log.i("Coinbase", "Could not load avatar!");
-        e.printStackTrace();
-        return null;
-      }
-    }
-
-    @Override
-    protected void onPostExecute(Bitmap result) {
-      if(result != null) {
-        ((ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar)).setImageDrawable(new AvatarDrawable(result));
-      }
-    }
-  }
-
-  private void createProfileView() {
-    mMenuProfileView = View.inflate(this, R.layout.activity_main_drawer_profile, null);
-    ImageView photo = (ImageView) mMenuProfileView.findViewById(R.id.drawer_profile_avatar);
-
-    photo.setImageDrawable(new AvatarDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar)));
-
-    refreshProfileView();
-  }
-
-  public void refreshProfileView() {
-
-    TextView name = (TextView) mMenuProfileView.findViewById(R.id.drawer_profile_name);
-    TextView email = (TextView) mMenuProfileView.findViewById(R.id.drawer_profile_account);
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-    String emailText = prefs.getString(String.format(Constants.KEY_ACCOUNT_NAME, activeAccount), "");
-    name.setText(prefs.getString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, activeAccount), null));
-
-    boolean emailChanged = !emailText.equals(email.getText().toString());
-    if (emailChanged) {
-      email.setText(emailText);
-      new LoadAvatarTask().execute(emailText);
-    }
-  }
-
   @Override
   protected void onPostCreate(Bundle savedInstanceState) {
     super.onPostCreate(savedInstanceState);
@@ -389,17 +215,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     super.onConfigurationChanged(newConfig);
     if (!mPinSlidingMenu) {
       mDrawerToggle.onConfigurationChanged(newConfig);
-    }
-  }
-
-  private BaseAdapter getAdapter() {
-
-    Adapter adapter = mMenuListView.getAdapter();
-
-    if(adapter instanceof HeaderViewListAdapter) {
-      return (BaseAdapter) ((HeaderViewListAdapter) adapter).getWrappedAdapter();
-    } else {
-      return (BaseAdapter) adapter;
     }
   }
 
@@ -445,6 +260,28 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     setInTransactionDetailsMode(savedInstanceState.getBoolean(KEY_IN_TRANSACTION_DETAILS_MODE));
   }
 
+  public void switchTo(Mintent mintent) {
+    switch (mintent.section) {
+      case TRANSACTIONS:
+        switchTo(FRAGMENT_INDEX_TRANSACTIONS);
+        break;
+      case SEND_REQUEST:
+        switchTo(FRAGMENT_INDEX_TRANSFER);
+        break;
+      case BUY_SELL:
+        switchTo(FRAGMENT_INDEX_BUYSELL);
+        break;
+      case SETTINGS:
+        switchTo(FRAGMENT_INDEX_ACCOUNT);
+        break;
+      case POINT_OF_SALE:
+        switchTo(FRAGMENT_INDEX_POINT_OF_SALE);
+        break;
+      default:
+        throw new IllegalArgumentException("Invalid section " + mintent.section);
+    }
+  }
+
   /**
    * Switch visible fragment.
    * @param index See the FRAGMENT_INDEX constants.
@@ -455,7 +292,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     mViewFlipper.setDisplayedChild(index);
     updateTitle();
-    getAdapter().notifyDataSetChanged();
 
     if(mFragments[index] != null) {
       mFragments[index].onSwitchedTo();
@@ -474,6 +310,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mTransactionsFragment.hideDetails(false);
     }
     updateBackButton();
+    Utils.bus().post(new SectionSelectedEvent(Section.fromIndex(index)));
+  }
+
+  public Section getSelectedSection() {
+    return Section.fromIndex(mViewFlipper.getDisplayedChild());
   }
 
   /** Called when close animation is complete */
@@ -580,7 +421,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     } else if (mInTransactionDetailsMode) {
       getSupportActionBar().setTitle(R.string.transactiondetails_title);
     } else {
-      getSupportActionBar().setTitle(mFragmentTitles[mViewFlipper.getDisplayedChild()]);
+      int index = mViewFlipper.getDisplayedChild();
+      getSupportActionBar().setTitle(mFragments[index] == null ? "Error" : mFragments[index].getTitle());
     }
 
     supportInvalidateOptionsMenu();
@@ -874,83 +716,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     }
 
     return super.onOptionsItemSelected(item);
-  }
-
-  public class SectionsListAdapter extends BaseAdapter {
-
-    private Integer[] items = null;
-
-    public SectionsListAdapter() {
-      buildData();
-    }
-
-    @Override
-    public void notifyDataSetChanged() {
-      buildData();
-      super.notifyDataSetChanged();
-    }
-
-    private void buildData() {
-
-      List<Integer> itemsList = new ArrayList<Integer>();
-      for(int i = 0; i < NUM_FRAGMENTS; i++) {
-
-        if(mFragmentVisible[i]) {
-          itemsList.add(i);
-        }
-
-        if(mFragmentHasSpacerAfter[i]) {
-          itemsList.add(-1);
-        }
-      }
-      if(itemsList.get(itemsList.size() - 1) == -1) {
-        itemsList.remove(itemsList.size() - 1); // Do not end in a divider
-      }
-      items = itemsList.toArray(new Integer[0]);
-    }
-
-    @Override
-    public int getCount() {
-
-      return items.length;
-    }
-
-    @Override
-    public Object getItem(int position) {
-      return items[position];
-    }
-
-    @Override
-    public long getItemId(int position) {
-      return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-      if(convertView == null) {
-        convertView = View.inflate(MainActivity.this, R.layout.activity_main_menu_item, null);
-      }
-
-      TextView title = (TextView) convertView.findViewById(R.id.main_menu_item_title);
-
-      int fragment = items[position];
-
-      if(fragment == -1) {
-        // Spacer
-        title.setText(null);
-        return convertView;
-      }
-
-      String font = mViewFlipper.getDisplayedChild() == position ? "Bold" : "Light";
-
-      String name = getString(mFragmentTitles[fragment]);
-      title.setText(name);
-      title.setTypeface(FontManager.getFont(MainActivity.this, "Roboto-" + font));
-
-      return convertView;
-    }
-
   }
 
   public void onAccountChosen(int account) {

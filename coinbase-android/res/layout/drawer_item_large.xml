@@ -4,14 +4,14 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/main_menu_item_title"
+        android:id="@android:id/text1"
         android:layout_width="wrap_content"
         android:layout_height="64dp"
-        android:layout_toRightOf="@+id/main_menu_item_icon"
         android:gravity="center_vertical"
-        android:textColor="@color/drawer_item_color"
+        android:textColor="#333333"
         android:layout_marginLeft="16dp"
         android:text="@string/title_transactions"
-        android:textSize="21sp"/>
+        android:textSize="21sp"
+        android:duplicateParentState="true"/>
 
 </RelativeLayout>

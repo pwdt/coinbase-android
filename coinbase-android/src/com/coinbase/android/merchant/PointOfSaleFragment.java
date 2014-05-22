@@ -804,4 +804,9 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
     new LoadMerchantInfoTask().execute();
   }
+
+  @Override
+  public String getTitle() {
+    return getString(R.string.title_point_of_sale);
+  }
 }
