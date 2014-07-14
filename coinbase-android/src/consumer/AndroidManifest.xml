@@ -40,7 +40,7 @@
             <meta-data android:name="android.appwidget.provider"
                        android:resource="@xml/price_appwidget_provider" />
         </receiver>
-        <activity android:name="com.google.zxing.client.android.CaptureActivity"
+        <activity android:name="com.coinbase.zxing.client.android.CaptureActivity"
                   android:configChanges="keyboardHidden"
                   android:theme="@android:style/Theme.NoTitleBar"
                   android:windowSoftInputMode="stateAlwaysHidden"></activity>

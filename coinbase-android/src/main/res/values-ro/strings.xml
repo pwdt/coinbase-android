@@ -141,7 +141,6 @@
     <string name="transactiondetails_title">Detalii tranzacţie</string>
     <string name="transactiondetails_progress">În curse de trimitere&#8230;</string>
     <string name="transactiondetails_action_error">Nu s-a putut acţiona privind această tranzacţie (%1$s).</string>
-    <string name="barcode_scan_message">Plasaţi un cod de bare Bitcoin \nîn vizor pentru a scana.</string>
     <string name="wallet_balance_home">≈ %1$s %2$s</string>
     <string name="account_name">Nume</string>
     <string name="account_email">E-mail</string>

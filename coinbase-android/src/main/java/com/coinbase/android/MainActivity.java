@@ -1,7 +1,6 @@
 package com.coinbase.android;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,39 +9,17 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.HeaderViewListAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SlidingDrawer;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
@@ -61,12 +38,7 @@ import com.coinbase.android.ui.SignOutFragment;
 import com.coinbase.android.ui.SlidingDrawerFragment;
 import com.coinbase.android.util.Section;
 import com.coinbase.api.LoginManager;
-import com.google.zxing.client.android.Intents;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import com.coinbase.zxing.client.android.Intents;
 
 @RequiresAuthentication
 @RequiresPIN
@@ -731,7 +703,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
   public void startBarcodeScan() {
 
-    Intent intent = new Intent(this, com.google.zxing.client.android.CaptureActivity.class);
+    Intent intent = new Intent(this, com.coinbase.zxing.client.android.CaptureActivity.class);
     intent.setAction(Intents.Scan.ACTION);
     intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
     startActivityForResult(intent, 0);

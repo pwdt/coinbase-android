@@ -123,7 +123,6 @@
     <string name="transactiondetails_title">Detail transakce</string>
     <string name="transactiondetails_progress">Zasílám&#8230;</string>
     <string name="transactiondetails_action_error">Nezdařilo se vykonání transakce (%1$s).</string>
-    <string name="barcode_scan_message">Umístěte čárový kód s platbou uvnitř\nhledáčku a naskenujte jej.</string>
     <string name="wallet_balance_home">≈ %1$s %2$s</string>
     <string name="account_name">Jméno</string>
     <string name="account_email">Email</string>

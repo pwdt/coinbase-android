@@ -119,7 +119,6 @@
     <string name="transactiondetails_title">Detalles de la transacción</string>
     <string name="transactiondetails_progress">Enviando&#8230;</string>
     <string name="transactiondetails_action_error">No se pudo actuar sobre la transacción (%1$s).</string>
-    <string name="barcode_scan_message">Pon un código de barras Bitcoin dentro\ndel recuadro para escanearlo.</string>
     <string name="wallet_balance_home">≈ %1$s %2$s</string>
     <string name="account_name">Nombre</string>
     <string name="account_email">E-mail</string>

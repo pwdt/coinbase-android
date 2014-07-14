@@ -128,7 +128,6 @@
     <string name="transactiondetails_title">Transactie details</string>
     <string name="transactiondetails_progress">Versturen&#8230;</string>
     <string name="transactiondetails_action_error">Kan geen actie ondernemen op de transactie(%1$s).</string>
-    <string name="barcode_scan_message">Plaats een Bitcoin barcode in het\nvierkantje om het te scannen.</string>
     <string name="wallet_balance_home">≈ %1$s %2$s</string>
     <string name="account_name">Naam</string>
     <string name="account_email">Email</string>
