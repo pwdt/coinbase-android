@@ -62,7 +62,6 @@ import com.coinbase.android.ui.SlidingDrawerFragment;
 import com.coinbase.android.util.Section;
 import com.coinbase.api.LoginManager;
 import com.google.zxing.client.android.Intents;
-import com.justinschultz.pusherclient.Pusher;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -113,7 +112,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   OnSharedPreferenceChangeListener mSharedPreferenceChangeListener;
   DrawerLayout mSlidingMenu;
   ActionBarDrawerToggle mDrawerToggle;
-  Pusher mPusher;
   MenuItem mRefreshItem;
   boolean mRefreshItemState = false;
   boolean mPinSlidingMenu = false;
@@ -566,16 +564,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   public void onResume() {
     super.onResume();
 
-    // Connect to pusher
-    new Thread(new Runnable() {
-      public void run() {
-
-        // mPusher = new Pusher(CoinbasePusherListener.API_KEY);
-        // mPusher.setPusherListener(new CoinbasePusherListener(mPusher, MainActivity.this));
-        // mPusher.connect();
-      }
-    }).start();
-
     // Refresh
     if (mTransactionsFragment != null) {
       mTransactionsFragment.loadTransactionsList();
@@ -606,11 +594,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   @Override
   protected void onPause() {
     super.onPause();
-
-    if(mPusher != null) {
-      mPusher.disconnect();
-      mPusher = null;
-    }
 
     mPendingPinReturn = false;
     ((CoinbaseApplication) getApplication()).removeMainActivity(this);

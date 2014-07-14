@@ -88,10 +88,10 @@ android {
 
     sourceSets {
         main {
-            java.srcDirs = ['src-javapusherclient','src-zxing-android','src/main/java']
-            resources.srcDirs = ['src-javapusherclient','src-zxing-android']
-            aidl.srcDirs = ['src-javapusherclient','src-zxing-android']
-            renderscript.srcDirs = ['src-javapusherclient','src-zxing-android']
+            java.srcDirs = ['src-zxing-android','src/main/java']
+            resources.srcDirs = ['src-zxing-android']
+            aidl.srcDirs = ['src-zxing-android']
+            renderscript.srcDirs = ['src-zxing-android']
         }
 
         consumer {
