@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="main_menu_background">#eeeeee</color>
+  <color name="drawer_profile_background">#EDEDED</color>
+  <color name="drawer_item_color">#333333</color>
+  <color name="button_primary_neutral">#5371c5</color>
+  <color name="button_primary_pressed">#2F4994</color>
+  <color name="button_primary_disabled">#bbbbbb</color>
+  <color name="button_secondary_neutral">#00ffffff</color>
+  <color name="button_secondary_pressed">#22000000</color>
+  <color name="button_transparent_neutral">#00000000</color>
+  <color name="buysell_type_active">#000000</color>
+  <color name="buysell_type_inactive">#aaaaaa</color>
+
+  <color name="pos_result_completed">#50bf82</color>
+  <color name="pos_result_mispaid">#f89406</color>
+  <color name="pos_result_error">#b94a48</color>
+  <color name="pos_waiting_good">#DBFFC9</color>
+  <color name="pos_waiting_bad">#C90000</color>
+</resources>

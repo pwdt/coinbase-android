@@ -1,4 +1,16 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.12.+'
+        classpath 'org.robolectric:robolectric-gradle-plugin:0.11.+'
+    }
+}
+
 apply plugin: 'com.android.application'
+apply plugin: 'robolectric'
 
 repositories {
     mavenCentral()
@@ -14,14 +26,54 @@ dependencies {
     }
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.squareup:otto:1.3.4'
+    compile 'com.google.zxing:core:2.1'
+    compile project(":coinbase-zxing-android")
+
+    // Espresso
+    androidTestCompile files('lib/espresso-1.1.jar', 'lib/testrunner-1.1.jar', 'lib/testrunner-runtime-1.1.jar')
+    androidTestCompile 'com.google.guava:guava:14.0.1'
+    androidTestCompile 'com.squareup.dagger:dagger:1.1.0'
+    androidTestCompile 'org.hamcrest:hamcrest-integration:1.1'
+    androidTestCompile 'org.hamcrest:hamcrest-core:1.1'
+    androidTestCompile 'org.hamcrest:hamcrest-library:1.1'
+
+    androidTestCompile('junit:junit:4.11') {
+        exclude module: 'hamcrest-core'
+    }
+    androidTestCompile('org.robolectric:robolectric:2.3') {
+        exclude module: 'classworlds'
+        exclude module: 'commons-logging'
+        exclude module: 'httpclient'
+        exclude module: 'maven-artifact'
+        exclude module: 'maven-artifact-manager'
+        exclude module: 'maven-error-diagnostics'
+        exclude module: 'maven-model'
+        exclude module: 'maven-project'
+        exclude module: 'maven-settings'
+        exclude module: 'plexus-container-default'
+        exclude module: 'plexus-interpolation'
+        exclude module: 'plexus-utils'
+        exclude module: 'wagon-file'
+        exclude module: 'wagon-http-lightweight'
+        exclude module: 'wagon-provider-api'
+    }
+    androidTestCompile 'com.squareup:fest-android:1.0.+'
 }
 
 android {
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+    }
+
     compileSdkVersion 20
     buildToolsVersion '20.0.0'
     defaultConfig {
         minSdkVersion 10
         targetSdkVersion 20
+        testInstrumentationRunner 'com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner'
     }
 
     productFlavors {
@@ -37,18 +89,9 @@ android {
     }
 
     sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src-javapusherclient','src-zxing-android','src']
-            resources.srcDirs = ['src-javapusherclient','src-zxing-android','src']
-            aidl.srcDirs = ['src-javapusherclient','src-zxing-android','src']
-            renderscript.srcDirs = ['src-javapusherclient','src-zxing-android','src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
+        androidTestConsumer {
+            setRoot('src/testConsumer')
         }
-
-        // Move the tests to tests/java, tests/res, etc...
-        instrumentTest.setRoot('tests')
 
         // Move the build types to build-types/<type>
         // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
@@ -62,5 +105,18 @@ android {
 
     lintOptions {
         checkReleaseBuilds false
+    }
+}
+
+robolectric {
+    include '**/*Test.class'
+    exclude '**/espresso/**/*.class'
+}
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        testOutputDir = file('build/test-classes/debug')
     }
 }

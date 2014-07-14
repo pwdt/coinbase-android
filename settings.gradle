@@ -1,1 +1,2 @@
 include ':coinbase-android'
+include ':coinbase-zxing-android'

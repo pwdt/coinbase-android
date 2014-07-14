@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Coinbase ZXing Library</string>
+    <string name="barcode_scan_message">Plaats een Bitcoin barcode in het\nvierkantje om het te scannen.</string>
+</resources>

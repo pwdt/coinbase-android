@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Coinbase ZXing Library</string>
+    <string name="barcode_scan_message">Place a Bitcoin barcode inside the\nviewfinder to scan it.</string>
+</resources>
