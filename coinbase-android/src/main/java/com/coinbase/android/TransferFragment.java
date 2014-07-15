@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -36,6 +37,7 @@ import com.coinbase.android.delayedtx.DelayedTransactionDialogFragment;
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
@@ -54,7 +56,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TransferFragment extends Fragment implements CoinbaseFragment {
+import roboguice.fragment.RoboFragment;
+import roboguice.util.RoboAsyncTask;
+
+public class TransferFragment extends RoboFragment implements CoinbaseFragment {
 
   protected enum TransferType {
     SEND(R.string.transfer_send_money, "send"),
@@ -203,39 +208,42 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
     }
   }
 
-  private class RefreshExchangeRateTask extends AsyncTask<Void, Void, JSONObject> {
+  private class RefreshExchangeRateTask extends RoboAsyncTask<JSONObject> {
+
+    @Inject
+    private RpcManager mRpcManager;
+    private JSONObject mResult = null;
+
+    public RefreshExchangeRateTask(Context context) {
+      super(context);
+    }
 
     @Override
-    protected JSONObject doInBackground(Void... params) {
-
+    public JSONObject call() {
       try {
-
-        JSONObject exchangeRates = RpcManager.getInstance().callGet(mParent, "currencies/exchange_rates");
-        return exchangeRates;
+        mResult = mRpcManager.callGet(mParent, "currencies/exchange_rates");
+        return mResult;
       } catch (IOException e) {
         e.printStackTrace();
       } catch (JSONException e) {
         ACRA.getErrorReporter().handleException(new RuntimeException("RefreshExchangeRate", e));
         e.printStackTrace();
       }
-
       return null;
     }
 
     @Override
-    protected void onPostExecute(JSONObject result) {
-
+    public void onFinally() {
       mNativeExchangeTask = null;
 
-      if(result != null) {
-        mNativeExchangeRates = result;
+      if(mResult != null) {
+        mNativeExchangeRates = mResult;
         mNativeExchangeRateTime = System.currentTimeMillis();
         doNativeCurrencyUpdate();
       } else {
         mNativeAmount.setText(R.string.transfer_fxrate_failure);
       }
     }
-
 
   }
 
@@ -261,6 +269,9 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
   private RefreshExchangeRateTask mNativeExchangeTask;
   private String[] mCurrenciesArray = new String[] { "BTC" };
   private SharedPreferences.OnSharedPreferenceChangeListener mPreferenceChangeListener = null;
+
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -666,13 +677,8 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private void refreshExchangeRate() {
-    mNativeExchangeTask = new RefreshExchangeRateTask();
-
-    if (PlatformUtils.hasHoneycomb()) {
-      mNativeExchangeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    } else {
-      mNativeExchangeTask.execute();
-    }
+    mNativeExchangeTask = new RefreshExchangeRateTask(this.getActivity());
+    mNativeExchangeTask.execute();
   }
 
   public void startQrNfcRequest(boolean isNfc, String amt, String notes) {
@@ -889,7 +895,7 @@ public class TransferFragment extends Fragment implements CoinbaseFragment {
       String.format("transaction[%s]", type == TransferType.SEND ? "to" : "from"), toFrom));
 
     try {
-      JSONObject response = RpcManager.getInstance().callPost(mParent,
+      JSONObject response = mRpcManager.callPost(mParent,
         String.format("transactions/%s_money", type.getRequestName()), params);
 
       boolean success = response.getBoolean("success");

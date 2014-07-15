@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.coinbase.android.BuildConfig;
 import com.coinbase.android.Constants;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -30,19 +32,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
+@Singleton
 public class RpcManager {
-
-  private static RpcManager INSTANCE = null;
-
-  public static RpcManager getInstance() {
-
-    if(INSTANCE == null) {
-      INSTANCE = new RpcManager();
-    }
-
-    return INSTANCE;
-  }
 
   private static enum RequestVerb {
     GET,
@@ -51,11 +42,14 @@ public class RpcManager {
     DELETE;
   }
 
-  private RpcManager() {
+  @Inject
+  protected LoginManager mLoginManager;
 
+  public RpcManager() {}
+
+  public String getBaseUrl() {
+    return mLoginManager.getClientBaseUrl() + "/api/v1/";
   }
-
-  private static final String BASE_URL = LoginManager.CLIENT_BASEURL + "/api/v1/";
 
   public JSONObject callGet(Context context, String method) throws IOException, JSONException {
 
@@ -103,7 +97,7 @@ public class RpcManager {
 
     DefaultHttpClient client = new DefaultHttpClient();
 
-    String url = BASE_URL + method;
+    String url = getBaseUrl() + method;
 
     HttpUriRequest request = null;
 
@@ -143,18 +137,18 @@ public class RpcManager {
       }
     }
 
-    String accountValid = LoginManager.getInstance().getAccountValid(context, account);
+    String accountValid = mLoginManager.getAccountValid(context, account);
     if(accountValid != null) {
       // Don't bother doing the request - this account is not valid
       throw new IOException("Account is not valid; made invalid by " + accountValid);
     }
 
-    if (LoginManager.getInstance().needToRefreshAccessToken(context, account)) {
+    if (mLoginManager.needToRefreshAccessToken(context, account)) {
       // Refresh the access token before doing the request
-      LoginManager.getInstance().refreshAccessToken(context, account);
+      mLoginManager.refreshAccessToken(context, account);
     }
 
-    String accessToken = LoginManager.getInstance().getAccessToken(context, account);
+    String accessToken = mLoginManager.getAccessToken(context, account);
     request.addHeader("Authorization", String.format("Bearer %s", accessToken));
 
     if (BuildConfig.DEBUG) {
@@ -169,12 +163,12 @@ public class RpcManager {
       if (retry) {
         // This may be caused by an outdated access token - attempt to fetch a new one
         // before failing.
-        LoginManager.getInstance().refreshAccessToken(context, account);
+        mLoginManager.refreshAccessToken(context, account);
         return call(context, method, verb, params, false, account);
       } else {
         // We already retried and it didn't work. The OAuth token must be no longer valid.
         // Update the LoginManager so that the UI can display an appropriate message.
-        LoginManager.getInstance().setAccountValid(context, account, false, "401 on " + method);
+        mLoginManager.setAccountValid(context, account, false, "401 on " + method);
         throw new IOException("Account is no longer valid");
       }
     } else if(code != 200) {

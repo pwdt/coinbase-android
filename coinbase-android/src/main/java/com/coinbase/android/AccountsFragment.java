@@ -2,6 +2,7 @@ package com.coinbase.android;
 
 import com.coinbase.android.R;
 import com.coinbase.api.LoginManager;
+import com.google.inject.Inject;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,7 +10,9 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 
-public class AccountsFragment extends DialogFragment {
+import roboguice.fragment.RoboDialogFragment;
+
+public class AccountsFragment extends RoboDialogFragment {
 
   public static interface ParentActivity {
     public void onAccountChosen(int index);
@@ -18,6 +21,8 @@ public class AccountsFragment extends DialogFragment {
 
   boolean widgetMode = false;
   int selected = -1;
+  @Inject
+  LoginManager mLoginManager;
 
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -27,8 +32,8 @@ public class AccountsFragment extends DialogFragment {
 
     widgetMode = getArguments() == null ? false : getArguments().getBoolean("widgetMode");
 
-    final String[] accounts = LoginManager.getInstance().getAccounts(getActivity());
-    selected = LoginManager.getInstance().getSelectedAccountIndex(getActivity());
+    final String[] accounts = mLoginManager.getAccounts(getActivity());
+    selected = mLoginManager.getSelectedAccountIndex(getActivity());
 
     String[] items = new String[accounts.length + 1];
     System.arraycopy(accounts, 0, items, 0, accounts.length);

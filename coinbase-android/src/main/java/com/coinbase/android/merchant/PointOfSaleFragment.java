@@ -51,6 +51,7 @@ import com.coinbase.android.Utils;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 
@@ -68,7 +69,11 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
+import roboguice.RoboGuice;
+import roboguice.fragment.RoboFragment;
+import roboguice.util.RoboAsyncTask;
+
+public class PointOfSaleFragment extends RoboFragment implements CoinbaseFragment {
 
   private class CreateButtonTask extends AsyncTask<String, Void, Object> {
 
@@ -92,12 +97,12 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
       params.add(new BasicNameValuePair("button[custom]", "coinbase_android_point_of_sale"));
 
       try {
-        JSONObject response = RpcManager.getInstance().callPost(mParent, "buttons", params).optJSONObject("button");
+        JSONObject response = mRpcManager.callPost(mParent, "buttons", params).optJSONObject("button");
         String button = response.optString("code");
 
         System.out.println(response.toString(5));
 
-        JSONObject orderResponse = RpcManager.getInstance().callPost(mParent,
+        JSONObject orderResponse = mRpcManager.callPost(mParent,
                 "buttons/" + button + "/create_order", new ArrayList<BasicNameValuePair>());
 
         return orderResponse;
@@ -140,46 +145,57 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     }
   }
 
-  private class LoadMerchantInfoTask extends AsyncTask<Void, Void, Object[]> {
+  private class LoadMerchantInfoTask extends RoboAsyncTask<Object[]> {
+
+    @Inject
+    private LoginManager mLoginManager;
+    @Inject
+    private RpcManager mRpcManager;
+    private Object[] mResult = null;
+
+    public LoadMerchantInfoTask(Context context) {
+      super(context);
+    }
 
     @Override
-    protected Object[] doInBackground(Void... arg0) {
+    public Object[] call() {
 
       try {
         // 1. Load merchant info
-        JSONObject response = RpcManager.getInstance().callGet(mParent, "users");
+        JSONObject response = mRpcManager.callGet(mParent, "users");
         JSONObject userInfo = response.getJSONArray("users").getJSONObject(0).getJSONObject("user");
         JSONObject merchantInfo = userInfo.getJSONObject("merchant");
 
         // 2. if possible, load logo
         if (merchantInfo.optJSONObject("logo") != null) {
          try {
-
            String logoUrlString = merchantInfo.getJSONObject("logo").getString("small");
-           URL logoUrl = logoUrlString.startsWith("/") ? new URL(new URL(LoginManager.CLIENT_BASEURL), logoUrlString) : new URL(logoUrlString);
+           URL logoUrl = logoUrlString.startsWith("/") ? new URL(new URL(mLoginManager.getClientBaseUrl()), logoUrlString) : new URL(logoUrlString);
            Bitmap logo = BitmapFactory.decodeStream(logoUrl.openStream());
            return new Object[] { merchantInfo, logo };
          } catch (Exception e) {
            // Could not load logo
            e.printStackTrace();
-           return new Object[] { merchantInfo, null };
+           mResult = new Object[] { merchantInfo, null };
+           return mResult;
          }
         } else {
-          // No logo
-          return new Object[] { merchantInfo, null };
+          mResult = new Object[] { merchantInfo, null };
+          return mResult;
         }
 
       } catch (Exception e) {
         // Could not load merchant info
         e.printStackTrace();
-        return null;
+        mResult = null;
+        return mResult;
       }
     }
 
     @Override
-    protected void onPostExecute(Object[] result) {
+    protected void onFinally() {
 
-      if (result == null) {
+      if (mResult == null) {
 
         // Data could not be loaded.
         for (View header : mHeaders) {
@@ -191,17 +207,17 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
           header.setVisibility(View.VISIBLE);
         }
 
-        String title = ((JSONObject) result[0]).optString("company_name");
+        String title = ((JSONObject) mResult[0]).optString("company_name");
         for (TextView titleView : mHeaderTitles) {
           titleView.setText(title);
-          titleView.setGravity(result[1] != null ? Gravity.RIGHT : Gravity.CENTER);
+          titleView.setGravity(mResult[1] != null ? Gravity.RIGHT : Gravity.CENTER);
         }
 
 
         for (ImageView logoView : mHeaderLogos) {
-          if (result[1] != null) {
+          if (mResult[1] != null) {
             logoView.setVisibility(View.VISIBLE);
-            logoView.setImageBitmap((Bitmap) result[1]);
+            logoView.setImageBitmap((Bitmap) mResult[1]);
           } else {
             logoView.setVisibility(View.GONE);
           }
@@ -226,12 +242,16 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
     private int mTimesExecuted = 0;
     private JSONObject mOrder = null;
 
-    public CheckStatusTask(Context context, TextView statusView, String orderId) {
+    @Inject
+    private RpcManager mRpcManager;
 
+    public CheckStatusTask(Context context, TextView statusView, String orderId) {
       mContext = context;
       mStatus = statusView;
       mHandler = new Handler();
       mOrderId = orderId;
+
+      RoboGuice.getInjector(context).injectMembers(this);
     }
 
     public void run() {
@@ -279,7 +299,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
         String currentUserId = prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), null);
 
-        JSONObject response = RpcManager.getInstance().callGet(mContext, "orders/" + mOrderId);
+        JSONObject response = mRpcManager.callGet(mContext, "orders/" + mOrderId);
         if(response.optJSONObject("order") != null) {
 
           mOrder = response.optJSONObject("order");
@@ -334,6 +354,9 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
   private Timer mCheckStatusTimer = null;
   private CreateButtonTask mCreatingTask = null;
+
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   public void onSwitchedTo() {
@@ -801,8 +824,7 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
 
   public void refresh() {
-
-    new LoadMerchantInfoTask().execute();
+    new LoadMerchantInfoTask(mParent).execute();
   }
 
   @Override

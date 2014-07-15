@@ -10,8 +10,14 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 import com.coinbase.api.LoginManager;
+import com.google.inject.Inject;
 
-public class WidgetChooseAccountActivity extends FragmentActivity implements AccountsFragment.ParentActivity {
+import roboguice.activity.RoboFragmentActivity;
+
+public class WidgetChooseAccountActivity extends RoboFragmentActivity implements AccountsFragment.ParentActivity {
+
+  @Inject
+  protected LoginManager mLoginManager;
 
   @Override
   protected void onCreate(Bundle arg0) {
@@ -42,7 +48,7 @@ public class WidgetChooseAccountActivity extends FragmentActivity implements Acc
   public void onAccountChosen(int accountId) {
 
     int widgetId = getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
-    int realAccountId = LoginManager.getInstance().getAccountId(this, accountId);
+    int realAccountId = mLoginManager.getAccountId(this, accountId);
 
     Editor e = PreferenceManager.getDefaultSharedPreferences(this).edit();
     e.putInt(String.format(Constants.KEY_WIDGET_ACCOUNT, widgetId), realAccountId);

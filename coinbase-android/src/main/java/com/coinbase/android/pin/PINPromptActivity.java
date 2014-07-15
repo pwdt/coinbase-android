@@ -70,7 +70,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
             FontManager.getFont(this, "RobotoCondensed-Regular"));
     findViewById(R.id.pin_switch_accounts).setVisibility(hideSwitchAccounts ? View.GONE : View.VISIBLE);
 
-    ((TextView) findViewById(R.id.pin_account)).setText(LoginManager.getInstance().getSelectedAccountName(this));
+    ((TextView) findViewById(R.id.pin_account)).setText(mLoginManager.getSelectedAccountName(this));
 
     mPinNumberField = ((EditText) findViewById(R.id.pin_number));
     mPinNumberField.setOnEditorActionListener(new OnEditorActionListener() {
@@ -224,7 +224,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
   public void onAccountChosen(int account) {
 
     // Change active account
-    LoginManager.getInstance().switchActiveAccount(this, account);
+    mLoginManager.switchActiveAccount(this, account);
 
     finish();
     startActivity(new Intent(this, getClass()));

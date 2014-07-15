@@ -12,6 +12,9 @@ import com.coinbase.android.BuildConfig;
 import com.coinbase.android.BuildType;
 import com.coinbase.android.Constants;
 import com.coinbase.android.R;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -32,31 +35,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Singleton
 public class LoginManager {
-
-  private static LoginManager INSTANCE = null;
-
-  public static LoginManager getInstance() {
-
-    if(INSTANCE == null) {
-      INSTANCE = new LoginManager();
-    }
-
-    return INSTANCE;
-  }
 
   // production
   protected static final String CLIENT_ID = BuildConfig.type == BuildType.CONSUMER ? "34183b03a3e1f0b74ee6aa8a6150e90125de2d6c1ee4ff7880c2b7e6e98b11f5" : "82f3e52bb25da3688066a45ec740a1efa686646bcdb89a054b2264bc362d9332";
   protected static final String CLIENT_SECRET = BuildConfig.type == BuildType.CONSUMER ? "2c481f46f9dc046b4b9a67e630041b9906c023d139fbc77a47053328b9d3122d" : "f8d57dceb5a4e36b30318e6f035ad3c846cb4dea18ff4f353a35608f1acb12cf";
-  public static final String CLIENT_BASEURL = "https://coinbase.com:443";
+  protected static final String CLIENT_BASEURL = "https://coinbase.com:443";
 
   // development (adjust to your setup)
   //protected static final String CLIENT_ID = "b6753e48f7eff4ca287dd081a251c3801037fcda51bb52181d06947d1fb4cb08";
   //protected static final String CLIENT_SECRET = "da853dce0fcc753501e6fe7972ad64c8525f552e708b585c46e65c12e0a5ef44";
   //public static final String CLIENT_BASEURL = "http://192.168.1.10:3001";
 
-  private LoginManager() {
+  protected final Provider<RpcManager> rpcManager;
 
+  @Inject
+  public LoginManager(Provider<RpcManager> rpcManager) {
+    this.rpcManager = rpcManager;
+  }
+
+  protected String getClientId() {
+    return CLIENT_ID;
+  }
+
+  public String getClientBaseUrl() {
+    return CLIENT_BASEURL;
   }
 
   public boolean isSignedIn(Context context) {
@@ -208,14 +212,12 @@ public class LoginManager {
       try {
         newTokens = doTokenRequest(context, parametersBody, account);
       } catch(Exception e) {
-
         e.printStackTrace();
         Log.e("Coinbase", "Could not fetch new access token!");
         return;
       }
 
       if(newTokens == null) {
-
         // Authentication error.
         Log.e("Coinbase", "Authentication error when fetching new access token.");
         return;
@@ -279,7 +281,7 @@ public class LoginManager {
 
       e.commit();
 
-      JSONObject userInfo = RpcManager.getInstance().callGet(context, "users").getJSONArray("users").getJSONObject(0).getJSONObject("user");
+      JSONObject userInfo = rpcManager.get().callGet(context, "users").getJSONArray("users").getJSONObject(0).getJSONObject("user");
       e.putString(String.format(Constants.KEY_ACCOUNT_NAME, accountId), userInfo.getString("email"));
       e.putString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, accountId), userInfo.getString("native_currency"));
       e.putString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, accountId), userInfo.getString("name"));

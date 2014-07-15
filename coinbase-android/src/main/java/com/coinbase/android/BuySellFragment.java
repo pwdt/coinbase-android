@@ -35,6 +35,7 @@ import android.widget.Toast;
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
@@ -49,7 +50,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-public class BuySellFragment extends Fragment implements CoinbaseFragment {
+import roboguice.fragment.RoboFragment;
+import roboguice.util.RoboAsyncTask;
+
+public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
   private enum BuySellType {
     BUY(R.string.buysell_type_buy, "buy"),
@@ -216,11 +220,21 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     NO_DATA_ENTERED;
   }
 
-  private class UpdatePriceTask extends AsyncTask<String, Void, Object> {
+  private class UpdatePriceTask extends RoboAsyncTask<Object> {
+
+    @Inject
+    private RpcManager mRpcManager;
+    private Object mResult = null;
+    private String mAmount, mType;
+
+    public UpdatePriceTask(String amount, String type) {
+      super(mParent);
+      mAmount = amount;
+      mType = type;
+    }
 
     @Override
-    protected void onPreExecute() {
-
+    protected void onPreExecute() throws Exception {
       super.onPreExecute();
       mTotal.setText(null);
       mSubmitButton.setEnabled(false);
@@ -228,29 +242,27 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
     boolean mIsSingleUpdate;
 
-    protected Object doInBackground(String... params) {
+    public Object call() {
 
       try {
-
-        String amount = params[0], type = params[1];
-
         mIsSingleUpdate = false;
 
-        if(amount == null) {
+        if(mAmount == null) {
           // Get single
           mIsSingleUpdate = true;
-          amount = "1";
+          mAmount = "1";
         }
 
-        if(amount.isEmpty() || ".".equals(amount) || new BigDecimal(amount).doubleValue() == 0) {
-          return UpdatePriceFailure.NO_DATA_ENTERED;
+        if(mAmount.isEmpty() || ".".equals(mAmount) || new BigDecimal(mAmount).doubleValue() == 0) {
+          mResult = UpdatePriceFailure.NO_DATA_ENTERED;
+          return mResult;
         }
 
         Collection<BasicNameValuePair> requestParams = new ArrayList<BasicNameValuePair>();
-        requestParams.add(new BasicNameValuePair("qty", amount));
+        requestParams.add(new BasicNameValuePair("qty", mAmount));
 
-        JSONObject result = RpcManager.getInstance().callGet(mParent, "prices/" + type, requestParams);
-        return result;
+        mResult = mRpcManager.callGet(mParent, "prices/" + mType, requestParams);
+        return mResult;
 
       } catch (IOException e) {
 
@@ -261,10 +273,12 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
         e.printStackTrace();
       }
 
-      return UpdatePriceFailure.ERROR_LOADING;
+      mResult = UpdatePriceFailure.ERROR_LOADING;
+      return mResult;
     }
 
-    protected void onPostExecute(Object result) {
+    @Override
+    public void onFinally() {
 
       TextView target = mTotal;
 
@@ -273,17 +287,17 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
 
       if(target != null) {
 
-        if(result instanceof UpdatePriceFailure) {
+        if(mResult instanceof UpdatePriceFailure) {
 
-          if(result == UpdatePriceFailure.ERROR_LOADING) {
+          if(mResult == UpdatePriceFailure.ERROR_LOADING) {
             target.setVisibility(View.VISIBLE);
             target.setText(error);
-          } else if(result == UpdatePriceFailure.NO_DATA_ENTERED) {
+          } else if(mResult == UpdatePriceFailure.NO_DATA_ENTERED) {
             target.setText(null);
             target.setVisibility(View.GONE);
           }
         } else {
-          JSONObject json = (JSONObject) result;
+          JSONObject json = (JSONObject) mResult;
           String subtotalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("subtotal").optString("amount")), false, CurrencyType.TRADITIONAL);
           String subtotalCurrency = json.optJSONObject("subtotal").optString("currency");
 
@@ -347,6 +361,9 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
   private RelativeLayout mHeader;
   private FrameLayout mListHeaderContainer;
   private BuySellType mBuySellType = BuySellType.BUY;
+
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -491,8 +508,8 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
   private void updateAllPrices() {
 
     BuySellType type = mBuySellType;
-    mUpdateSinglePriceTask = new UpdatePriceTask();
-    Utils.runAsyncTaskConcurrently(mUpdateSinglePriceTask, null, type.getRequestType());
+    mUpdateSinglePriceTask = new UpdatePriceTask(null, type.getRequestType());
+    mUpdateSinglePriceTask.execute();
 
     updatePrice();
   }
@@ -506,9 +523,9 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
       mUpdatePriceTask.cancel(true);
     }
 
-    mUpdatePriceTask = new UpdatePriceTask();
+    mUpdatePriceTask = new UpdatePriceTask(mAmount.getText().toString(), type.getRequestType());
     mTotal.setVisibility(View.GONE);
-    Utils.runAsyncTaskConcurrently(mUpdatePriceTask, mAmount.getText().toString(), type.getRequestType());
+    mUpdatePriceTask.execute();
   }
 
   private void switchType(BuySellType newType) {
@@ -532,7 +549,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
     }
 
     try {
-      JSONObject response = RpcManager.getInstance().callPost(mParent, type.getRequestType() + "s", params);
+      JSONObject response = mRpcManager.callPost(mParent, type.getRequestType() + "s", params);
 
       boolean success = response.getBoolean("success");
 
@@ -540,7 +557,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
         // Download the newly created transaction to put in the list
         JSONObject transaction;
         try {
-          transaction = RpcManager.getInstance().callGet(mParent, "transactions/" + response.getJSONObject("transfer").getString("transaction_id"));
+          transaction = mRpcManager.callGet(mParent, "transactions/" + response.getJSONObject("transfer").getString("transaction_id"));
           transaction = transaction.getJSONObject("transaction");
         } catch (Exception e) {
           Log.e("Coinbase", "Could not load transaction for new transfer");

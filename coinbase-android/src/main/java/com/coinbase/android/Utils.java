@@ -28,6 +28,7 @@ import android.widget.FrameLayout;
 import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -49,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
+
+import roboguice.RoboGuice;
 
 public class Utils {
 
@@ -87,8 +90,12 @@ public class Utils {
   public static class ContactsAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
     private ArrayList<String> resultList;
 
+    @Inject
+    private RpcManager mRpcManager;
+
     public ContactsAutoCompleteAdapter(Context context, int textViewResourceId) {
       super(context, textViewResourceId);
+      RoboGuice.getInjector(context).injectMembers(this);
     }
 
     @Override
@@ -137,7 +144,7 @@ public class Utils {
 
         List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
         getParams.add(new BasicNameValuePair("query", filter));
-        JSONArray response = RpcManager.getInstance().callGet(getContext(), "contacts", getParams)
+        JSONArray response = mRpcManager.callGet(getContext(), "contacts", getParams)
                 .getJSONArray("contacts");
         for (int i = 0; i < response.length(); i++) {
           result.add(response.getJSONObject(i).getJSONObject("contact").optString("email"));

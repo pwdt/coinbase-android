@@ -19,6 +19,7 @@ import com.coinbase.android.Utils;
 import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -31,9 +32,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-public class DelayedTxSenderService extends Service {
+import roboguice.service.RoboService;
+
+public class DelayedTxSenderService extends RoboService {
 
   private static int NOTIF_ID = -1;
+
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   public IBinder onBind(Intent intent) {
@@ -97,7 +103,7 @@ public class DelayedTxSenderService extends Service {
           params.add(new BasicNameValuePair(
                   String.format("transaction[%s]", tx.type == DelayedTransaction.Type.SEND ? "to" : "from"), tx.otherUser));
 
-          JSONObject response = RpcManager.getInstance().callPostOverrideAccount(this,
+          JSONObject response = mRpcManager.callPostOverrideAccount(this,
                   String.format("transactions/%s_money", tx.type.toString().toLowerCase(Locale.CANADA)), params, account);
 
           // Request was successfully sent! (Actual send/request may not have been successful, but that's not important.)

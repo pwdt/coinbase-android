@@ -9,8 +9,10 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.pin.PINPromptActivity;
 import com.coinbase.api.LoginManager;
+import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
+import com.google.inject.Inject;
 
-public class CoinbaseActivity extends SherlockFragmentActivity {
+public class CoinbaseActivity extends RoboSherlockFragmentActivity {
 
   /** This activity requires authentication */
   @Retention(RetentionPolicy.RUNTIME)
@@ -20,6 +22,9 @@ public class CoinbaseActivity extends SherlockFragmentActivity {
   @Retention(RetentionPolicy.RUNTIME)
   public static @interface RequiresPIN { }
 
+  @Inject
+  protected LoginManager mLoginManager;
+
   @Override
   public void onResume() {
 
@@ -27,11 +32,11 @@ public class CoinbaseActivity extends SherlockFragmentActivity {
 
     if(getClass().isAnnotationPresent(RequiresAuthentication.class)) {
       // Check authentication status
-      if(!LoginManager.getInstance().isSignedIn(this)) {
+      if(!mLoginManager.isSignedIn(this)) {
 
         // Not signed in.
         // First check if there are any accounts available to sign in to:
-        boolean success = LoginManager.getInstance().switchActiveAccount(this, 0);
+        boolean success = mLoginManager.switchActiveAccount(this, 0);
 
         if(!success) {
           // Not signed in - open login activity.

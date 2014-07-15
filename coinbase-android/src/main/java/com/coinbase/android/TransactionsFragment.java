@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -49,6 +50,7 @@ import com.coinbase.android.delayedtx.DelayedTxSenderService;
 import com.coinbase.android.util.InsertedItemListAdapter;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
@@ -69,6 +71,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import roboguice.util.RoboAsyncTask;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.AbsDefaultHeaderTransformer;
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
@@ -77,15 +80,24 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class TransactionsFragment extends ListFragment implements CoinbaseFragment {
 
-  private class LoadJustBalanceTask extends AsyncTask<Object, Void, JSONObject> {
+  private class LoadJustBalanceTask extends RoboAsyncTask<JSONObject> {
+
+    @Inject
+    private RpcManager mRpcManager;
+    private JSONObject mResult = null;
+
+    public LoadJustBalanceTask() {
+      super(mParent);
+    }
 
     @Override
-    protected JSONObject doInBackground(Object... params) {
+    public JSONObject call() {
 
       try {
-        JSONObject exchangeRates = RpcManager.getInstance().callGet(mParent, "currencies/exchange_rates");
-        exchangeRates.put("balance", RpcManager.getInstance().callGet(mParent, "account/balance"));
-        return exchangeRates;
+        JSONObject exchangeRates = mRpcManager.callGet(mParent, "currencies/exchange_rates");
+        exchangeRates.put("balance", mRpcManager.callGet(mParent, "account/balance"));
+        mResult = exchangeRates;
+        return mResult;
       } catch (IOException e) {
 
         e.printStackTrace();
@@ -98,10 +110,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
 
     @Override
-    protected void onPostExecute(JSONObject result) {
+    protected void onFinally() {
 
-      if (result != null) {
-        mBalanceBtc = result.optJSONObject("balance").optString("amount");
+      if (mResult != null) {
+        mBalanceBtc = mResult.optJSONObject("balance").optString("amount");
 
         // Calculate home currency amount
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
@@ -109,7 +121,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         mCurrencyNative = prefs.getString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
                 "usd").toUpperCase(Locale.CANADA);
         BigDecimal homeAmount = new BigDecimal(mBalanceBtc).multiply(
-                new BigDecimal(result.optString("btc_to_" + mCurrencyNative.toLowerCase(Locale.CANADA))));
+                new BigDecimal(mResult.optString("btc_to_" + mCurrencyNative.toLowerCase(Locale.CANADA))));
 
         mBalanceNative = Utils.formatCurrencyAmount(homeAmount, false, CurrencyType.TRADITIONAL);
         updateBalance();
@@ -118,7 +130,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
   }
 
-  private class SyncTransactionsTask extends AsyncTask<Integer, Void, Boolean> {
+  private class SyncTransactionsTask extends RoboAsyncTask<Boolean> {
 
     public static final int MAX_PAGES = 1;
     public static final int MAX_ENDLESS_PAGES = 10;
@@ -128,8 +140,22 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
      */
     public static final int MAX_TRANSFER_SYNC_PAGES = 3;
 
+    @Inject
+    private LoginManager mLoginManager;
+
+    @Inject
+    private RpcManager mRpcManager;
+
+    private Integer mStartPage;
+    private Boolean mResult = null;
+
+    public SyncTransactionsTask(Context context, Integer startPage) {
+      super(context);
+      mStartPage = startPage;
+    }
+
     @Override
-    protected Boolean doInBackground(Integer... params) {
+    public Boolean call() {
 
       Profiler p = new Profiler();
 
@@ -139,7 +165,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
       Map<String, JSONObject> extraInfo = new HashMap<String, JSONObject>();
 
-      int startPage = (params.length == 0 || params[0] == null) ? 0 : params[0];
+      int startPage = (mStartPage == null) ? 0 : mStartPage;
       int loadedPage;
 
       // Make API call to download list of account changes
@@ -150,7 +176,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
         List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
         getParams.add(new BasicNameValuePair("page", Integer.toString(startPage + 1)));
-        JSONObject response = RpcManager.getInstance().callGet(mParent, "account_changes", getParams);
+        JSONObject response = mRpcManager.callGet(mParent, "account_changes", getParams);
 
         // Update balance
         // (we do it here to update the balance ASAP.)
@@ -194,7 +220,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         // Also fetch extra info from /transactions call
         // for first ~30 transactions
         if (startPage == 0) {
-          JSONObject extraJson = RpcManager.getInstance().callGet(mParent, "transactions");
+          JSONObject extraJson = mRpcManager.callGet(mParent, "transactions");
           JSONArray extras = extraJson.getJSONArray("transactions");
           for(int i = 0; i < extras.length(); i++) {
             JSONObject extra = extras.getJSONObject(i).getJSONObject("transaction");
@@ -210,14 +236,16 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         Log.e("Coinbase", "I/O error refreshing transactions.");
         e.printStackTrace();
 
-        return false;
+        mResult = false;
+        return mResult;
       } catch (JSONException e) {
         // Malformed response from Coinbase.
         Log.e("Coinbase", "Could not parse JSON response from Coinbase, aborting refresh of transactions.");
         ACRA.getErrorReporter().handleException(new RuntimeException("SyncTransactions", e));
         e.printStackTrace();
 
-        return false;
+        mResult = false;
+        return mResult;
       }
 
       DatabaseObject db = DatabaseObject.getInstance();
@@ -286,7 +314,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
           Log.e("Coinbase", "Could not parse JSON response from Coinbase, aborting refresh of transactions.");
           e.printStackTrace();
 
-          return false;
+          mResult = false;
+          return mResult;
         } finally {
 
           db.endTransaction(mParent);
@@ -304,7 +333,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
       p.segmentDone("Done");
 
-      return true;
+      mResult = true;
+      return mResult;
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -329,11 +359,11 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     }
 
     @Override
-    protected void onPostExecute(Boolean result) {
+    protected void onFinally() {
 
-      ((MainActivity) mParent).setRefreshButtonAnimated(false);
+      mParent.setRefreshButtonAnimated(false);
 
-      if(result != null && !result && mSyncErrorView != null) {
+      if(mResult != null && !mResult && mSyncErrorView != null) {
         mSyncErrorView.setVisibility(View.VISIBLE);
 
         // If we're disconnected from the internet, a sync error is expected, so
@@ -350,7 +380,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-        if(LoginManager.getInstance().getAccountValid(mParent, activeAccount) != null) {
+        if(mLoginManager.getAccountValid(mParent, activeAccount) != null) {
           // Request failed because account is no longer valid
           if(getFragmentManager() != null) {
             new AccountInvalidDialogFragment().show(getFragmentManager(), "accountinvalid");
@@ -511,8 +541,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
         // Load more transactions
         if(mSyncTask == null) {
           Log.i("Coinbase", "Infinite scroll is loading more pages (last loaded page " + mLastLoadedPage + ", max " + mMaxPage + ")");
-          mSyncTask = new SyncTransactionsTask();
-          mSyncTask.execute(mLastLoadedPage);
+          mSyncTask = new SyncTransactionsTask(view.getContext(), mLastLoadedPage);
+          mSyncTask.execute();
         }
       }
     }
@@ -528,7 +558,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   boolean mBalanceLoading, mAnimationPlaying;
   FrameLayout mListHeaderContainer;
   ListView mListView;
-  ViewGroup mListHeader, mMainView;
+  ViewGroup mBaseView, mListHeader, mMainView;
   View mListFooter;
   View mRateNotice;
   TextView mBalanceText, mBalanceHome;
@@ -574,10 +604,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
                            Bundle savedInstanceState) {
 
     // Inflate base layout
-    ViewGroup view = (ViewGroup) inflater.inflate(R.layout.fragment_transactions, container, false);
-    mMainView = (ViewGroup) view.findViewById(R.id.inner_view);
+    mBaseView = (ViewGroup) inflater.inflate(R.layout.fragment_transactions, container, false);
+    mMainView = (ViewGroup) mBaseView.findViewById(R.id.inner_view);
 
-    mListView = (ListView) view.findViewById(android.R.id.list);
+    mListView = (ListView) mBaseView.findViewById(android.R.id.list);
 
     // Inflate header (which contains account balance)
     mListHeader = (ViewGroup) inflater.inflate(R.layout.fragment_transactions_header, null, false);
@@ -639,9 +669,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mBalanceHome = (TextView) mListHeader.findViewById(R.id.wallet_balance_home);
     mSyncErrorView = (TextView) mListHeader.findViewById(R.id.wallet_error);
 
-    ((TextView) view.findViewById(R.id.wallet_balance_label)).setTypeface(
+    ((TextView) mBaseView.findViewById(R.id.wallet_balance_label)).setTypeface(
             FontManager.getFont(mParent, "RobotoCondensed-Regular"));
-    ((TextView) view.findViewById(R.id.wallet_send_label)).setTypeface(
+    ((TextView) mBaseView.findViewById(R.id.wallet_send_label)).setTypeface(
            FontManager.getFont(mParent, "RobotoCondensed-Regular"));
 
     mBalanceText.setOnClickListener(new View.OnClickListener() {
@@ -677,7 +707,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
     }
 
-    view.findViewById(R.id.wallet_send).setOnClickListener(new View.OnClickListener() {
+    mBaseView.findViewById(R.id.wallet_send).setOnClickListener(new View.OnClickListener() {
 
       @Override
       public void onClick(View v) {
@@ -686,12 +716,26 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       }
     });
 
+    // Load transaction list
+    loadTransactionsList();
+
+    if (savedInstanceState != null && savedInstanceState.getBoolean("details_showing", false)) {
+
+      mDetailsShowing = true;
+      mBaseView.findViewById(R.id.transaction_details_background).setVisibility(View.VISIBLE);
+    }
+
+    return mBaseView;
+  }
+
+  @Override
+  public void onStart() {
     // Configure pull to refresh
     mPullToRefreshLayout = new PullToRefreshLayout(mParent);
     AbsDefaultHeaderTransformer ht =
             (AbsDefaultHeaderTransformer) new AbsDefaultHeaderTransformer();
     ActionBarPullToRefresh.from(mParent)
-            .insertLayoutInto(view)
+            .insertLayoutInto(mBaseView)
             .theseChildrenArePullable(android.R.id.list)
             .listener(new OnRefreshListener() {
               @Override
@@ -704,16 +748,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     ht.setPullText("Swipe down to refresh");
     ht.setRefreshingText("Refreshing...");
 
-    // Load transaction list
-    loadTransactionsList();
-
-    if (savedInstanceState != null && savedInstanceState.getBoolean("details_showing", false)) {
-
-      mDetailsShowing = true;
-      view.findViewById(R.id.transaction_details_background).setVisibility(View.VISIBLE);
-    }
-
-    return view;
+    super.onStart();
   }
 
   @Override
@@ -782,7 +817,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     mBalanceLoading = true;
     mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
-    Utils.runAsyncTaskConcurrently(new LoadJustBalanceTask());
+    new LoadJustBalanceTask().execute();
   }
 
   private void updateBalance() {
@@ -823,8 +858,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     // Reload transactions + balance
     if(mSyncTask == null) {
-      mSyncTask = new SyncTransactionsTask();
-      Utils.runAsyncTaskConcurrently(mSyncTask);
+      mSyncTask = new SyncTransactionsTask(mParent, null);
+      mSyncTask.execute();
     }
   }
 

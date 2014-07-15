@@ -189,7 +189,7 @@ public class SlidingDrawerFragment extends Fragment {
 
     ListView view = (ListView) inflater.inflate(R.layout.fragment_sliding_drawer, null);
     mAdapter = new SectionsListAdapter();
-    view.setAdapter(mAdapter);
+
     view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
       @Override
@@ -212,6 +212,7 @@ public class SlidingDrawerFragment extends Fragment {
     // Profile
     createProfileView();
     view.addHeaderView(mProfileView);
+    view.setAdapter(mAdapter);
 
     return view;
   }

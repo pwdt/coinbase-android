@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 
@@ -38,7 +39,9 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class DisplayQrOrNfcFragment extends DialogFragment {
+import roboguice.fragment.RoboDialogFragment;
+
+public class DisplayQrOrNfcFragment extends RoboDialogFragment {
 
   private static final boolean IS_NFC_SUPPORTED = PlatformUtils.hasIceCreamSandwich();
 
@@ -52,6 +55,9 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
     private Handler mHandler;
     private JSONObject mExchangeRates = null;
     private BigDecimal mDesiredAmount = null;
+
+    @Inject
+    private RpcManager mRpcManager;
 
     public CheckStatusTask(Context context, View parent, long monitorStartTime, BigDecimal desiredAmount) {
 
@@ -130,10 +136,10 @@ public class DisplayQrOrNfcFragment extends DialogFragment {
 
         if(mExchangeRates == null) {
 
-          mExchangeRates = RpcManager.getInstance().callGet(mContext, "currencies/exchange_rates");
+          mExchangeRates = mRpcManager.callGet(mContext, "currencies/exchange_rates");
         }
 
-        JSONObject response = RpcManager.getInstance().callGet(mContext, "transactions");
+        JSONObject response = mRpcManager.callGet(mContext, "transactions");
         if(response.getInt("total_count") > 0) {
 
           JSONArray array = response.getJSONArray("transactions");

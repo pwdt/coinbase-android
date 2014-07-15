@@ -1,5 +1,6 @@
 package com.coinbase.android;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.api.RpcManager;
+import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockListActivity;
+import com.google.inject.Inject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,29 +25,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReceiveAddressesActivity extends SherlockListActivity {
+import roboguice.util.RoboAsyncTask;
 
-  private class FetchReceiveAddressesTask extends AsyncTask<Void, Void, JSONObject> {
+public class ReceiveAddressesActivity extends RoboSherlockListActivity {
 
-    @Override
-    protected JSONObject doInBackground(Void... arg0) {
+  private class FetchReceiveAddressesTask extends RoboAsyncTask<JSONObject> {
 
-      try {
-        return RpcManager.getInstance().callGet(ReceiveAddressesActivity.this, "addresses");
-      } catch (IOException e) {
-        e.printStackTrace();
-        return null;
-      } catch (JSONException e) {
-        e.printStackTrace();
-        return null;
-      }
+    @Inject
+    private RpcManager mRpcManager;
+    private JSONObject mResult = null;
+
+    public FetchReceiveAddressesTask(Context context) {
+      super(context);
     }
 
     @Override
-    protected void onPostExecute(JSONObject result) {
+    public JSONObject call() {
+      try {
+        mResult = mRpcManager.callGet(ReceiveAddressesActivity.this, "addresses");
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+
+      return mResult;
+    }
+
+    @Override
+    protected void onFinally() {
 
       try {
-        if(result == null) {
+        if(mResult == null) {
           Toast.makeText(ReceiveAddressesActivity.this, getString(R.string.addresses_error), Toast.LENGTH_SHORT).show();
           finish();
         } else {
@@ -55,7 +67,7 @@ public class ReceiveAddressesActivity extends SherlockListActivity {
 
           // Create adapter
           List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-          JSONArray addresses = result.getJSONArray("addresses");
+          JSONArray addresses = mResult.getJSONArray("addresses");
           for(int i = 0; i < addresses.length(); i++) {
 
             JSONObject address = addresses.getJSONObject(i).getJSONObject("address");
@@ -90,7 +102,7 @@ public class ReceiveAddressesActivity extends SherlockListActivity {
 
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_addresses);
-    new FetchReceiveAddressesTask().execute();
+    new FetchReceiveAddressesTask(this).execute();
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
   }
 

@@ -31,6 +31,8 @@ import com.coinbase.api.LoginManager;
 
 import java.util.List;
 
+import roboguice.util.RoboAsyncTask;
+
 public class LoginActivity extends CoinbaseActivity {
 
   private static final String REDIRECT_URL = "urn:ietf:wg:oauth:2.0:oob";
@@ -72,22 +74,31 @@ public class LoginActivity extends CoinbaseActivity {
     }
   }
 
-  private class OAuthCodeTask extends AsyncTask<String, Void, String> {
+  private class OAuthCodeTask extends RoboAsyncTask<String> {
 
+    String mResult = null;
+    String mCode;
     ProgressDialog mDialog;
 
+    public OAuthCodeTask(Context context, String... params) {
+      super(context);
+      mCode = params[0];
+    }
+
     @Override
-    protected void onPreExecute() {
+    protected void onPreExecute() throws Exception {
       super.onPreExecute();
       mDialog = ProgressDialog.show(LoginActivity.this, null, getString(R.string.login_progress));
     }
 
     @Override
-    protected String doInBackground(String... params) {
-      return LoginManager.getInstance().addAccountOAuth(LoginActivity.this, params[0], REDIRECT_URL);
+    public String call() {
+      mResult = mLoginManager.addAccountOAuth(LoginActivity.this, mCode, REDIRECT_URL);
+      return mResult;
     }
 
-    protected void onPostExecute(String result) {
+    @Override
+    protected void onFinally() {
 
       try {
         mDialog.dismiss();
@@ -95,13 +106,13 @@ public class LoginActivity extends CoinbaseActivity {
         // ProgressDialog has been destroyed already
       }
 
-      if(result == null) {
+      if(mResult == null) {
         // Success!
         startActivity(new Intent(LoginActivity.this, MainActivity.class));
         finish();
       } else {
         // Failure.
-        Toast.makeText(LoginActivity.this, result, Toast.LENGTH_LONG).show();
+        Toast.makeText(LoginActivity.this, mResult, Toast.LENGTH_LONG).show();
         loadLoginUrl();
       }
     }
@@ -196,7 +207,7 @@ public class LoginActivity extends CoinbaseActivity {
           // Title is long and does not contain spaces;
           // must be the OAuth token!
           Log.i("Coinbase", "Starting login with title " + title.substring(0, 15) + "...");
-          new OAuthCodeTask().execute(title);
+          new OAuthCodeTask(LoginActivity.this, title).execute();
         }
       }
     });
@@ -253,7 +264,7 @@ public class LoginActivity extends CoinbaseActivity {
   }
 
   private void loadLoginUrl() {
-    mLoginWebView.loadUrl(LoginManager.getInstance().generateOAuthUrl(REDIRECT_URL));
+    mLoginWebView.loadUrl(mLoginManager.generateOAuthUrl(REDIRECT_URL));
   }
 
   private void showIntro() {

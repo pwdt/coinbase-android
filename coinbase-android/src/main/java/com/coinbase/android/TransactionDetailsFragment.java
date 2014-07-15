@@ -25,6 +25,7 @@ import com.coinbase.android.db.TransactionsDatabase;
 import com.coinbase.android.db.TransactionsDatabase.TransactionEntry;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.acra.ACRA;
 import org.json.JSONException;
@@ -34,6 +35,8 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import roboguice.util.RoboAsyncTask;
 
 public class TransactionDetailsFragment extends Fragment {
 
@@ -48,25 +51,31 @@ public class TransactionDetailsFragment extends Fragment {
   private String mPinReturnTransactionId;
   private ActionType mPinReturnActionType;
 
-  private class TakeActionTask extends AsyncTask<Object, Void, String> {
+  private class TakeActionTask extends RoboAsyncTask<String> {
 
     ProgressDialog mDialog;
     ActionType type;
 
-    @Override
-    protected void onPreExecute() {
-      super.onPreExecute();
+    @Inject
+    private RpcManager mRpcManager;
+    private String mResult = null;
+    private String mTransactionId;
 
+    public TakeActionTask(Context context, ActionType type, String transactionId) {
+      super(context);
+      this.type = type;
+      mTransactionId = transactionId;
+    }
+
+    @Override
+    protected void onPreExecute() throws Exception {
+      super.onPreExecute();
       mDialog = ProgressDialog.show(getActivity(), null, getString(R.string.transactiondetails_progress));
     }
 
     @Override
-    protected String doInBackground(Object... params) {
-
-      type = (ActionType) params[0];
-      String transactionID = (String) params[1];
-
-      String url = String.format("transactions/%s/", transactionID);
+    public String call() {
+      String url = String.format("transactions/%s/", mTransactionId);
 
       try {
 
@@ -74,13 +83,13 @@ public class TransactionDetailsFragment extends Fragment {
 
         switch(type) {
         case RESEND:
-          result = RpcManager.getInstance().callPut(getActivity(), url + "resend_request", null);
+          result = mRpcManager.callPut(getActivity(), url + "resend_request", null);
           break;
         case COMPLETE:
-          result = RpcManager.getInstance().callPut(getActivity(), url + "complete_request", null);
+          result = mRpcManager.callPut(getActivity(), url + "complete_request", null);
           break;
         case CANCEL:
-          result = RpcManager.getInstance().callDelete(getActivity(), url + "cancel_request", null);
+          result = mRpcManager.callDelete(getActivity(), url + "cancel_request", null);
           break;
         }
 
@@ -94,17 +103,19 @@ public class TransactionDetailsFragment extends Fragment {
             // Array
             error = Utils.getErrorStringFromJson(result, ", ");
           }
-          return error;
+          mResult = error;
         }
       } catch(Exception e) {
         // An error
         e.printStackTrace();
-        return e.getMessage();
+        mResult = e.getMessage();
       }
+
+      return mResult;
     }
 
     @Override
-    protected void onPostExecute(String result) {
+    protected void onFinally() {
 
       try {
         mDialog.dismiss();
@@ -116,11 +127,11 @@ public class TransactionDetailsFragment extends Fragment {
         return;
       }
 
-      if(result != null) {
+      if(mResult != null) {
 
         Log.i("Coinbase", "Transacation action not successful.");
         Toast.makeText(getActivity(),
-            String.format(getActivity().getString(R.string.transactiondetails_action_error), result), Toast.LENGTH_LONG).show();
+            String.format(getActivity().getString(R.string.transactiondetails_action_error), mResult), Toast.LENGTH_LONG).show();
       } else {
 
         int msg = 0;
@@ -152,18 +163,23 @@ public class TransactionDetailsFragment extends Fragment {
 
   }
 
-  private class LoadTransactionFromInternetTask extends AsyncTask<String, Void, JSONObject> {
+  private class LoadTransactionFromInternetTask extends RoboAsyncTask<JSONObject> {
 
-    String mId;
+    @Inject
+    private RpcManager mRpcManager;
+    private String mId;
+    private JSONObject mResult = null;
+
+    public LoadTransactionFromInternetTask(Context context, String id) {
+      super(context);
+      mId = id;
+    }
 
     @Override
-    protected JSONObject doInBackground(String... params) {
-
-      mId = params[0];
-
+    public JSONObject call() {
       Log.i("Coinbase", "Loading transaction " + mId + " from internet...");
       try {
-        return RpcManager.getInstance().callGet(getActivity(), "transactions/" + mId).getJSONObject("transaction");
+        mResult = mRpcManager.callGet(getActivity(), "transactions/" + mId).getJSONObject("transaction");
       } catch (JSONException e) {
         ACRA.getErrorReporter().handleException(new RuntimeException("LoadTransactionFromInternet", e));
         e.printStackTrace();
@@ -171,11 +187,11 @@ public class TransactionDetailsFragment extends Fragment {
         e.printStackTrace();
       }
 
-      return null;
+      return mResult;
     }
 
     @Override
-    protected void onPostExecute(JSONObject result) {
+    protected void onFinally() {
 
       if(mView != null && getActivity() != null) {
 
@@ -184,9 +200,9 @@ public class TransactionDetailsFragment extends Fragment {
         String currentUserId = prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), null);
 
         try {
-          if(result != null) {
+          if(mResult != null) {
             mContainer.setVisibility(View.VISIBLE);
-            fillViewsForJson(mView, result, currentUserId, mId);
+            fillViewsForJson(mView, mResult, currentUserId, mId);
             return;
           }
         } catch (JSONException e) {
@@ -237,7 +253,7 @@ public class TransactionDetailsFragment extends Fragment {
       // Fetch transaction information from internet.
       Uri uri = args.getParcelable("data");
       String transactionId = uri.getPath().substring("/transactions/".length());
-      new LoadTransactionFromInternetTask().execute(transactionId);
+      new LoadTransactionFromInternetTask(this.getActivity(), transactionId).execute();
       mContainer.setVisibility(View.GONE);
     } else {
 
@@ -266,7 +282,7 @@ public class TransactionDetailsFragment extends Fragment {
 
       if(stringData == null) {
         // No data for this transaction
-        new LoadTransactionFromInternetTask().execute(transactionId);
+        new LoadTransactionFromInternetTask(this.getActivity(), transactionId).execute();
         mContainer.setVisibility(View.GONE);
         return view;
       }
@@ -432,7 +448,7 @@ public class TransactionDetailsFragment extends Fragment {
       return;
     }
 
-    new TakeActionTask().execute(type, transactionId);
+    new TakeActionTask(this.getActivity(), type, transactionId).execute();
   }
 
   public void onPINPromptSuccessfulReturn() {

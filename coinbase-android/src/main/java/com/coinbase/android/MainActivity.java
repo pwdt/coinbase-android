@@ -682,11 +682,11 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
     if(account == -1) {
 
       // Delete current account
-      LoginManager.getInstance().deleteCurrentAccount(this);
+      mLoginManager.deleteCurrentAccount(this);
     } else {
 
       // Change active account
-      LoginManager.getInstance().switchActiveAccount(this, account);
+      mLoginManager.switchActiveAccount(this, account);
     }
 
     finish();

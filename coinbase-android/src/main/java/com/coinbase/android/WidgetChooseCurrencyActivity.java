@@ -13,10 +13,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.json.JSONArray;
 
-public class WidgetChooseCurrencyActivity extends ListActivity {
+import roboguice.activity.RoboListActivity;
+
+public class WidgetChooseCurrencyActivity extends RoboListActivity {
+
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   protected void onCreate(Bundle arg0) {
@@ -27,7 +33,7 @@ public class WidgetChooseCurrencyActivity extends ListActivity {
       public void run() {
         try {
 
-          final JSONArray currencies = RpcManager.getInstance().callGet(WidgetChooseCurrencyActivity.this, "currencies").optJSONArray("response");
+          final JSONArray currencies = mRpcManager.callGet(WidgetChooseCurrencyActivity.this, "currencies").optJSONArray("response");
           runOnUiThread(new Runnable() {
             public void run() {
               loadCurrencies(currencies);

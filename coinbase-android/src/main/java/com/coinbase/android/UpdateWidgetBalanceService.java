@@ -13,8 +13,11 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
-public class UpdateWidgetBalanceService extends Service {
+import roboguice.service.RoboService;
+
+public class UpdateWidgetBalanceService extends RoboService {
 
   public static interface WidgetUpdater {
     public void updateWidget(Context context, AppWidgetManager manager, int appWidgetId, String balance);
@@ -23,7 +26,8 @@ public class UpdateWidgetBalanceService extends Service {
   public static String EXTRA_WIDGET_ID = "widget_id";
   public static String EXTRA_UPDATER_CLASS = "updater_class";
 
-
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   public int onStartCommand(Intent intent, int flags, final int startId) {
@@ -51,7 +55,7 @@ public class UpdateWidgetBalanceService extends Service {
             balance = "";
           } else {
             Log.i("Coinbase", "Service fetching balance... [" + updaterClass.getSimpleName() + "]");
-            balance = RpcManager.getInstance().callGetOverrideAccount(
+            balance = mRpcManager.callGetOverrideAccount(
                 UpdateWidgetBalanceService.this, "account/balance", accountId).getString("amount");
             balance = Utils.formatCurrencyAmount(balance);
           }

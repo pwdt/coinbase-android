@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
@@ -17,7 +18,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UpdateWidgetPriceService extends Service {
+import roboguice.service.RoboService;
+
+public class UpdateWidgetPriceService extends RoboService {
 
   public static interface WidgetUpdater {
     public void updateWidget(Context context, AppWidgetManager manager, int appWidgetId, String balance);
@@ -26,7 +29,8 @@ public class UpdateWidgetPriceService extends Service {
   public static String EXTRA_WIDGET_ID = "widget_id";
   public static String EXTRA_UPDATER_CLASS = "updater_class";
 
-
+  @Inject
+  private RpcManager mRpcManager;
 
   @Override
   public int onStartCommand(Intent intent, int flags, final int startId) {
@@ -51,7 +55,7 @@ public class UpdateWidgetPriceService extends Service {
           String price;
           List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
           getParams.add(new BasicNameValuePair("currency", currency));
-          price = RpcManager.getInstance().callGet(UpdateWidgetPriceService.this,
+          price = mRpcManager.callGet(UpdateWidgetPriceService.this,
                   "prices/spot_rate", getParams).getString("amount");
           price = Utils.formatCurrencyAmount(new BigDecimal(price), false, Utils.CurrencyType.TRADITIONAL);
 

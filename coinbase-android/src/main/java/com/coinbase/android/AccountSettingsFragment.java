@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,6 +37,7 @@ import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.api.LoginManager;
 import com.coinbase.api.RpcManager;
+import com.google.inject.Inject;
 
 import org.acra.ACRA;
 import org.apache.http.message.BasicNameValuePair;
@@ -49,17 +51,27 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class AccountSettingsFragment extends ListFragment implements CoinbaseFragment {
+import roboguice.fragment.RoboListFragment;
+import roboguice.util.RoboAsyncTask;
 
-  private class RefreshSettingsTask extends AsyncTask<Void, Void, Boolean> {
+public class AccountSettingsFragment extends RoboListFragment implements CoinbaseFragment {
+
+  private class RefreshSettingsTask extends RoboAsyncTask<Boolean> {
+
+    @Inject
+    private RpcManager mRpcManager;
+
+    public RefreshSettingsTask(Context context) {
+      super(context);
+    }
 
     @Override
-    protected Boolean doInBackground(Void... params) {
+    public Boolean call() {
 
       try {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-        JSONObject userInfo = RpcManager.getInstance().callGet(mParent, "users").getJSONArray("users").getJSONObject(0).getJSONObject("user");
+        JSONObject userInfo = mRpcManager.callGet(mParent, "users").getJSONArray("users").getJSONObject(0).getJSONObject("user");
 
         Editor e = prefs.edit();
 
@@ -86,8 +98,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     }
 
     @Override
-    protected void onPostExecute(Boolean result) {
-
+    protected void onFinally() {
       setListAdapter(new PreferenceListAdapter());
       Utils.bus().post(new UserDataUpdatedEvent());
     }
@@ -328,30 +339,35 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     }
   }
 
-  private class ShowNetworkListTask extends AsyncTask<String, Void, String[][]> {
+  private class ShowNetworkListTask extends RoboAsyncTask<String[][]> {
 
     ProgressDialog mDialog;
-    String mPreferenceKey, mUserUpdateParam;
+    String  mApiEndpoint, mPreferenceKey, mUserUpdateParam;
     int mSelected = -1;
+    String[][] mResult = null;
+
+    @Inject
+    private RpcManager mRpcManager;
+
+    public ShowNetworkListTask(Context context, String apiEndpoint, String preferenceKey, String userUpdateParam) {
+      super(context);
+      mApiEndpoint = apiEndpoint;
+      mPreferenceKey = preferenceKey;
+      mUserUpdateParam = userUpdateParam;
+    }
 
     @Override
     protected void onPreExecute() {
-
       mDialog = ProgressDialog.show(mParent, null, mParent.getString(R.string.account_progress));
     }
 
     @Override
-    protected String[][] doInBackground(String... params) {
-
-      String apiEndpoint = params[0];
-      mPreferenceKey = params[1];
-      mUserUpdateParam = params[2];
-
+    public String[][] call() {
       String currentValue = PreferenceManager.getDefaultSharedPreferences(mParent).getString(mPreferenceKey, null);
 
       try {
 
-        JSONArray array = RpcManager.getInstance().callGet(mParent, apiEndpoint).getJSONArray("response");
+        JSONArray array = mRpcManager.callGet(mParent,mApiEndpoint).getJSONArray("response");
 
         String[] display = new String[array.length()];
         String[] data = new String[array.length()];
@@ -365,20 +381,21 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
           }
         }
 
-        return new String[][] { display, data };
+        mResult = new String[][] { display, data };
+        return mResult;
 
       } catch (JSONException e) {
         ACRA.getErrorReporter().handleException(new RuntimeException("ShowNetworkList", e));
         e.printStackTrace();
-        return null;
+        return mResult;
       } catch (IOException e) {
         e.printStackTrace();
-        return null;
+        return mResult;
       }
     }
 
     @Override
-    protected void onPostExecute(String[][] result) {
+    protected void onFinally() {
 
       try {
         mDialog.dismiss();
@@ -386,15 +403,15 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
         // ProgressDialog has been destroyed already
       }
 
-      if(result == null) {
+      if(mResult == null) {
 
         Toast.makeText(mParent, R.string.account_list_error, Toast.LENGTH_SHORT).show();
       } else {
 
         NetworkListDialogFragment f = new NetworkListDialogFragment();
         Bundle args = new Bundle();
-        args.putStringArray("display", result[0]);
-        args.putStringArray("data", result[1]);
+        args.putStringArray("display", mResult[0]);
+        args.putStringArray("data", mResult[1]);
         args.putString("key", mPreferenceKey);
         args.putInt("selected", mSelected);
         args.putString("userUpdateParam", mUserUpdateParam);
@@ -405,60 +422,68 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
   }
 
-  private class UpdateUserTask extends AsyncTask<String, Void, Boolean> {
+  private class UpdateUserTask extends RoboAsyncTask<Boolean> {
 
     ProgressDialog mDialog;
 
+    private String mUserUpdateParam, mValue, mPrefsKey;
+    private Boolean mResult = false;
+
+    @Inject
+    private RpcManager mRpcManager;
+
+    public UpdateUserTask(Context context, String userUpdateParam, String value, String prefsKey) {
+      super(context);
+      mUserUpdateParam = userUpdateParam;
+      mValue = value;
+      mPrefsKey = prefsKey;
+    }
+
     @Override
     protected void onPreExecute() {
-
       mDialog = ProgressDialog.show(mParent, null, mParent.getString(R.string.account_save_progress));
     }
 
     @Override
-    protected Boolean doInBackground(String... params) {
-
-      String userUpdateParam = params[0];
-      String value = params[1];
-      String prefsKey = params[2];
-
+    public Boolean call() {
       try {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
         int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
         String userId = prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, activeAccount), null);
 
         List<BasicNameValuePair> postParams = new ArrayList<BasicNameValuePair>();
-        postParams.add(new BasicNameValuePair("user[" + userUpdateParam + "]", value));
-        JSONObject response = RpcManager.getInstance().callPut(mParent, "users/" + userId, postParams);
+        postParams.add(new BasicNameValuePair("user[" + mUserUpdateParam + "]", mValue));
+        JSONObject response = mRpcManager.callPut(mParent, "users/" + userId, postParams);
 
         boolean success = response.optBoolean("success");
 
         if(success) {
           Editor e = prefs.edit();
-          e.putString(prefsKey, value);
+          e.putString(mPrefsKey, mValue);
           e.commit();
         } else {
           Log.e("Coinbase", "Got error when updating user: " + response);
         }
 
-        return success;
+        mResult = success;
+        return mResult;
 
       } catch (JSONException e) {
         ACRA.getErrorReporter().handleException(new RuntimeException("UpdateUser", e));
         e.printStackTrace();
-        return false;
+        return mResult;
       } catch (IOException e) {
         e.printStackTrace();
-        return false;
+        return mResult;
       }
     }
 
     @Override
-    protected void onPostExecute(Boolean result) {
+    protected void onFinally() {
 
       mDialog.dismiss();
 
-      if(result) {
+      if(mResult) {
 
         Toast.makeText(mParent, R.string.account_save_success, Toast.LENGTH_SHORT).show();
 
@@ -471,28 +496,35 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
   }
 
-  private class LoadReceiveAddressTask extends AsyncTask<Boolean, Void, String> {
+  private class LoadReceiveAddressTask extends RoboAsyncTask<Void> {
+
+    @Inject
+    private RpcManager mRpcManager;
+    private Boolean mShouldGenerateNew;
+
+    public LoadReceiveAddressTask(Context context, Boolean shouldGenerateNew) {
+      super(context);
+      mShouldGenerateNew = shouldGenerateNew;
+    }
 
     @Override
-    protected String doInBackground(Boolean... params) {
-
+    public Void call() {
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
-      boolean shouldGenerateNew = params[0];
 
       try {
 
         String address;
 
-        if(shouldGenerateNew) {
+        if(mShouldGenerateNew) {
 
-          JSONObject response = RpcManager.getInstance().callPost(mParent, "account/generate_receive_address", null);
+          JSONObject response = mRpcManager.callPost(mParent, "account/generate_receive_address", null);
 
           address = response.optString("address");
 
         } else {
 
-          JSONObject response = RpcManager.getInstance().callGet(mParent, "account/receive_address");
+          JSONObject response = mRpcManager.callGet(mParent, "account/receive_address");
 
           address = response.optString("address");
         }
@@ -504,20 +536,15 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
           editor.commit();
         }
 
-        return address;
-
       } catch (IOException e) {
-
         e.printStackTrace();
       } catch (JSONException e) {
-
-        ACRA.getErrorReporter().handleException(new RuntimeException("LoadReceiveAddress " + shouldGenerateNew, e));
+        ACRA.getErrorReporter().handleException(new RuntimeException("LoadReceiveAddress " + mShouldGenerateNew, e));
         e.printStackTrace();
       }
 
       return null;
     }
-
   }
 
   private Object[][] mPreferences = new Object[][] {
@@ -540,6 +567,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
   MainActivity mParent;
   int mPinItem = -1;
   SharedPreferences.OnSharedPreferenceChangeListener mChangeListener;
+  @Inject LoginManager mLoginManager;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -584,7 +612,7 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
   }
 
   public void updateUser(String key, String value, String prefsKey) {
-    new UpdateUserTask().execute(key, value, prefsKey);
+    new UpdateUserTask(mParent, key, value, prefsKey).execute();
   }
 
   @Override
@@ -621,15 +649,15 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
     } else if("native_currency".equals(data[2])) {
 
       // Show list of currencies
-      Utils.runAsyncTaskConcurrently(new ShowNetworkListTask(), "currencies",
+      new ShowNetworkListTask(mParent, "currencies",
               String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, activeAccount),
-              "native_currency");
+              "native_currency").execute();
     } else if("tokens".equals(data[2])) {
 
       // Refresh token
       new Thread(new Runnable() {
         public void run() {
-          LoginManager.getInstance().refreshAccessToken(mParent, activeAccount);
+          mLoginManager.refreshAccessToken(mParent, activeAccount);
         }
       }).start();
     } else if("limits".equals(data[2])) {
@@ -689,15 +717,15 @@ public class AccountSettingsFragment extends ListFragment implements CoinbaseFra
 
   public void regenerateReceiveAddress() {
 
-    new LoadReceiveAddressTask().execute(true);
+    new LoadReceiveAddressTask(mParent, true).execute();
   }
 
   public void refresh() {
 
     setListAdapter(new PreferenceListAdapter());
 
-    new RefreshSettingsTask().execute();
-    new LoadReceiveAddressTask().execute(false);
+    new RefreshSettingsTask(mParent).execute();
+    new LoadReceiveAddressTask(mParent, false).execute();
   }
 
   @Override
