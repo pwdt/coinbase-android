@@ -27,6 +27,7 @@ dependencies {
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.squareup:otto:1.3.4'
     compile 'com.google.zxing:core:2.1'
+    compile 'ch.acra:acra:4.5.0'
     compile project(":coinbase-zxing-android")
 
     // Espresso
