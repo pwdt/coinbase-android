@@ -528,7 +528,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
   boolean mBalanceLoading, mAnimationPlaying;
   FrameLayout mListHeaderContainer;
   ListView mListView;
-  ViewGroup mListHeader, mMainView;
+  ViewGroup mBaseView, mListHeader, mMainView;
   View mListFooter;
   View mRateNotice;
   TextView mBalanceText, mBalanceHome;
@@ -574,10 +574,10 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
                            Bundle savedInstanceState) {
 
     // Inflate base layout
-    ViewGroup view = (ViewGroup) inflater.inflate(R.layout.fragment_transactions, container, false);
-    mMainView = (ViewGroup) view.findViewById(R.id.inner_view);
+    mBaseView = (ViewGroup) inflater.inflate(R.layout.fragment_transactions, container, false);
+    mMainView = (ViewGroup) mBaseView.findViewById(R.id.inner_view);
 
-    mListView = (ListView) view.findViewById(android.R.id.list);
+    mListView = (ListView) mBaseView.findViewById(android.R.id.list);
 
     // Inflate header (which contains account balance)
     mListHeader = (ViewGroup) inflater.inflate(R.layout.fragment_transactions_header, null, false);
@@ -639,9 +639,9 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     mBalanceHome = (TextView) mListHeader.findViewById(R.id.wallet_balance_home);
     mSyncErrorView = (TextView) mListHeader.findViewById(R.id.wallet_error);
 
-    ((TextView) view.findViewById(R.id.wallet_balance_label)).setTypeface(
+    ((TextView) mBaseView.findViewById(R.id.wallet_balance_label)).setTypeface(
             FontManager.getFont(mParent, "RobotoCondensed-Regular"));
-    ((TextView) view.findViewById(R.id.wallet_send_label)).setTypeface(
+    ((TextView) mBaseView.findViewById(R.id.wallet_send_label)).setTypeface(
            FontManager.getFont(mParent, "RobotoCondensed-Regular"));
 
     mBalanceText.setOnClickListener(new View.OnClickListener() {
@@ -677,7 +677,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       mBalanceText.setTextColor(mParent.getResources().getColor(R.color.wallet_balance_color_invalid));
     }
 
-    view.findViewById(R.id.wallet_send).setOnClickListener(new View.OnClickListener() {
+    mBaseView.findViewById(R.id.wallet_send).setOnClickListener(new View.OnClickListener() {
 
       @Override
       public void onClick(View v) {
@@ -686,12 +686,26 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       }
     });
 
+    // Load transaction list
+    loadTransactionsList();
+
+    if (savedInstanceState != null && savedInstanceState.getBoolean("details_showing", false)) {
+
+      mDetailsShowing = true;
+      mBaseView.findViewById(R.id.transaction_details_background).setVisibility(View.VISIBLE);
+    }
+
+    return mBaseView;
+  }
+
+  @Override
+  public void onStart() {
     // Configure pull to refresh
     mPullToRefreshLayout = new PullToRefreshLayout(mParent);
     AbsDefaultHeaderTransformer ht =
             (AbsDefaultHeaderTransformer) new AbsDefaultHeaderTransformer();
     ActionBarPullToRefresh.from(mParent)
-            .insertLayoutInto(view)
+            .insertLayoutInto(mBaseView)
             .theseChildrenArePullable(android.R.id.list)
             .listener(new OnRefreshListener() {
               @Override
@@ -704,16 +718,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
     ht.setPullText("Swipe down to refresh");
     ht.setRefreshingText("Refreshing...");
 
-    // Load transaction list
-    loadTransactionsList();
-
-    if (savedInstanceState != null && savedInstanceState.getBoolean("details_showing", false)) {
-
-      mDetailsShowing = true;
-      view.findViewById(R.id.transaction_details_background).setVisibility(View.VISIBLE);
-    }
-
-    return view;
+    super.onStart();
   }
 
   @Override
