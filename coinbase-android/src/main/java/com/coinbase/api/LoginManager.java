@@ -199,6 +199,11 @@ public class LoginManager {
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
       String refreshToken = prefs.getString(String.format(Constants.KEY_ACCOUNT_REFRESH_TOKEN, account), null);
 
+      if (refreshToken == null) {
+        Log.e("Coinbase", "Refresh token was null");
+        return;
+      }
+
       List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
       parametersBody.add(new BasicNameValuePair("grant_type", "refresh_token"));
       parametersBody.add(new BasicNameValuePair("refresh_token", refreshToken));
