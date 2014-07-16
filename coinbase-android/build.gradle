@@ -61,6 +61,7 @@ dependencies {
         exclude module: 'wagon-provider-api'
     }
     androidTestCompile 'com.squareup:fest-android:1.0.+'
+    androidTestCompile 'commons-io:commons-io:2.4'
 }
 
 android {
@@ -89,21 +90,6 @@ android {
             applicationId "com.coinbase.android.merchant"
             buildConfigField "com.coinbase.android.BuildType", "type", "com.coinbase.android.BuildType.MERCHANT"
         }
-    }
-
-    sourceSets {
-        androidTestConsumer {
-            setRoot('src/testConsumer')
-        }
-
-        // Move the build types to build-types/<type>
-        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
-        // This moves them out of them default location under src/<type>/... which would
-        // conflict with src/ being used by the main source set.
-        // Adding new build types or product flavors should be accompanied
-        // by a similar customization.
-        debug.setRoot('build-types/debug')
-        release.setRoot('build-types/release')
     }
 
     lintOptions {
