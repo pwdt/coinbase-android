@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     }
 
     dependencies {
@@ -14,6 +15,7 @@ apply plugin: 'robolectric'
 
 repositories {
     mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 dependencies {
@@ -41,7 +43,7 @@ dependencies {
     androidTestCompile('junit:junit:4.11') {
         exclude module: 'hamcrest-core'
     }
-    androidTestCompile('org.robolectric:robolectric:2.3') {
+    androidTestCompile('org.robolectric:robolectric:2.4-SNAPSHOT') {
         exclude module: 'classworlds'
         exclude module: 'commons-logging'
         exclude module: 'httpclient'
@@ -79,12 +81,12 @@ android {
 
     productFlavors {
         consumer {
-            packageName "com.coinbase.android"
+            applicationId "com.coinbase.android"
             buildConfigField "com.coinbase.android.BuildType", "type", "com.coinbase.android.BuildType.CONSUMER"
         }
 
         merchant {
-            packageName "com.coinbase.android.merchant"
+            applicationId "com.coinbase.android.merchant"
             buildConfigField "com.coinbase.android.BuildType", "type", "com.coinbase.android.BuildType.MERCHANT"
         }
     }
