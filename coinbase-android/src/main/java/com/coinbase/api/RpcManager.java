@@ -39,7 +39,7 @@ public class RpcManager {
     GET,
     POST,
     PUT,
-    DELETE;
+    DELETE
   }
 
   @Inject

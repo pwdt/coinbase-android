@@ -16,9 +16,6 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile 'com.android.support:support-v4:20.+'
-    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.9.+'
     compile('com.github.chrisbanes.actionbarpulltorefresh:extra-abs:0.9.+') {
         exclude group: 'com.android.support'
     }
@@ -28,11 +25,12 @@ dependencies {
     compile 'ch.acra:acra:4.5.0'
     compile 'org.roboguice:roboguice:2.0'
     compile 'com.github.rtyley:roboguice-sherlock:1.5'
+    compile 'com.android.support:support-v4:20.+'
+    compile ('com.coinbase.api:coinbase-java:1.0.0')
     compile project(":coinbase-zxing-android")
 
-    androidTestCompile 'com.squareup:fest-android:1.0.+'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.2.1'
-    androidTestCompile 'com.squareup.okhttp:mockwebserver:2.0.0'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
     androidTestCompile 'commons-io:commons-io:2.4'
 }
 
@@ -42,6 +40,7 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
     }
 
     compileSdkVersion 20
