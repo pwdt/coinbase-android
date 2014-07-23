@@ -1,9 +1,5 @@
 package com.coinbase.android;
 
-import java.io.IOException;
-
-import org.json.JSONException;
-
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
@@ -12,8 +8,14 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.coinbase.api.RpcManager;
+import com.coinbase.api.Coinbase;
+import com.coinbase.api.LoginManager;
+import com.coinbase.api.entity.Account;
+import com.coinbase.api.exception.CoinbaseException;
 import com.google.inject.Inject;
+
+import java.io.IOException;
+import java.util.List;
 
 import roboguice.service.RoboService;
 
@@ -27,7 +29,7 @@ public class UpdateWidgetBalanceService extends RoboService {
   public static String EXTRA_UPDATER_CLASS = "updater_class";
 
   @Inject
-  private RpcManager mRpcManager;
+  private LoginManager mLoginManager;
 
   @Override
   public int onStartCommand(Intent intent, int flags, final int startId) {
@@ -49,21 +51,26 @@ public class UpdateWidgetBalanceService extends RoboService {
           WidgetUpdater updater = (WidgetUpdater) updaterClass.newInstance();
           updater.updateWidget(UpdateWidgetBalanceService.this, manager, widgetId, null);
 
-          // Step 2: Fetch balance
+          // Step 2: Fetch balance for primary account
           String balance;
           if(accountId == -1) {
             balance = "";
           } else {
+            balance = "";
             Log.i("Coinbase", "Service fetching balance... [" + updaterClass.getSimpleName() + "]");
-            balance = mRpcManager.callGetOverrideAccount(
-                UpdateWidgetBalanceService.this, "account/balance", accountId).getString("amount");
-            balance = Utils.formatCurrencyAmount(balance);
+            Coinbase client = mLoginManager.getClient(UpdateWidgetBalanceService.this);
+            List<Account> subAccounts = client.getAccounts().getAccounts();
+            for (Account subAccount : subAccounts) {
+              if (subAccount.isPrimary()) {
+                balance = Utils.formatCurrencyAmount(subAccount.getBalance().getAmount());
+              }
+            }
           }
 
           // Step 3: Update widget
           updater.updateWidget(UpdateWidgetBalanceService.this, manager, widgetId, balance);
 
-        } catch(JSONException e) {
+        } catch(CoinbaseException e) {
           e.printStackTrace();
         } catch (InstantiationException e) {
           e.printStackTrace();

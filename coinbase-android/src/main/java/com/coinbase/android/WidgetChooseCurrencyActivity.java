@@ -1,6 +1,5 @@
 package com.coinbase.android;
 
-import android.app.ListActivity;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
@@ -12,17 +11,19 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.coinbase.api.RpcManager;
+import com.coinbase.api.LoginManager;
 import com.google.inject.Inject;
 
-import org.json.JSONArray;
+import org.joda.money.CurrencyUnit;
+
+import java.util.List;
 
 import roboguice.activity.RoboListActivity;
 
 public class WidgetChooseCurrencyActivity extends RoboListActivity {
 
   @Inject
-  private RpcManager mRpcManager;
+  private LoginManager mLoginManager;
 
   @Override
   protected void onCreate(Bundle arg0) {
@@ -33,7 +34,8 @@ public class WidgetChooseCurrencyActivity extends RoboListActivity {
       public void run() {
         try {
 
-          final JSONArray currencies = mRpcManager.callGet(WidgetChooseCurrencyActivity.this, "currencies").optJSONArray("response");
+          final List<CurrencyUnit> currencies =
+                  mLoginManager.getClient(WidgetChooseCurrencyActivity.this).getSupportedCurrencies();
           runOnUiThread(new Runnable() {
             public void run() {
               loadCurrencies(currencies);
@@ -50,16 +52,16 @@ public class WidgetChooseCurrencyActivity extends RoboListActivity {
     setResult(RESULT_CANCELED);
   }
 
-  private void loadCurrencies(final JSONArray currencies) {
+  private void loadCurrencies(final List<CurrencyUnit> currencies) {
     setListAdapter(new BaseAdapter() {
       @Override
       public int getCount() {
-        return currencies.length();
+        return currencies.size();
       }
 
       @Override
-      public Object getItem(int i) {
-        return currencies.optJSONArray(i);
+      public CurrencyUnit getItem(int i) {
+        return currencies.get(i);
       }
 
       @Override
@@ -75,7 +77,7 @@ public class WidgetChooseCurrencyActivity extends RoboListActivity {
         }
 
         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-        text1.setText(currencies.optJSONArray(i).optString(0));
+        text1.setText(getItem(i).getCurrencyCode());
 
         return view;
       }
@@ -84,8 +86,7 @@ public class WidgetChooseCurrencyActivity extends RoboListActivity {
 
   @Override
   protected void onListItemClick(ListView l, View v, int position, long id) {
-
-    onCurrencyChosen(((JSONArray) l.getItemAtPosition(position)).optString(1));
+    onCurrencyChosen(((CurrencyUnit) l.getItemAtPosition(position)).getCurrencyCode());
   }
 
   public void onCurrencyChosen(String currency) {

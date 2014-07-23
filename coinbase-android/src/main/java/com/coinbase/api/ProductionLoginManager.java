@@ -403,7 +403,7 @@ public class ProductionLoginManager implements LoginManager {
   }
 
   @Override
-  public Coinbase getClient(final Context context, final int account) throws Exception {
+  public Coinbase getClient(final Context context, final int account) {
     if (needToRefreshAccessToken(context, account)) {
       refreshAccessToken(context, account);
     }
@@ -424,7 +424,7 @@ public class ProductionLoginManager implements LoginManager {
   }
 
   @Override
-  public Coinbase getClient(Context context) throws Exception {
+  public Coinbase getClient(Context context) {
     return getClient(context, getActiveAccount(context));
   }
 

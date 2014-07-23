@@ -41,7 +41,7 @@ public interface LoginManager {
 
   int getActiveAccount(Context context);
 
-  Coinbase getClient(Context context, int account) throws Exception;
+  Coinbase getClient(Context context, int account);
 
-  Coinbase getClient(Context context) throws Exception;
+  Coinbase getClient(Context context);
 }
