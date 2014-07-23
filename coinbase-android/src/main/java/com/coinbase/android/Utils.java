@@ -27,7 +27,8 @@ import android.widget.FrameLayout;
 
 import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;
-import com.coinbase.api.RpcManager;
+import com.coinbase.api.LoginManager;
+import com.coinbase.api.entity.Contact;
 import com.google.inject.Inject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -36,7 +37,6 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.squareup.otto.Bus;
 
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,7 +91,7 @@ public class Utils {
     private ArrayList<String> resultList;
 
     @Inject
-    private RpcManager mRpcManager;
+    private LoginManager mLoginManager;
 
     public ContactsAutoCompleteAdapter(Context context, int textViewResourceId) {
       super(context, textViewResourceId);
@@ -141,13 +141,10 @@ public class Utils {
       ArrayList<String> result = new ArrayList<String>();
 
       try {
-
-        List<BasicNameValuePair> getParams = new ArrayList<BasicNameValuePair>();
-        getParams.add(new BasicNameValuePair("query", filter));
-        JSONArray response = mRpcManager.callGet(getContext(), "contacts", getParams)
-                .getJSONArray("contacts");
-        for (int i = 0; i < response.length(); i++) {
-          result.add(response.getJSONObject(i).getJSONObject("contact").optString("email"));
+        List<Contact> contacts =
+                mLoginManager.getClient(getContext()).getContacts(filter).getContacts();
+        for (Contact contact : contacts) {
+          result.add(contact.getEmail());
         }
       } catch (Exception e) {
         e.printStackTrace();
