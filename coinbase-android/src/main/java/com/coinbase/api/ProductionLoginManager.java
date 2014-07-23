@@ -12,6 +12,7 @@ import com.coinbase.android.BuildConfig;
 import com.coinbase.android.BuildType;
 import com.coinbase.android.Constants;
 import com.coinbase.android.R;
+import com.coinbase.api.exception.CoinbaseException;
 import com.google.inject.Singleton;
 
 import org.apache.http.HttpResponse;
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -177,11 +179,11 @@ public class ProductionLoginManager implements LoginManager {
 
   @Override
   public boolean needToRefreshAccessToken(Context context, int account) {
-
+    int FIVE_MINUTES = 300000;
     synchronized (this) {
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
       long tokenExpiresAt = prefs.getLong(String.format(Constants.KEY_ACCOUNT_TOKEN_EXPIRES_AT, account), -1);
-      return System.currentTimeMillis() >= tokenExpiresAt;
+      return System.currentTimeMillis() >= tokenExpiresAt - FIVE_MINUTES;
     }
   }
 
@@ -401,13 +403,23 @@ public class ProductionLoginManager implements LoginManager {
   }
 
   @Override
-  public Coinbase getClient(Context context, int account) throws Exception {
+  public Coinbase getClient(final Context context, final int account) throws Exception {
     if (needToRefreshAccessToken(context, account)) {
       refreshAccessToken(context, account);
     }
 
     return new CoinbaseBuilder()
                 .withAccessToken(getAccessToken(context, account))
+                .withErrorHandler(new ErrorHandler() {
+                  @Override
+                  public void handleIOException(IOException ex, HttpURLConnection conn) throws IOException, CoinbaseException {
+                    if (HttpURLConnection.HTTP_UNAUTHORIZED == conn.getResponseCode()) {
+                      ProductionLoginManager.this.setAccountValid(context, account, false, "401 error");
+                      throw new IOException("Account is no longer valid");
+                    }
+                    super.handleIOException(ex, conn);
+                  }
+                })
                 .build();
   }
 

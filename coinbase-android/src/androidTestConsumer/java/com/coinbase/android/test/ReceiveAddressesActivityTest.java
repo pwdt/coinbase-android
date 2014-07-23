@@ -30,7 +30,6 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     mockAddressesResponse = mockAddressesResponse();
 
     doReturn(mockAddressesResponse).when(mockCoinbase).getAddresses();
-    doReturn(mockAddressesResponse).when(mockCoinbase).getAddresses(anyInt());
 
     startTestActivity();
   }

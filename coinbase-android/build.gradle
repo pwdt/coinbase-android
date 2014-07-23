@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 
@@ -11,6 +12,7 @@ buildscript {
 apply plugin: 'com.android.application'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -26,7 +28,7 @@ dependencies {
     compile 'org.roboguice:roboguice:2.0'
     compile 'com.github.rtyley:roboguice-sherlock:1.5'
     compile 'com.android.support:support-v4:20.+'
-    compile ('com.coinbase.api:coinbase-java:1.0.0')
+    compile ('com.coinbase.api:coinbase-java:1.1.0-SNAPSHOT')
     compile project(":coinbase-zxing-android")
 
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.2.1'
