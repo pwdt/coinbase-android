@@ -27,8 +27,10 @@ public class Constants {
   public static final String KEY_ACCOUNT_NATIVE_CURRENCY = "account_%d_native_currency";
   public static final String KEY_ACCOUNT_FULL_NAME = "account_%d_full_name";
   public static final String KEY_ACCOUNT_TIME_ZONE = "account_%d_time_zone";
-  public static final String KEY_ACCOUNT_LIMIT = "account_%1$d_limit_%2$s";
-  public static final String KEY_ACCOUNT_LIMIT_CURRENCY = "account_%1$d_limit_currency_%2$s";
+  public static final String KEY_ACCOUNT_LIMIT_SELL = "account_%1$d_limit_sell";
+  public static final String KEY_ACCOUNT_LIMIT_BUY = "account_%1$d_limit_buy";
+  public static final String KEY_ACCOUNT_LIMIT_CURRENCY_BUY = "account_%1$d_limit_currency_buy";
+  public static final String KEY_ACCOUNT_LIMIT_CURRENCY_SELL = "account_%1$d_limit_currency_sell";
   public static final String KEY_ACCOUNT_POS_NOTES = "account_%1$d_pos_notes";
   public static final String KEY_ACCOUNT_POS_BTC_AMT = "account_%1$d_pos_btc_amt";
   public static final String KEY_ACCOUNT_SHOW_BALANCE = "account_%1$d_show_balance";

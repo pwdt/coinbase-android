@@ -2,6 +2,11 @@ package com.coinbase.android.test;
 
 import com.coinbase.api.entity.Address;
 import com.coinbase.api.entity.AddressesResponse;
+import com.coinbase.api.entity.User;
+import com.coinbase.api.entity.UserResponse;
+
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,4 +35,21 @@ public class MockResponses {
     return response;
   }
 
+  public static User mockUser() {
+    User user = new User();
+    user.setName("Test User");
+    user.setEmail("user@example.com");
+    user.setTimeZone("Pacific Time (US & Canada)");
+    user.setNativeCurrency(CurrencyUnit.USD);
+    user.setBalance(Money.parse("BTC 1"));
+    user.setBuyLevel(1);
+    user.setSellLevel(1);
+    user.setBuyLimit(Money.parse("USD 3000"));
+    user.setSellLimit(Money.parse("USD 3000"));
+    return user;
+  }
+
+  public static List<CurrencyUnit> supportedCurrencies() {
+    return CurrencyUnit.registeredCurrencies();
+  }
 }

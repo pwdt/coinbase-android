@@ -589,7 +589,8 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     f.show(getFragmentManager(), "qrrequest");
 
     // After using a receive address, generate a new one for next time.
-    mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+    // TODO regenerate address here
+    // mParent.getAccountSettingsFragment().regenerateReceiveAddress();
   }
 
   private void submitNfc() {
@@ -614,7 +615,8 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     f.show(getFragmentManager(), "nfcrequest");
 
     // After using a receive address, generate a new one for next time.
-    mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+    // TODO regenerate address here
+    // mParent.getAccountSettingsFragment().regenerateReceiveAddress();
   }
 
   public void clearForm() {
@@ -694,7 +696,8 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     f.show(getFragmentManager(), "qrrequest");
 
     // After using a receive address, generate a new one for next time.
-    mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+    // TODO regenerate address here
+    // mParent.getAccountSettingsFragment().regenerateReceiveAddress();
   }
 
   public void startEmailRequest(String amt, String notes) {

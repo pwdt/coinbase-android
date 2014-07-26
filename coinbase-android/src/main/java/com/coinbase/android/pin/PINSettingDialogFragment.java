@@ -18,9 +18,17 @@ import android.widget.AdapterView;
 
 import com.coinbase.android.Constants;
 import com.coinbase.android.R;
+import com.coinbase.android.Utils;
+import com.coinbase.android.event.UserDataUpdatedEvent;
+import com.coinbase.api.LoginManager;
+import com.google.inject.Inject;
 
-public class PINSettingDialogFragment extends DialogFragment {
+import roboguice.fragment.RoboDialogFragment;
 
+public class PINSettingDialogFragment extends RoboDialogFragment {
+
+  @Inject
+  LoginManager mLoginManager;
   private int mSelectedOption = 0;
 
   @Override
@@ -40,7 +48,7 @@ public class PINSettingDialogFragment extends DialogFragment {
     }
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-    final int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    final int activeAccount = mLoginManager.getActiveAccount(getActivity());
     final String pinKey = String.format(Constants.KEY_ACCOUNT_PIN, activeAccount);
     final String viewAllowedKey = String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount);
 
@@ -79,6 +87,8 @@ public class PINSettingDialogFragment extends DialogFragment {
         }
 
         e.commit();
+
+        Utils.bus().post(new UserDataUpdatedEvent());
 
         if(mSelectedOption != itemsList.indexOf(R.string.account_android_pin_none)) {
           startSetPinPrompt();

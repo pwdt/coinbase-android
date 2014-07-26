@@ -9,6 +9,8 @@ import android.preference.PreferenceManager;
 
 import com.coinbase.android.Constants;
 import com.coinbase.android.MainActivity;
+import com.coinbase.android.Utils;
+import com.coinbase.android.event.UserDataUpdatedEvent;
 
 
 public class PINManager {
@@ -61,7 +63,7 @@ public class PINManager {
 
   /**
    * Should the user be allowed to edit protected content? If not, PIN prompt will be started.
-   * @param context
+   * @param activity
    * @return true if you should proceed with the edit
    */
   public boolean checkForEditAccess(Activity activity) {
@@ -119,6 +121,7 @@ public class PINManager {
     Editor e = prefs.edit();
     e.putString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), pin);
     e.commit();
+    Utils.bus().post(new UserDataUpdatedEvent());
   }
 
   /**

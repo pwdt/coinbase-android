@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.test.ActivityInstrumentationTestCase2;
 
+import com.coinbase.android.Constants;
 import com.coinbase.android.TestCaseEntryPointActivity;
 import com.coinbase.api.Coinbase;
 import com.coinbase.api.LoginManager;
@@ -54,6 +57,9 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
     mockCoinbase = mock(Coinbase.class);
     mockLoginManager = mock(LoginManager.class);
 
+    doReturn(1).when(mockLoginManager).getActiveAccount((Context) any());
+    doReturn(true).when(mockLoginManager).isSignedIn((Context) any());
+
     doReturn(mockCoinbase).when(mockLoginManager).getClient(any(Context.class));
     doReturn(mockCoinbase).when(mockLoginManager).getClient(any(Context.class), anyInt());
 
@@ -62,6 +68,15 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
     Module roboGuiceModule = RoboGuice.newDefaultRoboModule(application);
     Module testModule = Modules.override(roboGuiceModule).with(new MockLoginManagerModule());
     RoboGuice.setBaseApplicationInjector(application, RoboGuice.DEFAULT_STAGE, testModule);
+
+    // Clear preferences
+    SharedPreferences defaultPreferences = PreferenceManager.getDefaultSharedPreferences(getInstrumentation().getTargetContext());
+    defaultPreferences.edit().clear().commit();
+
+    // TODO Remove this when we centralize access through loginmanager
+    SharedPreferences.Editor e = defaultPreferences.edit();
+    e.putInt(Constants.KEY_ACTIVE_ACCOUNT, 1);
+    e.commit();
 
     // - Initialize Robotium driver.
     solo = new Solo(getInstrumentation(), getActivity());

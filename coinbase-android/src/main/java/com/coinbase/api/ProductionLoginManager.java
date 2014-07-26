@@ -281,10 +281,10 @@ public class ProductionLoginManager implements LoginManager {
       e.putString(String.format(Constants.KEY_ACCOUNT_NATIVE_CURRENCY, accountId), userInfo.getString("native_currency"));
       e.putString(String.format(Constants.KEY_ACCOUNT_FULL_NAME, accountId), userInfo.getString("name"));
       e.putString(String.format(Constants.KEY_ACCOUNT_TIME_ZONE, accountId), userInfo.getString("time_zone"));
-      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT, accountId, "buy"), userInfo.getJSONObject("buy_limit").getString("amount"));
-      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT, accountId, "sell"), userInfo.getJSONObject("sell_limit").getString("amount"));
-      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY, accountId, "buy"), userInfo.getJSONObject("buy_limit").getString("currency"));
-      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY, accountId, "sell"), userInfo.getJSONObject("sell_limit").getString("currency"));
+      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_BUY, accountId), userInfo.getJSONObject("buy_limit").getString("amount"));
+      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_SELL, accountId), userInfo.getJSONObject("sell_limit").getString("amount"));
+      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY_BUY, accountId), userInfo.getJSONObject("buy_limit").getString("currency"));
+      e.putString(String.format(Constants.KEY_ACCOUNT_LIMIT_CURRENCY_SELL, accountId), userInfo.getJSONObject("sell_limit").getString("currency"));
       e.commit();
 
       return null;
@@ -400,6 +400,12 @@ public class ProductionLoginManager implements LoginManager {
   public int getActiveAccount(Context context) {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     return prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+  }
+
+  @Override
+  public String getActiveUserId(Context context) {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    return prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, getActiveAccount(context)), null);
   }
 
   @Override

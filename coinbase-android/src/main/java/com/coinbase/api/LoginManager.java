@@ -41,6 +41,8 @@ public interface LoginManager {
 
   int getActiveAccount(Context context);
 
+  String getActiveUserId(Context context);
+
   Coinbase getClient(Context context, int account);
 
   Coinbase getClient(Context context);
