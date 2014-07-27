@@ -1,39 +1,29 @@
 package com.coinbase.android;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.coinbase.api.LoginManager;
-import com.coinbase.api.RpcManager;
 import com.coinbase.api.entity.Address;
 import com.coinbase.api.entity.AddressesResponse;
 import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockListActivity;
 import com.google.inject.Inject;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import roboguice.inject.InjectView;
 import roboguice.util.RoboAsyncTask;
 
 public class ReceiveAddressesActivity extends RoboSherlockListActivity {
@@ -89,41 +79,46 @@ public class ReceiveAddressesActivity extends RoboSherlockListActivity {
 
     @Inject
     private LoginManager mLoginManager;
-    private AddressesResponse mResult = null;
-    private ListView mListView;
 
     public FetchReceiveAddressesTask(Context context) {
       super(context);
-      mListView = getListView();
     }
 
     @Override
-    public AddressesResponse call() {
-      try {
-        mResult = mLoginManager.getClient(ReceiveAddressesActivity.this).getAddresses();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      return mResult;
+    protected void onPreExecute() throws Exception {
+      mProgressDialog = new ProgressDialog(ReceiveAddressesActivity.this);
+      mProgressDialog.setCancelable(false);
+      mProgressDialog.setIndeterminate(true);
+      mProgressDialog.show();
+    }
+
+    @Override
+    public AddressesResponse call() throws Exception {
+      return mLoginManager.getClient(ReceiveAddressesActivity.this).getAddresses();
+    }
+
+    @Override
+    protected void onSuccess(AddressesResponse addressesResponse) {
+      setListAdapter(new AddressesAdapter(
+              ReceiveAddressesActivity.this,
+              addressesResponse.getAddresses()
+      ));
+    }
+
+    @Override
+    protected void onException(Exception ex) {
+      Toast.makeText(ReceiveAddressesActivity.this, getString(R.string.addresses_error), Toast.LENGTH_SHORT).show();
+      super.onException(ex);
+      finish();
     }
 
     @Override
     protected void onFinally() {
-      if(mResult == null) {
-        Toast.makeText(ReceiveAddressesActivity.this, getString(R.string.addresses_error), Toast.LENGTH_SHORT).show();
-        finish();
-      } else {
-        findViewById(R.id.addresses_progress).setVisibility(View.GONE);
-        mListView.setVisibility(View.VISIBLE);
-        mListView.addHeaderView(View.inflate(ReceiveAddressesActivity.this, R.layout.activity_addresses_header, null));
-
-        setListAdapter(new AddressesAdapter(
-                ReceiveAddressesActivity.this,
-                mResult.getAddresses()
-        ));
-      }
+      mProgressDialog.dismiss();
     }
   }
+
+  protected ProgressDialog mProgressDialog;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -135,14 +130,17 @@ public class ReceiveAddressesActivity extends RoboSherlockListActivity {
 
   @Override
   protected void onListItemClick(ListView l, View v, int position, long id) {
-    if (position == 0) {
-      return; // Header
-    }
-
     Address address = (Address) l.getItemAtPosition(position);
 
     Utils.setClipboard(this, address.getAddress());
     Toast.makeText(ReceiveAddressesActivity.this, getString(R.string.addresses_copied), Toast.LENGTH_SHORT).show();
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getSupportMenuInflater();
+    inflater.inflate(R.menu.activity_receive_addresses, menu);
+    return true;
   }
 
   @Override
@@ -153,6 +151,19 @@ public class ReceiveAddressesActivity extends RoboSherlockListActivity {
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
       startActivity(intent);
       finish();
+    } else if (item.getItemId() == R.id.menu_generate_receive_address) {
+      new GenerateReceiveAddressTask(this) {
+        @Override
+        protected void onSuccess(String result) {
+          new FetchReceiveAddressesTask(ReceiveAddressesActivity.this).execute();
+        }
+
+        @Override
+        protected void onException(Exception e) {
+          Log.e("ReceiveAddressesActivity", "Error generating receive address", e);
+          Toast.makeText(ReceiveAddressesActivity.this, R.string.account_save_error, Toast.LENGTH_SHORT).show();
+        }
+      }.execute();
     }
 
     return false;

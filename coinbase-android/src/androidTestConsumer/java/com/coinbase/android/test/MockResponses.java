@@ -1,6 +1,7 @@
 package com.coinbase.android.test;
 
 import com.coinbase.api.entity.Address;
+import com.coinbase.api.entity.AddressResponse;
 import com.coinbase.api.entity.AddressesResponse;
 import com.coinbase.api.entity.User;
 import com.coinbase.api.entity.UserResponse;
@@ -51,5 +52,12 @@ public class MockResponses {
 
   public static List<CurrencyUnit> supportedCurrencies() {
     return CurrencyUnit.registeredCurrencies();
+  }
+
+  public static AddressResponse mockGeneratedAddress() {
+    AddressResponse response = new AddressResponse();
+    response.setAddress("1NewlyGeneratedAddress");
+
+    return response;
   }
 }

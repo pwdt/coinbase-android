@@ -36,6 +36,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.squareup.otto.Bus;
+import com.squareup.otto.ThreadEnforcer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -519,7 +520,7 @@ public class Utils {
     return s.hasNext() ? s.next() : "";
   }
 
-  private static final Bus BUS = new Bus();
+  private static final Bus BUS = new Bus(ThreadEnforcer.ANY);
   public static Bus bus() {
     return BUS;
   }

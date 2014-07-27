@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coinbase.android.event.ReceiveAddressUpdatedEvent;
 import com.coinbase.android.event.UserDataUpdatedEvent;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.pin.PINSettingDialogFragment;
@@ -698,7 +699,11 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
     ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
   }
 
-  // TODO subscribe to ReceiveAddressUpdatedEvent
+  @Subscribe
+  public void receiveAddressUpdated(ReceiveAddressUpdatedEvent event) {
+    Log.v(this.getClass().toString(), "Receive address updated, refreshing list adapter");
+    ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
+  }
 
   @Override
   public void onSwitchedTo() {
