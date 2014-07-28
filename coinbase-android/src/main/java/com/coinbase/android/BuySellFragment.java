@@ -80,6 +80,11 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
       Toast.makeText(context, R.string.buysell_type_price_error, Toast.LENGTH_SHORT).show();
       super.onException(ex);
     }
+
+    @Override
+    public void onInterrupted(Exception ex) {
+      updateLabelText(null);
+    }
   }
 
   private class GetBuyQuoteTask extends GetQuoteTask {
@@ -398,6 +403,9 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
   }
 
   private void getQuote() {
+    if (mGetQuoteTask != null) {
+      mGetQuoteTask.cancel(true);
+    }
     mSubmitButton.setEnabled(false);
     mTotal.setText(null);
     mTotal.setVisibility(View.GONE);
@@ -410,44 +418,46 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
       switch(mBuySellType) {
         case BUY:
-          new GetBuyQuoteTask(mParent, ONE_BTC) {
+          mGetQuoteTask = new GetBuyQuoteTask(mParent, ONE_BTC) {
             @Override
             public void onSuccess(Quote quote) {
               updateLabelText(quote);
             }
-          }.execute();
+          };
           break;
         case SELL:
-          new GetSellQuoteTask(mParent, ONE_BTC) {
+          mGetQuoteTask = new GetSellQuoteTask(mParent, ONE_BTC) {
             @Override
             public void onSuccess(Quote quote) {
               updateLabelText(quote);
             }
-          }.execute();
+          };
           break;
       }
     } else {
       switch(mBuySellType) {
         case BUY:
-          new GetBuyQuoteTask(mParent, quantity) {
+          mGetQuoteTask = new GetBuyQuoteTask(mParent, quantity) {
             @Override
             public void onSuccess(Quote quote) {
               mCurrentQuote = quote;
               displayTotal(quote);
             }
-          }.execute();
+          };
           break;
         case SELL:
-          new GetSellQuoteTask(mParent, quantity) {
+          mGetQuoteTask = new GetSellQuoteTask(mParent, quantity) {
             @Override
             public void onSuccess(Quote quote) {
               mCurrentQuote = quote;
               displayTotal(quote);
             }
-          }.execute();
+          };
           break;
       }
     }
+
+    mGetQuoteTask.execute();
   }
 
   private void switchType(BuySellType newType) {
