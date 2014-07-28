@@ -83,6 +83,8 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
   }
 
   public void tearDown() throws Exception {
+    verifyNoMoreInteractions(mockCoinbase);
+
     Application app = getActivity().getApplication();
     DefaultRoboModule defaultModule = RoboGuice.newDefaultRoboModule(app);
     RoboGuice.setBaseApplicationInjector(app, RoboGuice.DEFAULT_STAGE, defaultModule);

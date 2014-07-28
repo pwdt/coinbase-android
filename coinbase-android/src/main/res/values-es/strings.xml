@@ -38,7 +38,7 @@
     <string name="menu_barcode">Escannear código de barras</string>
     <string name="buysell_type_buy">Comprar</string>
     <string name="buysell_type_sell">vender</string>
-    <string name="buysell_type_price">$%1$s cada uno</string>
+    <string name="buysell_type_price">%1$s cada uno</string>
     <string name="buysell_type_price_error">(no se pudo cargar precio)</string>
     <string name="buysell_type_buy_text">Comprar</string>
     <string name="buysell_type_sell_text">Vender</string>
@@ -46,10 +46,10 @@
     <string name="buysell_submit_buy">Comprar Bitcoins</string>
     <string name="buysell_submit_sell">Vender Bitcoins</string>
     <string name="buysell_total_error">No se pudo obtener el precio</string>
-    <string name="buysell_confirm_message_buy">¿Está seguro que desea comprar %1$s BTC por $%2$s %3$s? Su cuenta de banco primaria será usada para la transacción.</string>
-    <string name="buysell_confirm_message_sell">¿Está seguro que desea vender %1$s BTC por $%2$s %3$s? Su cuenta de banco primaria será usada para la transacción.</string>
+    <string name="buysell_confirm_message_buy">¿Está seguro que desea comprar %1$s por %2$s? Su cuenta de banco primaria será usada para la transacción.</string>
+    <string name="buysell_confirm_message_sell">¿Está seguro que desea vender %1$s por %2$s? Su cuenta de banco primaria será usada para la transacción.</string>
     <string name="buysell_error_exception">El pedido no pudo ser completado.</string>
-    <string name="buysell_error_api">El pedido no pudo ser completado.\n\n%1$s</string>
+    <string name="buysell_error_api">El pedido no pudo ser completado.</string>
     <string name="buysell_progress">Enviando&#8230;</string>
     <string name="buysell_success_buy">%1$s BTC comprados.</string>
     <string name="buysell_success_sell">%1$s BTC vendidos.</string>

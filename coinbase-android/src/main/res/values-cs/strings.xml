@@ -52,10 +52,10 @@
     <string name="buysell_submit_buy">Koupit bitcoiny</string>
     <string name="buysell_submit_sell">Prodat bitcoiny</string>
     <string name="buysell_total_error">Nelze získat cenu</string>
-    <string name="buysell_confirm_message_buy">Skutečně chcete koupit %1$s BTC za $%2$s %3$s? Bude použit primární účet.</string>
-    <string name="buysell_confirm_message_sell">Skutečně chcete prodat %1$s BTC za $%2$s %3$s? Bude použit primární účet.</string>
+    <string name="buysell_confirm_message_buy">Skutečně chcete koupit %1$s za %2$s? Bude použit primární účet.</string>
+    <string name="buysell_confirm_message_sell">Skutečně chcete prodat %1$s za %2$s? Bude použit primární účet.</string>
     <string name="buysell_error_exception">Požadavek se nepodařilo dokončit.</string>
-    <string name="buysell_error_api">Požadavek nelze dokončit.\n\n%1$s</string>
+    <string name="buysell_error_api">Požadavek nelze dokončit.</string>
     <string name="buysell_progress">Zasílání&#8230;</string>
     <string name="buysell_success_buy">Zakoupeno %1$s BTC.</string>
     <string name="buysell_success_sell">Prodáno %1$s BTC.</string>

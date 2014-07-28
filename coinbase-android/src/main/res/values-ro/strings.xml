@@ -47,7 +47,7 @@
     <string name="menu_barcode">Scanează codul de bare</string>
     <string name="buysell_type_buy">Cumpără</string>
     <string name="buysell_type_sell">Vinde</string>
-    <string name="buysell_type_price">pentru $%1$s fiecare</string>
+    <string name="buysell_type_price">pentru %1$s fiecare</string>
     <string name="buysell_type_price_error">(preţul nu a putut fi încărcat)</string>
     <string name="buysell_type_buy_text">Vinde</string>
     <string name="buysell_type_sell_text">Cumpără</string>
@@ -57,10 +57,10 @@
     <string name="buysell_submit_buy">Cumpără Bitcoin-uri</string>
     <string name="buysell_submit_sell">Vinde Bitcoin-uri</string>
     <string name="buysell_total_error">Preţul nu a putut fi obţinut</string>
-    <string name="buysell_confirm_message_buy">Eşti sigur(ă) ca dreşti să cumperi %1$s BTC pentru suma de $%2$s %3$s? Contul dvs. bancar primar va fi încasat.</string>
-    <string name="buysell_confirm_message_sell">Eşti sigur(ă) ca dreşti să vinzi %1$s BTC pentru suma de $%2$s %3$s? Contul dvs. bancar primar va fi încasat.</string>
+    <string name="buysell_confirm_message_buy">Eşti sigur(ă) ca dreşti să cumperi %1$s pentru suma de %2$s? Contul dvs. bancar primar va fi încasat.</string>
+    <string name="buysell_confirm_message_sell">Eşti sigur(ă) ca dreşti să vinzi %1$s pentru suma de %2$s? Contul dvs. bancar primar va fi încasat.</string>
     <string name="buysell_error_exception">Cererea nu a putut fi finalizată.</string>
-    <string name="buysell_error_api">Cererea nu a putut fi finalizată.\n\n%1$s</string>
+    <string name="buysell_error_api">Cererea nu a putut fi finalizată.</string>
     <string name="buysell_progress">În curse de trimitere&#8230;</string>
     <string name="buysell_success_buy">Aţi achiziţionat %1$s BTC.</string>
     <string name="buysell_success_sell">Aţi vândut %1$s BTC.</string>

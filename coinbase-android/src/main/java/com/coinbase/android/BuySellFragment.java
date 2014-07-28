@@ -8,392 +8,292 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.coinbase.android.Utils.CurrencyType;
 import com.coinbase.android.pin.PINManager;
-import com.coinbase.api.RpcManager;
+import com.coinbase.api.LoginManager;
+import com.coinbase.api.entity.Quote;
+import com.coinbase.api.entity.Transfer;
+import com.coinbase.api.exception.CoinbaseException;
 import com.google.inject.Inject;
 
-import org.acra.ACRA;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.joda.money.BigMoney;
+import org.joda.money.BigMoneyProvider;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.BigMoneyProvider;
+import org.joda.money.Money;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import roboguice.fragment.RoboDialogFragment;
 import roboguice.fragment.RoboFragment;
+import roboguice.inject.InjectResource;
+import roboguice.inject.InjectView;
 import roboguice.util.RoboAsyncTask;
 
 public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
   private enum BuySellType {
-    BUY(R.string.buysell_type_buy, "buy"),
-    SELL(R.string.buysell_type_sell, "sell");
+    BUY(R.string.buysell_type_buy),
+    SELL(R.string.buysell_type_sell);
 
     private int mFriendlyName;
-    private String mRequestType;
 
-    private BuySellType(int friendlyName, String requestType) {
-
+    private BuySellType(int friendlyName) {
       mFriendlyName = friendlyName;
-      mRequestType = requestType;
-    }
-
-    public String getRequestType() {
-
-      return mRequestType;
     }
 
     public int getName() {
-
       return mFriendlyName;
-    }
-
-    public static BuySellType fromApiType(String apiType) {
-      if("AchCredit".equals(apiType)) {
-        return SELL;
-      } else if("AchDebit".equals(apiType)) {
-        return BUY;
-      } else {
-        return null;
-      }
     }
   }
 
-  public static class ConfirmBuySellDialogFragment extends DialogFragment {
+  private abstract class GetQuoteTask extends RoboAsyncTask<Quote> {
+    @Inject
+    protected LoginManager mLoginManager;
+    protected BigMoneyProvider mAmount;
+
+    public GetQuoteTask(Context context, BigMoneyProvider amount) {
+      super(context);
+      mAmount = amount;
+    }
 
     @Override
+    public void onException(Exception ex) {
+      Toast.makeText(context, R.string.buysell_type_price_error, Toast.LENGTH_SHORT).show();
+      super.onException(ex);
+    }
+  }
+
+  private class GetBuyQuoteTask extends GetQuoteTask {
+    public GetBuyQuoteTask(Context context, BigMoneyProvider amount) {
+      super(context, amount);
+    }
+
+    @Override
+    public Quote call() throws Exception {
+      return mLoginManager.getClient(context).getBuyQuote(mAmount.toBigMoney().toMoney());
+    }
+  }
+
+  private class GetSellQuoteTask extends GetQuoteTask {
+    public GetSellQuoteTask(Context context, BigMoneyProvider amount) {
+      super(context, amount);
+    }
+
+    @Override
+    public Quote call() throws Exception {
+      return mLoginManager.getClient(context).getSellQuote(mAmount.toBigMoney().toMoney());
+    }
+  }
+
+  private abstract class ConfirmationDialogFragment extends RoboDialogFragment {
+    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-      final BuySellType type = (BuySellType) getArguments().getSerializable("type");
-      final String amount1 = getArguments().getString("amount1");
-      final boolean agreeBtcAmountVaries = getArguments().getBoolean("agreeBtcAmountVaries", false);
-
-      final TextView message = new TextView(getActivity());
+      final TextView message = new TextView(mParent);
       message.setBackgroundColor(Color.WHITE);
       message.setTextColor(Color.BLACK);
       message.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-      message.setLinksClickable(true);
-      message.setMovementMethod(LinkMovementMethod.getInstance());
 
       float scale = getResources().getDisplayMetrics().density;
       int paddingPx = (int) (15 * scale + 0.5f);
       message.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
 
-      if(agreeBtcAmountVaries) {
-
-        message.setText(Html.fromHtml(getString(R.string.buysell_confirm_message_buy_varies)));
-      } else {
-
-        final String amount2 = getArguments().getString("amount2"),
-            amount2currency = getArguments().getString("amount2currency");
-
-        int messageResource = type == BuySellType.BUY ? R.string.buysell_confirm_message_buy : R.string.buysell_confirm_message_sell;
-        message.setText(String.format(getString(messageResource), amount1, amount2, amount2currency));
-      }
+      message.setText(getMessage());
 
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
       builder.setView(message)
-      .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-
-          // Buy / sell!
-          BuySellFragment parent = getActivity() == null ? null : ((MainActivity) getActivity()).getBuySellFragment();
-
-          if(parent != null) {
-            parent.startBuySellTask(type, amount1, agreeBtcAmountVaries);
-          }
-        }
-      })
-      .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          // User cancelled the dialog
-        }
-      });
+              .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                  onUserConfirm();
+                }
+              })
+              .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                  onUserCancel();
+                }
+              });
 
       return builder.create();
     }
+
+    public abstract String getMessage();
+    public abstract void onUserConfirm();
+    public void onUserCancel() {}
   }
 
-  private class DoBuySellTask extends AsyncTask<Object, Void, Object[]> {
+  private abstract class AmountConfirmationDialogFragment extends ConfirmationDialogFragment {
+    protected BigMoneyProvider mAmount;
+    protected BigMoneyProvider mTotal;
 
-    private static final String BTC_AMOUNT_VARIES_ERROR = "Sorry, the maximum number of purchases on Coinbase has been reached";
-    private ProgressDialog mDialog;
-    private boolean mAgreeBtcAmountVaries;
+    AmountConfirmationDialogFragment(BigMoneyProvider amount, BigMoneyProvider total) {
+      mAmount = amount;
+      mTotal = total;
+    }
+  }
+
+  private abstract class BuyConfirmationDialog extends AmountConfirmationDialogFragment {
+    @InjectResource(R.string.buysell_confirm_message_buy)
+    protected String mMessageFormat;
+
+    BuyConfirmationDialog(BigMoneyProvider amount, BigMoneyProvider total) {
+      super(amount, total);
+    }
 
     @Override
-    protected void onPreExecute() {
-
-      super.onPreExecute();
-      mDialog = ProgressDialog.show(mParent, null, getString(R.string.buysell_progress));
-    }
-
-    protected Object[] doInBackground(Object... params) {
-
-      mAgreeBtcAmountVaries = params.length > 3 && params[3] != null;
-      return doBuySell((BuySellType) params[0], (String) params[1], mAgreeBtcAmountVaries);
-    }
-
-    protected void onPostExecute(Object[] result) {
-
-      try {
-        mDialog.dismiss();
-      } catch (Exception e) {
-        // ProgressDialog has been destroyed already
-      }
-
-      boolean success = (Boolean) result[0];
-      if(success) {
-
-        BuySellType type = (BuySellType) result[2];
-
-        int messageId = type == BuySellType.BUY ? R.string.buysell_success_buy : R.string.buysell_success_sell;
-        String text = String.format(getString(messageId), (String) result[1]);
-        Toast.makeText(mParent, text, Toast.LENGTH_SHORT).show();
-        mAmount.setText(null);
-
-        // Sync transactions
-        JSONObject tx = (JSONObject) result[3];
-        Log.i("Coinbase", "TX: " + tx);
-        mParent.getTransactionsFragment().insertTransactionAnimated(0, tx, "transfer", tx.optString("status"));
-        Utils.incrementPrefsInt(mParent, Constants.KEY_ACCOUNT_APP_USAGE);
-        mParent.switchTo(MainActivity.FRAGMENT_INDEX_TRANSACTIONS);
-
-        // Hide keyboard (so the user can see their new transaction)
-        InputMethodManager inputMethodManager = (InputMethodManager) mParent.getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(mParent.findViewById(android.R.id.content).getWindowToken(), 0);
-      } else {
-
-        if(result[1] != null && ((String) result[1]).trim().startsWith(BTC_AMOUNT_VARIES_ERROR)
-            && !mAgreeBtcAmountVaries) {
-
-          // Prompt to buy again, but with different message
-          BuySellType type = (BuySellType) result[2];
-          String amount = (String) result[3];
-          ConfirmBuySellDialogFragment dialog = new ConfirmBuySellDialogFragment();
-          Bundle b = new Bundle();
-          b.putSerializable("type", type);
-          b.putString("amount1", amount);
-          b.putBoolean("agreeBtcAmountVaries", true);
-          dialog.setArguments(b);
-          dialog.show(getFragmentManager(), "confirm");
-        } else {
-
-          System.out.println("Does not start with '" + mAgreeBtcAmountVaries);
-          Utils.showMessageDialog(getFragmentManager(), String.format(getString(R.string.buysell_error_api), (String) result[1]));
-        }
-      }
+    public String getMessage() {
+      return String.format(mMessageFormat, Utils.formatMoney(mAmount), Utils.formatMoney(mTotal));
     }
   }
 
-  private enum UpdatePriceFailure {
-    ERROR_LOADING,
-    NO_DATA_ENTERED;
+  private abstract class SellConfirmationDialog extends AmountConfirmationDialogFragment {
+    @InjectResource(R.string.buysell_confirm_message_sell)
+    protected String mMessageFormat;
+
+    SellConfirmationDialog(BigMoneyProvider amount, BigMoneyProvider total) {
+      super(amount, total);
+    }
+
+    @Override
+    public String getMessage() {
+      return String.format(mMessageFormat, Utils.formatMoney(mAmount), Utils.formatMoney(mTotal));
+    }
   }
 
-  private class UpdatePriceTask extends RoboAsyncTask<Object> {
-
-    @Inject
-    private RpcManager mRpcManager;
-    private Object mResult = null;
-    private String mAmount, mType;
-
-    public UpdatePriceTask(String amount, String type) {
-      super(mParent);
-      mAmount = amount;
-      mType = type;
-    }
+  private abstract class BuySellTask extends RoboAsyncTask<Transfer> {
+    @InjectResource(R.string.buysell_error_api)
+    private String mApiErrorMessage;
+    private ProgressDialog mDialog;
 
     @Override
     protected void onPreExecute() throws Exception {
       super.onPreExecute();
-      mTotal.setText(null);
-      mSubmitButton.setEnabled(false);
+      mDialog = ProgressDialog.show(mParent, null, getString(R.string.buysell_progress));
     }
 
-    boolean mIsSingleUpdate;
-
-    public Object call() {
-
-      try {
-        mIsSingleUpdate = false;
-
-        if(mAmount == null) {
-          // Get single
-          mIsSingleUpdate = true;
-          mAmount = "1";
-        }
-
-        if(mAmount.isEmpty() || ".".equals(mAmount) || new BigDecimal(mAmount).doubleValue() == 0) {
-          mResult = UpdatePriceFailure.NO_DATA_ENTERED;
-          return mResult;
-        }
-
-        Collection<BasicNameValuePair> requestParams = new ArrayList<BasicNameValuePair>();
-        requestParams.add(new BasicNameValuePair("qty", mAmount));
-
-        mResult = mRpcManager.callGet(mParent, "prices/" + mType, requestParams);
-        return mResult;
-
-      } catch (IOException e) {
-
-        e.printStackTrace();
-      } catch (JSONException e) {
-
-        ACRA.getErrorReporter().handleException(new RuntimeException("UpdatePrice", e));
-        e.printStackTrace();
-      }
-
-      mResult = UpdatePriceFailure.ERROR_LOADING;
-      return mResult;
+    protected BuySellTask(Context context) {
+      super(context);
     }
 
     @Override
-    public void onFinally() {
+    public void onSuccess(Transfer transfer) throws Exception {
+      super.onSuccess(transfer);
+      String text = String.format(getSuccessFormatString(), transfer.getBtc().getAmount().toPlainString());
+      Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+      // TODO update transactions
+    }
 
-      TextView target = mTotal;
+    @Override
+    protected void onFinally() {
+      super.onFinally();
+      mDialog.dismiss();
+    }
 
-      int format = mIsSingleUpdate ? R.string.buysell_type_price : R.string.buysell_total;
-      int error = mIsSingleUpdate ? R.string.buysell_type_price_error : R.string.buysell_total_error;
-
-      if(target != null) {
-
-        if(mResult instanceof UpdatePriceFailure) {
-
-          if(mResult == UpdatePriceFailure.ERROR_LOADING) {
-            target.setVisibility(View.VISIBLE);
-            target.setText(error);
-          } else if(mResult == UpdatePriceFailure.NO_DATA_ENTERED) {
-            target.setText(null);
-            target.setVisibility(View.GONE);
-          }
-        } else {
-          JSONObject json = (JSONObject) mResult;
-          String subtotalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("subtotal").optString("amount")), false, CurrencyType.TRADITIONAL);
-          String subtotalCurrency = json.optJSONObject("subtotal").optString("currency");
-
-          if(mIsSingleUpdate) {
-
-            updateLabelText(String.format(mParent.getString(format), subtotalAmount));
-          } else {
-
-            target.setVisibility(View.VISIBLE);
-            String totalAmount = Utils.formatCurrencyAmount(new BigDecimal(json.optJSONObject("total").optString("amount")), false, CurrencyType.TRADITIONAL);
-            String totalCurrency = json.optJSONObject("total").optString("currency");
-
-            mSubmitButton.setEnabled(true);
-            mCurrentPrice = totalAmount;
-            mCurrentPriceCurrency = totalCurrency;
-
-            // Create breakdown of transaction
-            StringBuffer breakdown = new StringBuffer();
-            JSONArray fees = json.optJSONArray("fees");
-
-            breakdown.append("<font color=\"#757575\">");
-            breakdown.append("Subtotal: $" + subtotalAmount + " " + subtotalCurrency + "<br>");
-
-            for(int i = 0; i < fees.length(); i++) {
-              JSONObject fee = fees.optJSONObject(i);
-              String type = (String) fee.keys().next();
-              String amount = fee.optJSONObject(type).optString("amount");
-              String currency = fee.optJSONObject(type).optString("currency");
-              breakdown.append(type.substring(0, 1).toUpperCase(Locale.CANADA)).append(type.substring(1)).append(" fee: $");
-              breakdown.append(Utils.formatCurrencyAmount(new BigDecimal(amount), false, CurrencyType.TRADITIONAL));
-              breakdown.append(' ').append(currency).append("<br>");
-            }
-
-            breakdown.append("</font>");
-            breakdown.append("Total: $" + totalAmount + " " + totalCurrency);
-
-            target.setText(Html.fromHtml(breakdown.toString()));
-          }
-
-          return;
-        }
+    @Override
+    protected void onException(Exception e) {
+      super.onException(e);
+      if (e instanceof CoinbaseException) {
+        Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
+      } else {
+        Toast.makeText(context, mApiErrorMessage, Toast.LENGTH_LONG).show();
       }
+    }
 
-      if(!mIsSingleUpdate) {
-        mCurrentPrice = null;
-        mSubmitButton.setEnabled(false);
-      }
+    public abstract String getSuccessFormatString();
+  }
+
+  private class BuyTask extends BuySellTask  {
+    @InjectResource(R.string.buysell_success_buy)
+    protected String mSuccessFormat;
+    @Inject
+    protected LoginManager mLoginManager;
+    protected BigMoneyProvider        mAmount;
+
+    public BuyTask(Context context, BigMoneyProvider amount) {
+      super(context);
+      mAmount = amount;
+    }
+
+    @Override
+    public Transfer call() throws Exception {
+      return mLoginManager.getClient(context).buy(mAmount.toBigMoney().toMoney());
+    }
+
+    @Override
+    public String getSuccessFormatString() {
+      return mSuccessFormat;
     }
   }
 
-  private MainActivity mParent;
+  private class SellTask extends BuySellTask  {
+    @InjectResource(R.string.buysell_success_sell)
+    protected String mSuccessFormat;
+    @Inject
+    protected LoginManager mLoginManager;
+    protected BigMoneyProvider        mAmount;
 
-  private UpdatePriceTask mUpdatePriceTask, mUpdateSinglePriceTask;
-  private String mCurrentPrice, mCurrentPriceCurrency;
+    public SellTask(Context context, BigMoneyProvider amount) {
+      super(context);
+      mAmount = amount;
+    }
 
-  private TextView mTotal, mText2, mTypeBuy, mTypeSell;
-  private Button mSubmitButton;
-  private EditText mAmount;
+    @Override
+    public Transfer call() throws Exception {
+      return mLoginManager.getClient(context).sell(mAmount.toBigMoney().toMoney());
+    }
 
-  private ViewGroup mRootView;
-  private RelativeLayout mHeader;
-  private FrameLayout mListHeaderContainer;
-  private BuySellType mBuySellType = BuySellType.BUY;
-
-  @Inject
-  private RpcManager mRpcManager;
-
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-
-    super.onCreate(savedInstanceState);
+    @Override
+    public String getSuccessFormatString() {
+      return mSuccessFormat;
+    }
   }
 
+  private Activity mParent;
+
+  private GetQuoteTask mGetQuoteTask;
+  private Quote mCurrentQuote;
+  private BuySellType mBuySellType;
+
+  @InjectView(R.id.buysell_total)         private TextView mTotal;
+  @InjectView(R.id.buysell_type_buy)      private TextView mTypeBuy;
+  @InjectView(R.id.buysell_type_sell)     private TextView mTypeSell;
+  @InjectView(R.id.buysell_submit)        private Button mSubmitButton;
+  @InjectView(R.id.buysell_amount)        private EditText mAmount;
+  @InjectResource(R.string.title_buysell) private String mTitle;
 
   @Override
   public void onAttach(Activity activity) {
-
     super.onAttach(activity);
-    mParent = (MainActivity) activity;
+    mParent = activity;
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.fragment_buysell, container, false);
+  }
 
-    // Inflate the layout for this fragment
-    View view = inflater.inflate(R.layout.fragment_buysell, container, false);
-    mRootView = (ViewGroup) view;
-    mHeader = (RelativeLayout) view.findViewById(R.id.buysell_header);
-
-    mTotal = (TextView) view.findViewById(R.id.buysell_total);
-    mText2 = (TextView) view.findViewById(R.id.buysell_text2);
-    mTypeBuy = (TextView) view.findViewById(R.id.buysell_type_buy);
-    mTypeSell = (TextView) view.findViewById(R.id.buysell_type_sell);
-
-    //mTotal.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
+  @Override
+  public void onViewCreated(View view, Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
 
     mTypeBuy.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -401,6 +301,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
         switchType(BuySellType.BUY);
       }
     });
+
     mTypeSell.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -408,72 +309,153 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
       }
     });
 
-    mSubmitButton = (Button) view.findViewById(R.id.buysell_submit);
     mSubmitButton.setTypeface(FontManager.getFont(mParent, "Roboto-Light"));
     mSubmitButton.setOnClickListener(new View.OnClickListener() {
-
       @Override
       public void onClick(View v) {
-
         submit();
       }
     });
 
-    mAmount = (EditText) view.findViewById(R.id.buysell_amount);
     mAmount.addTextChangedListener(new TextWatcher() {
+      private Timer timer = new Timer();
+      private final long DELAY = 1000;
+
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+      }
 
       @Override
       public void afterTextChanged(Editable s) {
-      }
-
-      @Override
-      public void beforeTextChanged(CharSequence s, int start, int count,
-          int after) {
-      }
-
-      @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-        updatePrice();
+        timer.cancel();
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+          @Override
+          public void run() {
+            mParent.runOnUiThread(new Runnable() {
+              @Override
+              public void run() {
+                getQuote();
+              }
+            });
+          }
+        }, DELAY);
       }
     });
 
     switchType(BuySellType.BUY);
-
-    return view;
   }
 
-  private void updateLabelText(String price) {
+  private void updateLabelText(Quote quote) {
+    final TextView target = mBuySellType == BuySellType.BUY ? mTypeBuy : mTypeSell;
+    final TextView disableTarget = mBuySellType == BuySellType.BUY ? mTypeSell : mTypeBuy;
 
-    TextView target = mBuySellType == BuySellType.BUY ? mTypeBuy : mTypeSell;
-    TextView disableTarget = mBuySellType == BuySellType.BUY ? mTypeSell : mTypeBuy;
+    final String base = mParent.getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_buy : R.string.buysell_type_sell);
+    final String disableBase = mParent.getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_sell : R.string.buysell_type_buy);
 
-    String base = mParent.getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_buy : R.string.buysell_type_sell);
-    String disableBase = mParent.getString(mBuySellType == BuySellType.BUY ? R.string.buysell_type_sell : R.string.buysell_type_buy);
-
-    Typeface normal = Typeface.DEFAULT;
-    Typeface light = FontManager.getFont(mParent, "Roboto-Light");
+    final Typeface light = FontManager.getFont(mParent, "Roboto-Light");
 
     // Target text
-    SpannableStringBuilder targetText = new SpannableStringBuilder(base);
-
-    if(price != null) {
-      targetText.append(' ').append(price);
+    final SpannableStringBuilder targetText = new SpannableStringBuilder(base);
+    if (quote != null) {
+      String formatString = getString(R.string.buysell_type_price);
+      String price = Utils.formatMoney(quote.getSubtotal());
+      targetText.append(' ').append(String.format(formatString, price));
       targetText.setSpan(new CustomTypefaceSpan("sans-serift", light), base.length(), base.length() + price.length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     target.setText(targetText);
-
     // Disable text
     disableTarget.setText(disableBase);
   }
 
-  private void onTypeChanged() {
+  private void displayTotal(Quote quote) {
+    String totalAmountString = Utils.formatMoney(quote.getTotal());
 
-    BuySellType type = mBuySellType;
+    // Create breakdown of transaction
+    final StringBuffer breakdown = new StringBuffer();
 
-    float buyWeight = type == BuySellType.BUY ? 1 : 0;
-    float sellWeight = type == BuySellType.SELL ? 1 : 0;
+    breakdown.append("<font color=\"#757575\">");
+    breakdown.append("Subtotal: " + Utils.formatMoney(quote.getSubtotal()) + "<br>");
+
+    for(Map.Entry<String, Money> fee : quote.getFees().entrySet()) {
+      String type = fee.getKey();
+      String amount = Utils.formatMoney(fee.getValue());
+      breakdown.append(type.substring(0, 1).toUpperCase(Locale.CANADA)).append(type.substring(1)).append(" fee: ");
+      breakdown.append(amount);
+      breakdown.append("<br>");
+    }
+
+    breakdown.append("</font>");
+    breakdown.append("Total: " + totalAmountString);
+
+    mSubmitButton.setEnabled(true);
+    mTotal.setVisibility(View.VISIBLE);
+    mTotal.setText(Html.fromHtml(breakdown.toString()));
+  }
+
+  private void getQuote() {
+    mSubmitButton.setEnabled(false);
+    mTotal.setText(null);
+    mTotal.setVisibility(View.GONE);
+
+    BigMoneyProvider quantity = getQuantityEntered();
+
+    // If no quantity is entered, get generic 1 BTC quote
+    if (null == quantity) {
+      BigMoneyProvider ONE_BTC = BigMoney.of(CurrencyUnit.getInstance("BTC"), BigDecimal.ONE);
+
+      switch(mBuySellType) {
+        case BUY:
+          new GetBuyQuoteTask(mParent, ONE_BTC) {
+            @Override
+            public void onSuccess(Quote quote) {
+              updateLabelText(quote);
+            }
+          }.execute();
+          break;
+        case SELL:
+          new GetSellQuoteTask(mParent, ONE_BTC) {
+            @Override
+            public void onSuccess(Quote quote) {
+              updateLabelText(quote);
+            }
+          }.execute();
+          break;
+      }
+    } else {
+      switch(mBuySellType) {
+        case BUY:
+          new GetBuyQuoteTask(mParent, quantity) {
+            @Override
+            public void onSuccess(Quote quote) {
+              mCurrentQuote = quote;
+              displayTotal(quote);
+            }
+          }.execute();
+          break;
+        case SELL:
+          new GetSellQuoteTask(mParent, quantity) {
+            @Override
+            public void onSuccess(Quote quote) {
+              mCurrentQuote = quote;
+              displayTotal(quote);
+            }
+          }.execute();
+          break;
+      }
+    }
+  }
+
+  private void switchType(BuySellType newType) {
+    mBuySellType = newType;
+
+    float buyWeight = mBuySellType == BuySellType.BUY ? 1 : 0;
+    float sellWeight = mBuySellType == BuySellType.SELL ? 1 : 0;
     ((LinearLayout.LayoutParams) mTypeBuy.getLayoutParams()).weight = buyWeight;
     ((LinearLayout.LayoutParams) mTypeSell.getLayoutParams()).weight = sellWeight;
 
@@ -486,140 +468,26 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
     View divider = parent.findViewById(R.id.buysell_divider_2);
     parent.removeView(mTypeBuy);
     parent.removeView(divider);
-    parent.addView(mTypeBuy, type == BuySellType.BUY ? 0 : 1, params);
+    parent.addView(mTypeBuy, mBuySellType == BuySellType.BUY ? 0 : 1, params);
     parent.addView(divider, 1);
 
     // Text color
-    TextView active = type == BuySellType.BUY ? mTypeBuy : mTypeSell;
-    TextView inactive = type == BuySellType.BUY ? mTypeSell : mTypeBuy;
+    TextView active = mBuySellType == BuySellType.BUY ? mTypeBuy : mTypeSell;
+    TextView inactive = mBuySellType == BuySellType.BUY ? mTypeSell : mTypeBuy;
     active.setTextColor(getResources().getColor(R.color.buysell_type_active));
     inactive.setTextColor(getResources().getColor(R.color.buysell_type_inactive));
 
-    int submitLabel = type == BuySellType.BUY ? R.string.buysell_submit_buy : R.string.buysell_submit_sell;
+    int submitLabel = mBuySellType == BuySellType.BUY ? R.string.buysell_submit_buy : R.string.buysell_submit_sell;
     mSubmitButton.setText(submitLabel);
 
-    if(mUpdateSinglePriceTask != null) {
-      mUpdateSinglePriceTask.cancel(true);
-    }
-
-    updateAllPrices();
-  }
-
-  private void updateAllPrices() {
-
-    BuySellType type = mBuySellType;
-    mUpdateSinglePriceTask = new UpdatePriceTask(null, type.getRequestType());
-    mUpdateSinglePriceTask.execute();
-
-    updatePrice();
-  }
-
-  private void updatePrice() {
-
-    BuySellType type = mBuySellType;
-
-    if(mUpdatePriceTask != null) {
-
-      mUpdatePriceTask.cancel(true);
-    }
-
-    mUpdatePriceTask = new UpdatePriceTask(mAmount.getText().toString(), type.getRequestType());
-    mTotal.setVisibility(View.GONE);
-    mUpdatePriceTask.execute();
-  }
-
-  private void switchType(BuySellType newType) {
-
-    mBuySellType = newType;
-    onTypeChanged();
-  }
-
-  protected void startBuySellTask(BuySellType type, String amount, boolean agreeBtcAmountVaries) {
-
-    Utils.runAsyncTaskConcurrently(new DoBuySellTask(), type, amount, agreeBtcAmountVaries);
-  }
-
-  private Object[] doBuySell(BuySellType type, String amount, boolean agreeBtcAmountVaries) {
-
-    List<BasicNameValuePair> params = new ArrayList<BasicNameValuePair>();
-    params.add(new BasicNameValuePair("qty", amount));
-
-    if(type == BuySellType.BUY && agreeBtcAmountVaries) {
-      params.add(new BasicNameValuePair("agree_btc_amount_varies", "true"));
-    }
-
-    try {
-      JSONObject response = mRpcManager.callPost(mParent, type.getRequestType() + "s", params);
-
-      boolean success = response.getBoolean("success");
-
-      if(success) {
-        // Download the newly created transaction to put in the list
-        JSONObject transaction;
-        try {
-          transaction = mRpcManager.callGet(mParent, "transactions/" + response.getJSONObject("transfer").getString("transaction_id"));
-          transaction = transaction.getJSONObject("transaction");
-        } catch (Exception e) {
-          Log.e("Coinbase", "Could not load transaction for new transfer");
-          Log.e("Coinbase", response.toString(4));
-          transaction = null;
-          e.printStackTrace();
-        }
-        return new Object[] { true, amount, type, transaction };
-      } else {
-
-        String errorMessage = response.getJSONArray("errors").optString(0);
-        return new Object[] { false, errorMessage, type, amount };
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (JSONException e) {
-      ACRA.getErrorReporter().handleException(new RuntimeException("doBuySell", e));
-      e.printStackTrace();
-    }
-
-    // There was an exception
-    return new Object[] { false, getString(R.string.buysell_error_exception), type, amount };
-  }
-
-  public void onTransactionsSynced() {
-
-  }
-
-  public void refresh() {
-    // Refresh buy price
-    updateAllPrices();
-  }
-
-  private void submit() {
-
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
-      return;
-    }
-
-    ConfirmBuySellDialogFragment dialog = new ConfirmBuySellDialogFragment();
-
-    Bundle b = new Bundle();
-
-    BuySellType type = mBuySellType;
-    b.putSerializable("type", type);
-
-    b.putString("amount1", mAmount.getText().toString());
-    b.putString("amount2", mCurrentPrice);
-    b.putString("amount2currency", mCurrentPriceCurrency);
-
-    dialog.setArguments(b);
-
-    dialog.show(getFragmentManager(), "confirm");
+    getQuote();
   }
 
   @Override
   public void onSwitchedTo() {
-
     // Focus text field
     mAmount.requestFocus();
-
-    updateAllPrices();
+    getQuote();
   }
 
   @Override
@@ -628,7 +496,57 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
   }
 
   @Override
-  public String getTitle() {
-    return getString(R.string.title_buysell);
+  public String getTitle() { return mTitle; }
+
+  private void submit() {
+    final BigMoneyProvider quantity = getQuantityEntered();
+
+    if (null == quantity) {
+      return;
+    }
+
+    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+      return;
+    }
+
+    ConfirmationDialogFragment dialog;
+
+    switch(mBuySellType) {
+      case BUY:
+        dialog = new BuyConfirmationDialog(quantity, mCurrentQuote.getTotal()) {
+          @Override
+          public void onUserConfirm() {
+            new BuyTask(mParent, quantity).execute();
+          }
+        };
+        break;
+      case SELL:
+      default:
+        dialog = new SellConfirmationDialog(quantity, mCurrentQuote.getTotal()) {
+          @Override
+          public void onUserConfirm() {
+            new SellTask(mParent, quantity).execute();
+          }
+        };
+        break;
+    }
+
+    dialog.show(getFragmentManager(), "confirm");
+  }
+
+  // Have to use BigMoneyProvider here to truncate trailing zeros for BTC
+  protected BigMoneyProvider getQuantityEntered() {
+    BigMoneyProvider quantity = null;
+    try {
+      quantity = BigMoney.of(
+              CurrencyUnit.getInstance("BTC"),
+              new BigDecimal(mAmount.getText().toString()).stripTrailingZeros()
+      );
+      // Only positive quantities are valid
+      if (quantity.toBigMoney().getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        quantity = null;
+      }
+    } catch (Exception ex) {}
+    return quantity;
   }
 }

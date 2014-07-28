@@ -18,6 +18,7 @@ import java.util.List;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 
 import static com.coinbase.android.test.MockResponses.*;
@@ -54,6 +55,8 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     assertTrue(getSolo().searchText(mockAddressesResponse.getAddresses().get(1).getAddress()));
     assertTrue(getSolo().searchText(mockAddressesResponse.getAddresses().get(0).getLabel()));
     assertTrue(getSolo().searchText(mockAddressesResponse.getAddresses().get(1).getLabel()));
+
+    verify(mockCoinbase, atLeast(0)).getAddresses();
   }
 
   public void testCopyToClipboard() throws Exception {
@@ -64,6 +67,8 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     getSolo().clickOnText(address);
     getSolo().waitForText("clipboard");
     assertEquals(address, getClipboardText());
+
+    verify(mockCoinbase, atLeast(0)).getAddresses();
   }
 
   public void testGenerateNewAddress() throws Exception {
@@ -83,6 +88,7 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     assertTrue(getSolo().searchText("The newly generated address"));
     assertTrue(getSolo().searchText("1NewlyGeneratedAddress"));
 
+    verify(mockCoinbase, atLeast(0)).getAddresses();
     verify(mockCoinbase, times(1)).generateReceiveAddress();
   }
 

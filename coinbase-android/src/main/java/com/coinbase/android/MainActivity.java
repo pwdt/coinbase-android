@@ -792,7 +792,6 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
 
     if (BuildConfig.type == BuildType.CONSUMER) {
       mTransactionsFragment.refresh();
-      mBuySellFragment.refresh();
       mTransferFragment.refresh();
       mSettingsFragment.refresh();
     } else {

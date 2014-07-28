@@ -328,8 +328,8 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
       // Update transaction widgets
       updateWidgets();
 
-      // Update the buy / sell history list
-      mParent.getBuySellFragment().onTransactionsSynced();
+      // TODO Update the buy / sell history list
+      // mParent.getBuySellFragment().onTransactionsSynced();
 
       p.segmentDone("Done");
 

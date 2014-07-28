@@ -124,4 +124,12 @@ public class AccountSettingsFragmentTest extends MockApiTest {
     getSolo().sleep(1000);
     assertEquals("ReceiveAddressesActivity", getSolo().getCurrentActivity().getLocalClassName());
   }
+
+  @Override
+  public void tearDown() throws Exception {
+    verify(mockCoinbase, atLeast(0)).getSupportedCurrencies();
+    verify(mockCoinbase, atLeast(0)).getAddresses();
+    verify(mockCoinbase, atLeast(0)).getUser();
+    super.tearDown();
+  }
 }

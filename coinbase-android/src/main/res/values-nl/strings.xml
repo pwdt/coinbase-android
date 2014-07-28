@@ -46,7 +46,7 @@
     <string name="menu_barcode">Scan barcode</string>
     <string name="buysell_type_buy">Koop</string>
     <string name="buysell_type_sell">Verkoop</string>
-    <string name="buysell_type_price">voor $%1$s elk</string>
+    <string name="buysell_type_price">voor %1$s elk</string>
     <string name="buysell_type_price_error">(kan prijs niet laden)</string>
     <string name="buysell_type_buy_text">Koop</string>
     <string name="buysell_type_sell_text">Verkoop</string>
@@ -56,10 +56,10 @@
     <string name="buysell_submit_buy">Koop Bitcoins</string>
     <string name="buysell_submit_sell">Verkoop Bitcoins</string>
     <string name="buysell_total_error">Kan geen prijs krijgen</string>
-    <string name="buysell_confirm_message_buy">Weet je het zeker dat je %1$s BTC voor $%2$s %3$s wilt kopen? Je huidige bankrekening zal worden gecrediteerd.</string>
-    <string name="buysell_confirm_message_sell">Weet je het zeker dat je %1$s BTC voor $%2$s %3$s wilt verkopen? Je huidige bankrekening zal worden gecrediteerd.</string>
+    <string name="buysell_confirm_message_buy">Weet je het zeker dat je %1$s voor %2$s wilt kopen? Je huidige bankrekening zal worden gecrediteerd.</string>
+    <string name="buysell_confirm_message_sell">Weet je het zeker dat je %1$s voor %2$s wilt verkopen? Je huidige bankrekening zal worden gecrediteerd.</string>
     <string name="buysell_error_exception">De aanvraag kon niet worden voltooid.</string>
-    <string name="buysell_error_api">De aanvraag kon niet worden voltooid.\n\n%1$s</string>
+    <string name="buysell_error_api">De aanvraag kon niet worden voltooid.</string>
     <string name="buysell_progress">Versturen&#8230;</string>
     <string name="buysell_success_buy">%1$s BTC gekocht.</string>
     <string name="buysell_success_sell">%1$s BTC verkocht.</string>

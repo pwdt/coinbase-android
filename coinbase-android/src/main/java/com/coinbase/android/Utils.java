@@ -38,6 +38,11 @@ import com.google.zxing.common.BitMatrix;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
+import org.joda.money.BigMoney;
+import org.joda.money.BigMoneyProvider;
+import org.joda.money.Money;
+import org.joda.money.format.MoneyFormatter;
+import org.joda.money.format.MoneyFormatterBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -208,6 +213,15 @@ public class Utils {
 
   }
 
+  public static final String formatMoney(BigMoneyProvider money) {
+    // Build money formatter from default locale
+    MoneyFormatter formatter = new MoneyFormatterBuilder()
+                                    .appendCurrencySymbolLocalized()
+                                    .appendAmountLocalized()
+                                    .toFormatter();
+    String result = formatter.print(money);
+    return result;
+  }
 
   public static final String formatCurrencyAmount(String amount) {
     return formatCurrencyAmount(new BigDecimal(amount), false, CurrencyType.BTC);
