@@ -39,11 +39,15 @@ public interface LoginManager {
 
   void deleteCurrentAccount(Context context);
 
-  int getActiveAccount(Context context);
+  // TODO remove methods that take context and use injected context
 
-  String getActiveUserId(Context context);
+  int getActiveAccount();
 
-  Coinbase getClient(Context context, int account);
+  String getActiveUserId();
 
-  Coinbase getClient(Context context);
+  Coinbase getClient(int account);
+
+  Coinbase getClient();
+
+  boolean isSignedIn();
 }

@@ -13,7 +13,7 @@ import com.coinbase.android.BuildType;
 import com.coinbase.android.Constants;
 import com.coinbase.android.R;
 import com.coinbase.api.exception.CoinbaseException;
-import com.google.inject.Singleton;
+import com.google.inject.Inject;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -35,7 +35,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Singleton
+import roboguice.inject.ContextSingleton;
+
+@ContextSingleton
 public class ProductionLoginManager implements LoginManager {
 
   // production
@@ -47,6 +49,9 @@ public class ProductionLoginManager implements LoginManager {
   //protected static final String CLIENT_ID = "b6753e48f7eff4ca287dd081a251c3801037fcda51bb52181d06947d1fb4cb08";
   //protected static final String CLIENT_SECRET = "da853dce0fcc753501e6fe7972ad64c8525f552e708b585c46e65c12e0a5ef44";
   //public static final String CLIENT_BASEURL = "http://192.168.1.10:3001";
+
+  @Inject
+  protected Context mContext;
 
   public ProductionLoginManager() {}
 
@@ -397,30 +402,30 @@ public class ProductionLoginManager implements LoginManager {
   }
 
   @Override
-  public int getActiveAccount(Context context) {
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+  public int getActiveAccount() {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
     return prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
   }
 
   @Override
-  public String getActiveUserId(Context context) {
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    return prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, getActiveAccount(context)), null);
+  public String getActiveUserId() {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+    return prefs.getString(String.format(Constants.KEY_ACCOUNT_ID, getActiveAccount()), null);
   }
 
   @Override
-  public Coinbase getClient(final Context context, final int account) {
-    if (needToRefreshAccessToken(context, account)) {
-      refreshAccessToken(context, account);
+  public Coinbase getClient(final int account) {
+    if (needToRefreshAccessToken(mContext, account)) {
+      refreshAccessToken(mContext, account);
     }
 
     return new CoinbaseBuilder()
-                .withAccessToken(getAccessToken(context, account))
+                .withAccessToken(getAccessToken(mContext, account))
                 .withErrorHandler(new ErrorHandler() {
                   @Override
                   public void handleIOException(IOException ex, HttpURLConnection conn) throws IOException, CoinbaseException {
                     if (HttpURLConnection.HTTP_UNAUTHORIZED == conn.getResponseCode()) {
-                      ProductionLoginManager.this.setAccountValid(context, account, false, "401 error");
+                      ProductionLoginManager.this.setAccountValid(mContext, account, false, "401 error");
                       throw new IOException("Account is no longer valid");
                     }
                     super.handleIOException(ex, conn);
@@ -430,8 +435,12 @@ public class ProductionLoginManager implements LoginManager {
   }
 
   @Override
-  public Coinbase getClient(Context context) {
-    return getClient(context, getActiveAccount(context));
+  public Coinbase getClient() {
+    return getClient(getActiveAccount());
   }
 
+  @Override
+  public boolean isSignedIn() {
+    return isSignedIn(mContext);
+  }
 }

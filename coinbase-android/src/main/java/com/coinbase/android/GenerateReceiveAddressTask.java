@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.coinbase.android.event.ReceiveAddressUpdatedEvent;
-import com.coinbase.android.event.UserDataUpdatedEvent;
 import com.coinbase.api.LoginManager;
 import com.google.inject.Inject;
 
@@ -22,9 +21,9 @@ public class GenerateReceiveAddressTask extends RoboAsyncTask<String> {
 
   @Override
   public String call() throws Exception {
-    mResult = mLoginManager.getClient(context).generateReceiveAddress().getAddress();
+    mResult = mLoginManager.getClient().generateReceiveAddress().getAddress();
 
-    int activeAccount = mLoginManager.getActiveAccount(context);
+    int activeAccount = mLoginManager.getActiveAccount();
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     SharedPreferences.Editor e = prefs.edit();
     e.putString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), mResult);

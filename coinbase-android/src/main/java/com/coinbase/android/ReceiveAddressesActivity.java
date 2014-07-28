@@ -94,7 +94,7 @@ public class ReceiveAddressesActivity extends RoboSherlockListActivity {
 
     @Override
     public AddressesResponse call() throws Exception {
-      return mLoginManager.getClient(ReceiveAddressesActivity.this).getAddresses();
+      return mLoginManager.getClient().getAddresses();
     }
 
     @Override

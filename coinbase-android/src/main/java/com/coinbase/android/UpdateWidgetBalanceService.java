@@ -58,7 +58,7 @@ public class UpdateWidgetBalanceService extends RoboService {
           } else {
             balance = "";
             Log.i("Coinbase", "Service fetching balance... [" + updaterClass.getSimpleName() + "]");
-            Coinbase client = mLoginManager.getClient(UpdateWidgetBalanceService.this);
+            Coinbase client = mLoginManager.getClient();
             List<Account> subAccounts = client.getAccounts().getAccounts();
             for (Account subAccount : subAccounts) {
               if (subAccount.isPrimary()) {

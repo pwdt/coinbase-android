@@ -34,7 +34,6 @@ import com.google.inject.Inject;
 import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
 import org.joda.money.CurrencyUnit;
-import org.joda.money.BigMoneyProvider;
 import org.joda.money.Money;
 
 import java.math.BigDecimal;
@@ -90,7 +89,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Quote call() throws Exception {
-      return mLoginManager.getClient(context).getBuyQuote(mAmount.toBigMoney().toMoney());
+      return mLoginManager.getClient().getBuyQuote(mAmount.toBigMoney().toMoney());
     }
   }
 
@@ -101,7 +100,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Quote call() throws Exception {
-      return mLoginManager.getClient(context).getSellQuote(mAmount.toBigMoney().toMoney());
+      return mLoginManager.getClient().getSellQuote(mAmount.toBigMoney().toMoney());
     }
   }
 
@@ -234,7 +233,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Transfer call() throws Exception {
-      return mLoginManager.getClient(context).buy(mAmount.toBigMoney().toMoney());
+      return mLoginManager.getClient().buy(mAmount.toBigMoney().toMoney());
     }
 
     @Override
@@ -257,7 +256,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Transfer call() throws Exception {
-      return mLoginManager.getClient(context).sell(mAmount.toBigMoney().toMoney());
+      return mLoginManager.getClient().sell(mAmount.toBigMoney().toMoney());
     }
 
     @Override

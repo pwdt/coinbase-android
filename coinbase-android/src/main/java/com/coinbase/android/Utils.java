@@ -38,9 +38,7 @@ import com.google.zxing.common.BitMatrix;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
-import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
-import org.joda.money.Money;
 import org.joda.money.format.MoneyFormatter;
 import org.joda.money.format.MoneyFormatterBuilder;
 import org.json.JSONArray;
@@ -148,7 +146,7 @@ public class Utils {
 
       try {
         List<Contact> contacts =
-                mLoginManager.getClient(getContext()).getContacts(filter).getContacts();
+                mLoginManager.getClient().getContacts(filter).getContacts();
         for (Contact contact : contacts) {
           result.add(contact.getEmail());
         }

@@ -57,11 +57,13 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
     mockCoinbase = mock(Coinbase.class);
     mockLoginManager = mock(LoginManager.class);
 
-    doReturn(1).when(mockLoginManager).getActiveAccount((Context) any());
+    // TODO remove the methods that take contexts
     doReturn(true).when(mockLoginManager).isSignedIn((Context) any());
 
-    doReturn(mockCoinbase).when(mockLoginManager).getClient(any(Context.class));
-    doReturn(mockCoinbase).when(mockLoginManager).getClient(any(Context.class), anyInt());
+    doReturn(mockCoinbase).when(mockLoginManager).getClient();
+    doReturn(mockCoinbase).when(mockLoginManager).getClient(anyInt());
+    doReturn(1).when(mockLoginManager).getActiveAccount();
+    doReturn(true).when(mockLoginManager).isSignedIn();
 
     Application application = getActivity().getApplication();
 

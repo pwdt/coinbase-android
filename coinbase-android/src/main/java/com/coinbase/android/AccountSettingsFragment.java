@@ -61,8 +61,8 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
 
       try {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParent);
-        int activeAccount = mLoginManager.getActiveAccount(mParent);
-        User user = mLoginManager.getClient(mParent).getUser();
+        int activeAccount = mLoginManager.getActiveAccount();
+        User user = mLoginManager.getClient().getUser();
 
         Editor e = prefs.edit();
 
@@ -109,11 +109,11 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
 
     @Override
     public Void call() throws Exception {
-        String address = mLoginManager.getClient(context).getAddresses().getAddresses().get(0).getAddress();
+        String address = mLoginManager.getClient().getAddresses().getAddresses().get(0).getAddress();
         if(address != null) {
           // Save balance in preferences
           SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-          int activeAccount = mLoginManager.getActiveAccount(context);
+          int activeAccount = mLoginManager.getActiveAccount();
           Editor editor = prefs.edit();
           editor.putString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), address);
           editor.commit();
@@ -142,7 +142,7 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
     }
     protected String getCachedValue(String preferenceKey, String def) {
       return mPrefs.getString(
-              String.format(preferenceKey, mLoginManager.getActiveAccount(mContext)),
+              String.format(preferenceKey, mLoginManager.getActiveAccount()),
               def
       );
     }
@@ -402,7 +402,7 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
       @Override
       public List<CurrencyUnit> call() throws Exception {
         try {
-          mCurrencyOptions = mLoginManager.getClient(mContext).getSupportedCurrencies();
+          mCurrencyOptions = mLoginManager.getClient().getSupportedCurrencies();
         } catch (Exception ex) {}
         return mCurrencyOptions;
       }
@@ -546,7 +546,7 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
 
     @Override
     public String getDisplayValue() {
-      int activeAccount = mLoginManager.getActiveAccount(mContext);
+      int activeAccount = mLoginManager.getActiveAccount();
       boolean enabled = getCachedValue(Constants.KEY_ACCOUNT_PIN) != null;
       boolean editOnly = mPrefs.getBoolean(String.format(Constants.KEY_ACCOUNT_PIN_VIEW_ALLOWED, activeAccount), false);
 
@@ -611,9 +611,9 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
     @Override
     public Boolean call() {
       try {
-        mLoginManager.getClient(mContext).updateUser(mLoginManager.getActiveUserId(mContext), mUser);
+        mLoginManager.getClient().updateUser(mLoginManager.getActiveUserId(), mUser);
 
-        int activeAccount = mLoginManager.getActiveAccount(mContext);
+        int activeAccount = mLoginManager.getActiveAccount();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         Editor e = prefs.edit();
         e.putString(String.format(mPrefsKey, activeAccount), mPrefsValue);

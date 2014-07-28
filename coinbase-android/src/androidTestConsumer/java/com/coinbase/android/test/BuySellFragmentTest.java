@@ -1,31 +1,18 @@
 package com.coinbase.android.test;
 
-import com.coinbase.android.BuySellFragment;
-import com.coinbase.android.TestAccountSettingsFragmentActivity;
 import com.coinbase.android.TestBuySellFragmentActivity;
-import com.coinbase.android.TestFragmentActivity;
-import com.coinbase.api.entity.Quote;
-import com.coinbase.api.entity.User;
 
-import org.joda.money.BigMoneyProvider;
 import org.joda.money.Money;
-import org.mockito.ArgumentCaptor;
 
-import static com.coinbase.android.test.MockResponses.mockAddressesResponse;
 import static com.coinbase.android.test.MockResponses.mockBuyQuote;
 import static com.coinbase.android.test.MockResponses.mockBuyTransfer;
 import static com.coinbase.android.test.MockResponses.mockSellQuote;
 import static com.coinbase.android.test.MockResponses.mockSellTransfer;
-import static com.coinbase.android.test.MockResponses.mockUser;
-import static com.coinbase.android.test.MockResponses.supportedCurrencies;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class BuySellFragmentTest extends MockApiTest {
   public BuySellFragmentTest() {

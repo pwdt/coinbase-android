@@ -35,7 +35,7 @@ public class WidgetChooseCurrencyActivity extends RoboListActivity {
         try {
 
           final List<CurrencyUnit> currencies =
-                  mLoginManager.getClient(WidgetChooseCurrencyActivity.this).getSupportedCurrencies();
+                  mLoginManager.getClient().getSupportedCurrencies();
           runOnUiThread(new Runnable() {
             public void run() {
               loadCurrencies(currencies);

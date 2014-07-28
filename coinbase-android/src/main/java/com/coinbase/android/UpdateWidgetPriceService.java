@@ -50,7 +50,7 @@ public class UpdateWidgetPriceService extends RoboService {
 
           // Step 2: Fetch price
           String priceString;
-          Money spotPrice = mLoginManager.getClient(UpdateWidgetPriceService.this).getSpotPrice(currency);
+          Money spotPrice = mLoginManager.getClient().getSpotPrice(currency);
           priceString = Utils.formatCurrencyAmount(spotPrice.getAmount(), false, Utils.CurrencyType.TRADITIONAL);
 
           // Step 3: Update widget
