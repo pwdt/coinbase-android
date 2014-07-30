@@ -34,6 +34,7 @@ import com.coinbase.android.merchant.MerchantToolsFragment;
 import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.android.settings.AccountSettingsFragment;
+import com.coinbase.android.transfers.TransferFragment;
 import com.coinbase.android.ui.Mintent;
 import com.coinbase.android.ui.SignOutFragment;
 import com.coinbase.android.ui.SlidingDrawerFragment;
@@ -578,9 +579,9 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   }
 
   public void openTransferMenu(boolean isRequest) {
-
     switchTo(FRAGMENT_INDEX_TRANSFER);
-    mTransferFragment.switchType(isRequest ? TransferFragment.TransferType.REQUEST.ordinal() : TransferFragment.TransferType.SEND.ordinal());
+    // TODO
+    // mTransferFragment.switchType(isRequest ? TransferFragment.TransferType.REQUEST.ordinal() : TransferFragment.TransferType.SEND.ordinal());
   }
 
   @Override
@@ -787,12 +788,10 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   }
 
   public void refresh() {
-
     mLastRefreshTime = System.currentTimeMillis();
 
     if (BuildConfig.type == BuildType.CONSUMER) {
       mTransactionsFragment.refresh();
-      mTransferFragment.refresh();
       mSettingsFragment.refresh();
     } else {
       mPointOfSaleFragment.refresh();

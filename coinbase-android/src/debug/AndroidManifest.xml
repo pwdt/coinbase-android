@@ -3,5 +3,6 @@
         <activity android:name="com.coinbase.android.TestCaseEntryPointActivity"></activity>
         <activity android:name="com.coinbase.android.TestAccountSettingsFragmentActivity"></activity>
         <activity android:name="com.coinbase.android.TestBuySellFragmentActivity"></activity>
+        <activity android:name="com.coinbase.android.TestTransferFragmentActivity"></activity>
     </application>
 </manifest>

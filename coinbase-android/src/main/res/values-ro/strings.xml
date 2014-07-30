@@ -110,9 +110,9 @@
     <string name="menu_about">Despre</string>
     <string name="menu_help">Ajutor</string>
     <string name="transfer_recipient">Destinatar de e-mail sau adresa de Bitcoin</string>
-    <string name="transfer_confirm_message_send">Sunteţi sigur(ă) că doriţi să trimiteţi %1$s %3$s pentru %2$s?</string>
-    <string name="transfer_confirm_message_request">Sunteţi sigur(ă) că doriţi să solicitaţi %1$s %3$s de la %2$s?</string>
-    <string name="transfer_confirm_message_send_fee">Această tranzacţie necesită o taxă de %4$s BTC pentru a fi acceptat de către reţeaua Bitcoin. Sunteţi sigur(ă) că doriţi să trimiteţi %1$s %3$s pentru %2$s?</string>
+    <string name="transfer_confirm_message_send">Sunteţi sigur(ă) că doriţi să trimiteţi %1$s pentru %2$s?</string>
+    <string name="transfer_confirm_message_request">Sunteţi sigur(ă) că doriţi să solicitaţi %1$s de la %2$s?</string>
+    <string name="transfer_confirm_message_send_fee">Această tranzacţie necesită o taxă de %3$s pentru a fi acceptat de către reţeaua Bitcoin. Sunteţi sigur(ă) că doriţi să trimiteţi %1$s pentru %2$s?</string>
     <string name="transfer_error_exception">Cererea nu a putut fi finalizată.</string>
     <string name="transfer_error_api">Cererea nu a putut fi finalizată.\n\n%1$s</string>
     <string name="transfer_progress">În curse de trimitere&#8230;</string>
@@ -127,7 +127,7 @@
     <string name="menu_refresh">Reîncarcă</string>
     <string name="transfer_nfc_ready">NFC este activat.\n\nŢineţi partea din spate a dispozitivului dvs. apropiat de partea din spate a celuilalt dispozitiv şi apăsaţi ecranul.</string>
     <string name="transfer_nfc_failure">Transferul NFC nu a putut fi iniţializat.</string>
-    <string name="transfer_email_prompt_text">Solicitare %1$s %2$s de la:</string>
+    <string name="transfer_email_prompt_text">Solicitare %1$s de la:</string>
     <string name="transfer_email_prompt_hint">Introduceţi adres de e-mail</string>
     <string name="transactiondetails_request_resend">Retrimiteţi Solicitare</string>
     <string name="transactiondetails_request_cancel">Anulaţi Solicitarea</string>
@@ -155,7 +155,7 @@
     <string name="account_save_error">Setările contului nu au putut fi salvate.</string>
     <string name="account_save_progress">În curs de salvare...</string>
     <string name="buysell_help">Pentru a conecta un cont bancar cu contul tău Coinbase, vizitaţi https://coinbase.com în browser.</string>
-    <string name="transfer_amt_native">≈ %1$s %2$s</string>
+    <string name="transfer_amt_native">≈ %1$s</string>
     <string name="transactions_refresh_error">Tranzacţiile nu au putut fi sincronizate.</string>
     <string name="account_limits">Limitele tale vânzare / cumpărare</string>
     <string name="account_limits_text">Cumpără %1$s %2$s zilnic, vinde %3$s %4$s zilnic</string>

@@ -3,7 +3,10 @@ package com.coinbase.android.test;
 import com.coinbase.api.entity.Address;
 import com.coinbase.api.entity.AddressResponse;
 import com.coinbase.api.entity.AddressesResponse;
+import com.coinbase.api.entity.Contact;
+import com.coinbase.api.entity.ContactsResponse;
 import com.coinbase.api.entity.Quote;
+import com.coinbase.api.entity.Response;
 import com.coinbase.api.entity.Transfer;
 import com.coinbase.api.entity.User;
 import com.coinbase.api.entity.UserResponse;
@@ -16,6 +19,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.joda.money.CurrencyUnit.USD;
 
@@ -121,6 +125,45 @@ public class MockResponses {
     result.setSubtotal(sellQuote.getSubtotal());
     result.setTotal(sellQuote.getTotal());
     result.setType(Transfer.Type.SELL);
+    return result;
+  }
+
+  public static Map<String, BigDecimal> mockExchangeRates() {
+    HashMap<String, BigDecimal> result = new HashMap<String, BigDecimal>();
+
+    BigDecimal BTC_USD = new BigDecimal("590.23");
+
+    result.put("btc_to_usd", BTC_USD);
+    result.put("usd_to_btc", BigDecimal.ONE.divide(BTC_USD, 8, RoundingMode.HALF_EVEN));
+
+    return result;
+  }
+
+  public static ContactsResponse mockContacts() {
+    ContactsResponse result = newResponse(ContactsResponse.class, 1, 25, 1);
+
+    Contact contact = new Contact();
+    contact.setEmail("user@example.com");
+
+    List<Contact> contacts = new ArrayList<Contact>();
+    contacts.add(contact);
+
+    result.setContacts(contacts);
+    return result;
+  }
+
+  public static <T extends Response> T newResponse(Class<T> clazz, int count, int limit, int page) {
+    T result;
+    try {
+      result = clazz.newInstance();
+    } catch (Exception ex) {
+      throw new AssertionError();
+    }
+
+    result.setNumPages(count / limit);
+    result.setCurrentPage(page);
+    result.setTotalCount(count);
+
     return result;
   }
 }

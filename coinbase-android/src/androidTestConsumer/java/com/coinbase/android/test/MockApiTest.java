@@ -17,6 +17,8 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import com.robotium.solo.Solo;
 
+import org.joda.money.Money;
+
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 
@@ -85,6 +87,7 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
   }
 
   public void tearDown() throws Exception {
+    ignoreSafeApiCalls();
     verifyNoMoreInteractions(mockCoinbase);
 
     Application app = getActivity().getApplication();
@@ -97,6 +100,19 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
   protected void startTestActivity() {
     final Intent intent = new Intent(getActivity(), testActivityClass);
     solo.getCurrentActivity().startActivity(intent);
+  }
+
+  // We use strict verification to ensure no extraneous unsafe calls are made (purchases/transfers)
+  // but we can ignore safe api calls
+  protected void ignoreSafeApiCalls() throws Exception {
+    verify(mockCoinbase, atLeast(0)).getContacts();
+    verify(mockCoinbase, atLeast(0)).getContacts(anyString());
+    verify(mockCoinbase, atLeast(0)).getExchangeRates();
+    verify(mockCoinbase, atLeast(0)).getSupportedCurrencies();
+    verify(mockCoinbase, atLeast(0)).getAddresses();
+    verify(mockCoinbase, atLeast(0)).getUser();
+    verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
+    verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
   }
 
   protected Solo getSolo() {

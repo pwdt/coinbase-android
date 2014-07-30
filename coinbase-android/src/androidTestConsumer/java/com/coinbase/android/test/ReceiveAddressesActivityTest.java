@@ -1,27 +1,17 @@
 package com.coinbase.android.test;
 
-import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 
-import com.coinbase.android.AboutActivity;
 import com.coinbase.android.PlatformUtils;
 import com.coinbase.android.ReceiveAddressesActivity;
 import com.coinbase.android.Utils;
 import com.coinbase.api.entity.Address;
 import com.coinbase.api.entity.AddressesResponse;
-import com.coinbase.api.entity.User;
-import com.robotium.solo.Solo;
 
-import java.util.List;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.atLeast;
+import static com.coinbase.android.test.MockResponses.mockAddressesResponse;
+import static com.coinbase.android.test.MockResponses.mockGeneratedAddress;
 import static org.mockito.Mockito.doReturn;
-
-import static com.coinbase.android.test.MockResponses.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -55,8 +45,6 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     assertTrue(getSolo().searchText(mockAddressesResponse.getAddresses().get(1).getAddress()));
     assertTrue(getSolo().searchText(mockAddressesResponse.getAddresses().get(0).getLabel()));
     assertTrue(getSolo().searchText(mockAddressesResponse.getAddresses().get(1).getLabel()));
-
-    verify(mockCoinbase, atLeast(0)).getAddresses();
   }
 
   public void testCopyToClipboard() throws Exception {
@@ -67,8 +55,6 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     getSolo().clickOnText(address);
     getSolo().waitForText("clipboard");
     assertEquals(address, getClipboardText());
-
-    verify(mockCoinbase, atLeast(0)).getAddresses();
   }
 
   public void testGenerateNewAddress() throws Exception {
@@ -88,7 +74,6 @@ public class ReceiveAddressesActivityTest extends MockApiTest {
     assertTrue(getSolo().searchText("The newly generated address"));
     assertTrue(getSolo().searchText("1NewlyGeneratedAddress"));
 
-    verify(mockCoinbase, atLeast(0)).getAddresses();
     verify(mockCoinbase, times(1)).generateReceiveAddress();
   }
 

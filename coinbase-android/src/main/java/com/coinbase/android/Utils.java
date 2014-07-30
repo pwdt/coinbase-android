@@ -38,6 +38,7 @@ import com.google.zxing.common.BitMatrix;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
+import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
 import org.joda.money.format.MoneyFormatter;
 import org.joda.money.format.MoneyFormatterBuilder;
@@ -46,6 +47,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -114,7 +116,7 @@ public class Utils {
 
     @Override
     public Filter getFilter() {
-      Filter filter = new Filter() {
+      return new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
           FilterResults filterResults = new FilterResults();
@@ -137,8 +139,8 @@ public class Utils {
           else {
             notifyDataSetInvalidated();
           }
-        }};
-      return filter;
+        }
+      };
     }
 
     private ArrayList<String> fetchContacts(String filter) {
@@ -212,13 +214,30 @@ public class Utils {
   }
 
   public static final String formatMoney(BigMoneyProvider money) {
+    BigMoney originalMoney = money.toBigMoney();
+    BigDecimal displayAmount = originalMoney.getAmount();
+    displayAmount = displayAmount.stripTrailingZeros();
+    if (displayAmount.scale() < 2) {
+      displayAmount = displayAmount.setScale(2);
+    }
+
+    BigMoney zerosStripped = BigMoney.of(
+            originalMoney.getCurrencyUnit(),
+            displayAmount
+    );
+
     // Build money formatter from default locale
     MoneyFormatter formatter = new MoneyFormatterBuilder()
                                     .appendCurrencySymbolLocalized()
                                     .appendAmountLocalized()
                                     .toFormatter();
-    String result = formatter.print(money);
+
+    String result = formatter.print(zerosStripped);
     return result;
+  }
+
+  public static final String formatMoneyRounded(BigMoneyProvider money) {
+    return formatMoney(money.toBigMoney().withScale(2, RoundingMode.HALF_EVEN));
   }
 
   public static final String formatCurrencyAmount(String amount) {

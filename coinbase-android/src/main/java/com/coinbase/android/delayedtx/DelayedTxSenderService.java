@@ -2,7 +2,6 @@ package com.coinbase.android.delayedtx;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,7 +13,6 @@ import android.util.Log;
 import com.coinbase.android.CoinbaseApplication;
 import com.coinbase.android.MainActivity;
 import com.coinbase.android.R;
-import com.coinbase.android.TransferFragment;
 import com.coinbase.android.Utils;
 import com.coinbase.android.db.DatabaseObject;
 import com.coinbase.android.db.TransactionsDatabase;

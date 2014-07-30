@@ -97,9 +97,9 @@
     <string name="menu_about">Over</string>
     <string name="menu_help">Help</string>
     <string name="transfer_recipient">Ontvanger email of bitcoin adres</string>
-    <string name="transfer_confirm_message_send">Weet je het zeker dat je %1$s %3$s wilt versturen naar %2$s?</string>
-    <string name="transfer_confirm_message_request">Weet jet het zeker dat je %1$s %3$s wilt vragen van %2$s?</string>
-    <string name="transfer_confirm_message_send_fee">Deze transactie heeft een fee van %4$s BTC om te worden geacepteerd in het bitcoin netwerk. Weet je het zeker dat je %1$s %3$s wilt sturen naar %2$s?</string>
+    <string name="transfer_confirm_message_send">Weet je het zeker dat je %1$s wilt versturen naar %2$s?</string>
+    <string name="transfer_confirm_message_request">Weet jet het zeker dat je %1$s wilt vragen van %2$s?</string>
+    <string name="transfer_confirm_message_send_fee">Deze transactie heeft een fee van %3$s BTC om te worden geacepteerd in het bitcoin netwerk. Weet je het zeker dat je %1$s wilt sturen naar %2$s?</string>
     <string name="transfer_error_exception">De aanvraag kon niet worden voltooid.</string>
     <string name="transfer_error_api">De aanvraag kon niet worden voltooid\n\n%1$s</string>
     <string name="transfer_progress">Versturen&#8230;</string>
@@ -114,7 +114,7 @@
     <string name="menu_refresh">Refresh</string>
     <string name="transfer_nfc_ready">NFC is uitgeschakeld.\n\nHoud de achterzijde van je apparaat tegen de achterkant van een ander apparaat en klik op het scherm.</string>
     <string name="transfer_nfc_failure">Kon NFC transfer niet starten.</string>
-    <string name="transfer_email_prompt_text">Verzoek %1$s %2$s van:</string>
+    <string name="transfer_email_prompt_text">Verzoek %1$s van:</string>
     <string name="transfer_email_prompt_hint">Voer email adres in</string>
     <string name="transactiondetails_request_resend">Verstuur Aaanvraag</string>
     <string name="transactiondetails_request_cancel">Annuleer Aanvraag</string>
@@ -141,7 +141,7 @@
     <string name="account_save_error">Kan de accountinstellingen niet opslaan.</string>
     <string name="account_save_progress">Bewaren...</string>
     <string name="buysell_help">Bezoek https://coinbase.com in je browser om een bankrekening toe te voegen aan je Coinbase account.</string>
-    <string name="transfer_amt_native">≈ %1$s %2$s</string>
+    <string name="transfer_amt_native">≈ %1$s</string>
     <string name="transactions_refresh_error">Kan transacties niet synchroniseren.</string>
     <string name="account_limits">Je koop / verkoop limiet</string>
     <string name="account_limits_text">Koop %1$s %2$s per dag, verkoop %3$s %4$s per dag</string>

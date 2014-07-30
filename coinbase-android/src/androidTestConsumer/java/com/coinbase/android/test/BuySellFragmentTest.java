@@ -1,7 +1,5 @@
 package com.coinbase.android.test;
 
-import android.graphics.drawable.GradientDrawable;
-
 import com.coinbase.android.TestBuySellFragmentActivity;
 import com.robotium.solo.Solo;
 
@@ -11,8 +9,6 @@ import static com.coinbase.android.test.MockResponses.mockBuyQuote;
 import static com.coinbase.android.test.MockResponses.mockBuyTransfer;
 import static com.coinbase.android.test.MockResponses.mockSellQuote;
 import static com.coinbase.android.test.MockResponses.mockSellTransfer;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,14 +40,17 @@ public class BuySellFragmentTest extends MockApiTest {
     assertTrue(getSolo().searchText("\\$0\\.15"));     // Bank fee
     assertTrue(getSolo().searchText("\\$655\\.90"));   // Total
     getSolo().clickOnButton("Buy");
+
+    // Make sure dialogs don't crash on rotation and preserve state
+    getSolo().setActivityOrientation(Solo.LANDSCAPE);
+    getInstrumentation().waitForIdleSync();
+
     assertTrue(getSolo().searchText("\\$655\\.90"));   // Total displayed for confirmation
     assertTrue(getSolo().searchText("BTC1\\.1"));   // Amount displayed for confirmation
     getSolo().clickOnButton("OK");
 
     getSolo().sleep(500);
 
-    verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
-    verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
     verify(mockCoinbase, times(1)).buy(Money.parse("BTC 1.1"));
   }
 
@@ -75,8 +74,6 @@ public class BuySellFragmentTest extends MockApiTest {
 
     getSolo().sleep(500);
 
-    verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
-    verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
     verify(mockCoinbase, times(1)).sell(Money.parse("BTC 1.1"));
   }
 
@@ -104,8 +101,6 @@ public class BuySellFragmentTest extends MockApiTest {
 
     getSolo().sleep(500);
 
-    verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
-    verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
     verify(mockCoinbase, times(1)).buy(Money.parse("BTC 1.1"));
   }
 }
