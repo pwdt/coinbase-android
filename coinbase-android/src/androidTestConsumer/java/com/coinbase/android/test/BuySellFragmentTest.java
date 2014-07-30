@@ -1,6 +1,9 @@
 package com.coinbase.android.test;
 
+import android.graphics.drawable.GradientDrawable;
+
 import com.coinbase.android.TestBuySellFragmentActivity;
+import com.robotium.solo.Solo;
 
 import org.joda.money.Money;
 
@@ -75,5 +78,34 @@ public class BuySellFragmentTest extends MockApiTest {
     verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
     verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
     verify(mockCoinbase, times(1)).sell(Money.parse("BTC 1.1"));
+  }
+
+  public void testBuyLandscape() throws Exception {
+    doReturn(mockBuyQuote(Money.parse("BTC 1.1"))).when(mockCoinbase).getBuyQuote(Money.parse("BTC 1.1"));
+    doReturn(mockBuyTransfer(Money.parse("BTC 1.1"))).when(mockCoinbase).buy(Money.parse("BTC 1.1"));
+
+    getSolo().sleep(1000);
+    assertTrue(getSolo().searchText("\\$590\\.23")); // Single BTC subtotal price
+    getSolo().enterText(0, "1.1");
+    getSolo().sleep(1000);
+    assertTrue(getSolo().searchText("\\$649\\.25"));   // Subtotal
+    assertTrue(getSolo().searchText("\\$6\\.49"));     // Coinbase Fee
+    assertTrue(getSolo().searchText("\\$0\\.15"));     // Bank fee
+    assertTrue(getSolo().searchText("\\$655\\.90"));   // Total
+    getSolo().clickOnButton("Buy");
+    assertTrue(getSolo().searchText("\\$655\\.90"));   // Total displayed for confirmation
+    assertTrue(getSolo().searchText("BTC1\\.1"));   // Amount displayed for confirmation
+    getSolo().setActivityOrientation(Solo.LANDSCAPE);
+    getInstrumentation().waitForIdleSync();
+    // Dialog still exists
+    assertTrue(getSolo().searchText("\\$655\\.90"));   // Total displayed for confirmation
+    assertTrue(getSolo().searchText("BTC1\\.1"));   // Amount displayed for confirmation
+    getSolo().clickOnButton("OK");
+
+    getSolo().sleep(500);
+
+    verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
+    verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
+    verify(mockCoinbase, times(1)).buy(Money.parse("BTC 1.1"));
   }
 }

@@ -37,6 +37,7 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
@@ -65,9 +66,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
     }
   }
 
-  private abstract class GetQuoteTask extends RoboAsyncTask<Quote> {
-    @Inject
-    protected LoginManager mLoginManager;
+  private abstract class GetQuoteTask extends ApiTask<Quote> {
     protected BigMoneyProvider mAmount;
 
     public GetQuoteTask(Context context, BigMoneyProvider amount) {
@@ -94,7 +93,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Quote call() throws Exception {
-      return mLoginManager.getClient().getBuyQuote(mAmount.toBigMoney().toMoney());
+      return getClient().getBuyQuote(mAmount.toBigMoney().toMoney());
     }
   }
 
@@ -105,92 +104,78 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Quote call() throws Exception {
-      return mLoginManager.getClient().getSellQuote(mAmount.toBigMoney().toMoney());
+      return getClient().getSellQuote(mAmount.toBigMoney().toMoney());
     }
   }
 
-  private abstract class ConfirmationDialogFragment extends RoboDialogFragment {
+  public static abstract class BuySellConfirmationDialogFragment extends ConfirmationDialogFragment {
+    public static final String QUANTITY = "BUY_SELL_CONFIRMATION_DIALOG_QUANTITY";
+    public static final String TOTAL = "BUY_SELL_CONFIRMATION_DIALOG_TOTAL";
+
+    protected BigMoney mQuantity;
+    protected BigMoney mTotal;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-      final TextView message = new TextView(mParent);
-      message.setBackgroundColor(Color.WHITE);
-      message.setTextColor(Color.BLACK);
-      message.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-
-      float scale = getResources().getDisplayMetrics().density;
-      int paddingPx = (int) (15 * scale + 0.5f);
-      message.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
-
-      message.setText(getMessage());
-
-      AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-      builder.setView(message)
-              .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                  onUserConfirm();
-                }
-              })
-              .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                  onUserCancel();
-                }
-              });
-
-      return builder.create();
-    }
-
-    public abstract String getMessage();
-    public abstract void onUserConfirm();
-    public void onUserCancel() {}
-  }
-
-  private abstract class AmountConfirmationDialogFragment extends ConfirmationDialogFragment {
-    protected BigMoneyProvider mAmount;
-    protected BigMoneyProvider mTotal;
-
-    AmountConfirmationDialogFragment(BigMoneyProvider amount, BigMoneyProvider total) {
-      mAmount = amount;
-      mTotal = total;
+      mQuantity = (BigMoney) getArguments().getSerializable(QUANTITY);
+      mTotal = (BigMoney) getArguments().getSerializable(TOTAL);
+      return super.onCreateDialog(savedInstanceState);
     }
   }
 
-  private abstract class BuyConfirmationDialog extends AmountConfirmationDialogFragment {
+  public static class BuyConfirmationDialogFragment extends BuySellConfirmationDialogFragment {
     @InjectResource(R.string.buysell_confirm_message_buy)
     protected String mMessageFormat;
 
-    BuyConfirmationDialog(BigMoneyProvider amount, BigMoneyProvider total) {
-      super(amount, total);
-    }
+    public BuyConfirmationDialogFragment() {}
 
     @Override
     public String getMessage() {
-      return String.format(mMessageFormat, Utils.formatMoney(mAmount), Utils.formatMoney(mTotal));
+      return String.format(mMessageFormat, Utils.formatMoney(mQuantity), Utils.formatMoney(mTotal));
+    }
+
+    @Override
+    public void onUserConfirm() {
+      new BuyTask(getActivity(), mQuantity).execute();
     }
   }
 
-  private abstract class SellConfirmationDialog extends AmountConfirmationDialogFragment {
+  public static class SellConfirmationDialogFragment extends BuySellConfirmationDialogFragment {
     @InjectResource(R.string.buysell_confirm_message_sell)
     protected String mMessageFormat;
 
-    SellConfirmationDialog(BigMoneyProvider amount, BigMoneyProvider total) {
-      super(amount, total);
-    }
+    public SellConfirmationDialogFragment() {}
 
     @Override
     public String getMessage() {
-      return String.format(mMessageFormat, Utils.formatMoney(mAmount), Utils.formatMoney(mTotal));
+      return String.format(mMessageFormat, Utils.formatMoney(mQuantity), Utils.formatMoney(mTotal));
+    }
+
+    @Override
+    public void onUserConfirm() {
+      new SellTask(getActivity(), mQuantity).execute();
+    }
+
+    public static SellConfirmationDialogFragment newInstance(BigMoney quantity, BigMoney total) {
+      SellConfirmationDialogFragment frag = new SellConfirmationDialogFragment();
+
+      return frag;
     }
   }
 
-  private abstract class BuySellTask extends RoboAsyncTask<Transfer> {
+  public static abstract class BuySellTask extends ApiTask<Transfer> {
     @InjectResource(R.string.buysell_error_api)
     private String mApiErrorMessage;
+
+    @InjectResource(R.string.buysell_progress)
+    private String mBuySellProgressMessage;
+
     private ProgressDialog mDialog;
 
     @Override
     protected void onPreExecute() throws Exception {
       super.onPreExecute();
-      mDialog = ProgressDialog.show(mParent, null, getString(R.string.buysell_progress));
+      mDialog = ProgressDialog.show(context, null, mBuySellProgressMessage);
     }
 
     protected BuySellTask(Context context) {
@@ -224,11 +209,9 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
     public abstract String getSuccessFormatString();
   }
 
-  private class BuyTask extends BuySellTask  {
+  public static class BuyTask extends BuySellTask  {
     @InjectResource(R.string.buysell_success_buy)
     protected String mSuccessFormat;
-    @Inject
-    protected LoginManager mLoginManager;
     protected BigMoneyProvider        mAmount;
 
     public BuyTask(Context context, BigMoneyProvider amount) {
@@ -238,7 +221,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Transfer call() throws Exception {
-      return mLoginManager.getClient().buy(mAmount.toBigMoney().toMoney());
+      return getClient().buy(mAmount.toBigMoney().toMoney(RoundingMode.HALF_EVEN));
     }
 
     @Override
@@ -247,11 +230,9 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
     }
   }
 
-  private class SellTask extends BuySellTask  {
+  public static class SellTask extends BuySellTask  {
     @InjectResource(R.string.buysell_success_sell)
     protected String mSuccessFormat;
-    @Inject
-    protected LoginManager mLoginManager;
     protected BigMoneyProvider        mAmount;
 
     public SellTask(Context context, BigMoneyProvider amount) {
@@ -261,7 +242,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     @Override
     public Transfer call() throws Exception {
-      return mLoginManager.getClient().sell(mAmount.toBigMoney().toMoney());
+      return getClient().sell(mAmount.toBigMoney().toMoney(RoundingMode.HALF_EVEN));
     }
 
     @Override
@@ -508,7 +489,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
   public String getTitle() { return mTitle; }
 
   private void submit() {
-    final BigMoneyProvider quantity = getQuantityEntered();
+    final BigMoney quantity = getQuantityEntered();
 
     if (null == quantity) {
       return;
@@ -522,37 +503,31 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 
     switch(mBuySellType) {
       case BUY:
-        dialog = new BuyConfirmationDialog(quantity, mCurrentQuote.getTotal()) {
-          @Override
-          public void onUserConfirm() {
-            new BuyTask(mParent, quantity).execute();
-          }
-        };
+        dialog = new BuyConfirmationDialogFragment();
         break;
       case SELL:
       default:
-        dialog = new SellConfirmationDialog(quantity, mCurrentQuote.getTotal()) {
-          @Override
-          public void onUserConfirm() {
-            new SellTask(mParent, quantity).execute();
-          }
-        };
+        dialog = new SellConfirmationDialogFragment();
         break;
     }
 
+    Bundle args = new Bundle();
+    args.putSerializable(BuySellConfirmationDialogFragment.QUANTITY, quantity);
+    args.putSerializable(BuySellConfirmationDialogFragment.TOTAL, mCurrentQuote.getTotal().toBigMoney());
+    dialog.setArguments(args);
     dialog.show(getFragmentManager(), "confirm");
   }
 
-  // Have to use BigMoneyProvider here to truncate trailing zeros for BTC
-  protected BigMoneyProvider getQuantityEntered() {
-    BigMoneyProvider quantity = null;
+  // Have to use BigMoney here to truncate trailing zeros for BTC
+  protected BigMoney getQuantityEntered() {
+    BigMoney quantity = null;
     try {
       quantity = BigMoney.of(
               CurrencyUnit.getInstance("BTC"),
               new BigDecimal(mAmount.getText().toString()).stripTrailingZeros()
       );
       // Only positive quantities are valid
-      if (quantity.toBigMoney().getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+      if (quantity.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
         quantity = null;
       }
     } catch (Exception ex) {}
