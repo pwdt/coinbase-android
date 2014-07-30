@@ -33,11 +33,11 @@ import com.coinbase.android.merchant.MerchantKioskModeService;
 import com.coinbase.android.merchant.MerchantToolsFragment;
 import com.coinbase.android.merchant.PointOfSaleFragment;
 import com.coinbase.android.pin.PINSettingDialogFragment;
+import com.coinbase.android.settings.AccountSettingsFragment;
 import com.coinbase.android.ui.Mintent;
 import com.coinbase.android.ui.SignOutFragment;
 import com.coinbase.android.ui.SlidingDrawerFragment;
 import com.coinbase.android.util.Section;
-import com.coinbase.api.LoginManager;
 import com.coinbase.zxing.client.android.Intents;
 
 @RequiresAuthentication

@@ -11,7 +11,7 @@ import roboguice.util.RoboAsyncTask;
 public abstract class ApiTask<T> extends RoboAsyncTask<T> {
 
   @Inject
-  LoginManager mLoginManager;
+  protected LoginManager mLoginManager;
 
   public ApiTask(Context context) {
     super(context);

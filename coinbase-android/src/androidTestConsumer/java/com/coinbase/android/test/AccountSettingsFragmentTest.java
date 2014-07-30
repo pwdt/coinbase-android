@@ -2,6 +2,7 @@ package com.coinbase.android.test;
 
 import com.coinbase.android.TestAccountSettingsFragmentActivity;
 import com.coinbase.api.entity.User;
+import com.robotium.solo.Solo;
 
 import static com.coinbase.android.test.MockResponses.mockAddressesResponse;
 import static com.coinbase.android.test.MockResponses.mockUser;
@@ -48,6 +49,11 @@ public class AccountSettingsFragmentTest extends MockApiTest {
     getSolo().clickOnText("Email");
     getSolo().clearEditText(0);
     getSolo().enterText(0, "newlywed@example.com");
+
+    // Make sure dialogs don't crash on rotation and preserve state
+    getSolo().setActivityOrientation(Solo.LANDSCAPE);
+    getInstrumentation().waitForIdleSync();
+
     getSolo().clickOnText("OK");
     getSolo().waitForDialogToClose();
     assertTrue(getSolo().searchText("newlywed@example.com"));
@@ -109,6 +115,11 @@ public class AccountSettingsFragmentTest extends MockApiTest {
     getSolo().clickOnText("Native currency");
     getSolo().scrollListToTop(0);
     getSolo().clickOnText("CAD");
+
+    // Make sure dialogs don't crash on rotation and preserve state
+    getSolo().setActivityOrientation(Solo.LANDSCAPE);
+    getInstrumentation().waitForIdleSync();
+
     getSolo().clickOnText("OK");
     getSolo().waitForDialogToClose();
     assertTrue(getSolo().searchText("CAD"));
