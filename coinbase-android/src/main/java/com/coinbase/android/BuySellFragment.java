@@ -1,12 +1,9 @@
 package com.coinbase.android;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,7 +11,6 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,12 +20,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coinbase.android.dialog.ConfirmationDialogFragment;
 import com.coinbase.android.pin.PINManager;
-import com.coinbase.api.LoginManager;
 import com.coinbase.api.entity.Quote;
 import com.coinbase.api.entity.Transfer;
 import com.coinbase.api.exception.CoinbaseException;
-import com.google.inject.Inject;
 
 import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
@@ -43,11 +38,9 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import roboguice.fragment.RoboDialogFragment;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
-import roboguice.util.RoboAsyncTask;
 
 public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
 

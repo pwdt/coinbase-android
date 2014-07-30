@@ -1,4 +1,4 @@
-package com.coinbase.android;
+package com.coinbase.android.dialog;
 
 
 import android.app.AlertDialog;
