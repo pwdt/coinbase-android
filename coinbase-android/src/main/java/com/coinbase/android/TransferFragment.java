@@ -16,7 +16,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import com.coinbase.android.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;

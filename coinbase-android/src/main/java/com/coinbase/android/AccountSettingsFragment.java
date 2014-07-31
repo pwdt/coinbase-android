@@ -16,7 +16,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
 import android.text.InputType;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import com.coinbase.android.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;

@@ -6,7 +6,7 @@ import android.content.SharedPreferences.Editor;
 import android.net.ParseException;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.util.Log;
+import com.coinbase.android.Log;
 
 import com.coinbase.android.BuildConfig;
 import com.coinbase.android.BuildType;

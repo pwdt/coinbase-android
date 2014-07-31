@@ -18,7 +18,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
+import com.coinbase.android.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -204,7 +204,7 @@ public class BuySellFragment extends Fragment implements CoinbaseFragment {
           dialog.show(getFragmentManager(), "confirm");
         } else {
 
-          System.out.println("Does not start with '" + mAgreeBtcAmountVaries);
+          Log.d("Coinbase", "Does not start with '" + mAgreeBtcAmountVaries);
           Utils.showMessageDialog(getFragmentManager(), String.format(getString(R.string.buysell_error_api), (String) result[1]));
         }
       }

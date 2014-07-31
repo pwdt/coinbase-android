@@ -12,7 +12,7 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
+import com.coinbase.android.Log;
 import android.view.View;
 import android.widget.AdapterView;
 
