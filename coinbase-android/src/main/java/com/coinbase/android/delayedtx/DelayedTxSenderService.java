@@ -9,7 +9,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
+import com.coinbase.android.Log;
 
 import com.coinbase.android.CoinbaseApplication;
 import com.coinbase.android.MainActivity;

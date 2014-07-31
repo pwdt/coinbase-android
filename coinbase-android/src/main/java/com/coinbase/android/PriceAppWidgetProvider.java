@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
+import com.coinbase.android.Log;
 import android.widget.RemoteViews;
 
 public class PriceAppWidgetProvider extends AppWidgetProvider {

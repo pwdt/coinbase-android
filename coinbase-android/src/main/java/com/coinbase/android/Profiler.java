@@ -1,6 +1,6 @@
 package com.coinbase.android;
 
-import android.util.Log;
+import com.coinbase.android.Log;
 
 /**
  * Created by isaac_000 on 23/12/13.

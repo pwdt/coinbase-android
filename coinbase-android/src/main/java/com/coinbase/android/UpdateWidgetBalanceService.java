@@ -10,7 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
+import com.coinbase.android.Log;
 
 import com.coinbase.api.RpcManager;
 

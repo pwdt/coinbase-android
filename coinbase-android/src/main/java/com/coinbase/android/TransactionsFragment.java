@@ -26,7 +26,7 @@ import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Html;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import com.coinbase.android.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -839,7 +839,7 @@ public class TransactionsFragment extends ListFragment implements CoinbaseFragme
 
     if(pinned) {
       mMainView.addView(mListHeader, 0);
-      System.out.println("Main view has " + mMainView.getChildCount());
+      Log.d("Coinbase","Main view has " + mMainView.getChildCount());
     } else {
       mListHeaderContainer.addView(mListHeader);
     }

@@ -3,8 +3,7 @@ package com.coinbase.api;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
-
+import com.coinbase.android.Log;
 import com.coinbase.android.BuildConfig;
 import com.coinbase.android.Constants;
 
