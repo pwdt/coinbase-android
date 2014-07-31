@@ -165,8 +165,9 @@
     <string name="pos_result_failure_creation">No se pudo crear el pedido.</string>
     <string name="pos_result_failure_creation_exception">No se pudo crar el pedido (%1$s).</string>
     <string name="waiting_for_payment">Esperando pago...</string>
-    <string name="payment_received">Has recibido %1$s BTC (%2$s %3$s).</string>
-    <string name="payment_received_short">Has recibido %1$s BTC (%2$s %3$s), pero has solicitado %4$s BTC.</string>
+    <string name="payment_received">Has recibido %1$s.</string>
+    <string name="payment_received_native">Has recibido %1$s (%2$s).</string>
+    <string name="payment_received_short">Has recibido %1$s, pero has solicitado %2$s.</string>
     <string name="pos_description">El Punto de Venta es una versión simplificada de la pestaña Enviar / Recibir, optimizada para comerciantes.</string>
     <string name="account_android_pin">Contraseña de la aplicación Android</string>
     <string name="account_android_pin_all">Requiere contraseña para abrir la aplicación</string>

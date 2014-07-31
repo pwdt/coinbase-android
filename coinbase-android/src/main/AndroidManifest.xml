@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.coinbase.android"
     android:versionCode="15"
@@ -6,21 +7,26 @@
     <uses-sdk
         android:minSdkVersion="10"
         android:targetSdkVersion="20" />
-        
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.NFC"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
 
     <application
+        android:name=".CoinbaseApplication"
+        android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Coinbase"
-        android:name="com.coinbase.android.CoinbaseApplication"
-        android:allowBackup="false">
+        android:theme="@style/Theme.Coinbase" >
         <activity
-            android:name="com.coinbase.android.MainActivity" android:launchMode="singleTop"
-            android:label="@string/title_activity_main" android:configChanges="orientation|screenSize">
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_main"
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,33 +34,52 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <data android:scheme="bitcoin" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+
                 <data android:scheme="bitcoin" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.coinbase.android.LoginActivity"
-            android:label="@string/title_activity_login" android:configChanges="orientation|screenSize">
+            android:name=".LoginActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_login" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-                <data android:scheme="http" android:pathPattern="/users/.*/verify" android:host="coinbase.com"/>
-                <data android:scheme="https" android:pathPattern="/users/.*/verify" android:host="coinbase.com"/>
+
+                <data
+                    android:host="coinbase.com"
+                    android:pathPattern="/users/.*/verify"
+                    android:scheme="http" />
+                <data
+                    android:host="coinbase.com"
+                    android:pathPattern="/users/.*/verify"
+                    android:scheme="https" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <activity android:name="com.coinbase.android.AboutActivity"
-            android:theme="@style/Theme.Coinbase.NoWindowContentOverlay"></activity>
-        <activity android:name=".pin.PINPromptActivity"
-                  android:windowSoftInputMode="stateHidden"
-            android:theme="@style/Theme.Sherlock.Light.NoActionBar"></activity>
-        <service android:name=".merchant.MerchantKioskModeService"></service>
+        <activity
+            android:name=".AboutActivity"
+            android:theme="@style/Theme.Coinbase.NoWindowContentOverlay" />
+        <activity
+            android:name=".pin.PINPromptActivity"
+            android:theme="@style/Theme.Sherlock.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+
+        <service android:name=".merchant.MerchantKioskModeService" />
+        <service
+            android:name=".transfers.TransactionPollingService"
+            android:exported="false" />
     </application>
 
 </manifest>

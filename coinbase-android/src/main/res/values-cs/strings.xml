@@ -170,8 +170,9 @@
     <string name="pos_traditional">≈ %1$s %2$s</string>
     <string name="pos_notes">Poznámky</string>
     <string name="waiting_for_payment">Čekání na platbu...</string>
-    <string name="payment_received">Obdrženo %1$s BTC (%2$s %3$s).</string>
-    <string name="payment_received_short">Obdrženo %1$s BTC (%2$s %3$s), ale bylo požadováno %4$s BTC.</string>
+    <string name="payment_received">Obdrženo %1$s.</string>
+    <string name="payment_received_native">Obdrženo %1$s (%2$s).</string>
+    <string name="payment_received_short">Obdrženo %1$s, ale bylo požadováno %2$s.</string>
     <string name="pos_description">The Point of Sale tab je zjednodušený pohled na tab Poslat / Vyžádat, optimalizováno pro obchodníky.</string>
     <string name="account_android_pin">Pin aplikace</string>
     <string name="account_android_pin_all">Pro otevření aplikace je vyžádován pin</string>

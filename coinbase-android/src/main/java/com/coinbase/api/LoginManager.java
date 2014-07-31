@@ -50,4 +50,6 @@ public interface LoginManager {
   Coinbase getClient();
 
   boolean isSignedIn();
+
+  String getReceiveAddress();
 }

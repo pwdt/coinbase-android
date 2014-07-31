@@ -97,7 +97,6 @@ public class PINManager {
    * Called after the user has entered the PIN successfully.
    */
   public void resetPinClock(Context context) {
-
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     Editor e = prefs.edit();
@@ -109,7 +108,6 @@ public class PINManager {
    * Set the user's PIN.
    */
   public void setPin(Context context, String pin) {
-
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     Editor e = prefs.edit();

@@ -197,8 +197,9 @@
     <string name="pos_result_failure_cancel">Comandă anulată.</string>
     <string name="pos_result_ok">OK</string>
     <string name="waiting_for_payment">În aşteptare de plată...</string>
-    <string name="payment_received">Aţi primit %1$s BTC (%2$s %3$s).</string>
-    <string name="payment_received_short">Aţi primit %1$s BTC (%2$s %3$s), dar aţi solicitat %4$s BTC.</string>
+    <string name="payment_received">Aţi primit %1$s.</string>
+    <string name="payment_received_native">Aţi primit %1$s (%2$s).</string>
+    <string name="payment_received_short">Aţi primit %1$s, dar aţi solicitat %2$s.</string>
     <string name="pos_description">Pagina Point of Sale este o versiune simplificată a paginii Trimitere / Solicitare, optimizată pentru utilizarea de către comercianţi.</string>
     <string name="account_android_pin">Cod de acces pentru aplicaţia Android</string>
     <string name="account_android_pin_all">Solicită introducerea unui cod de acces pentru a deschide aplicaţia</string>

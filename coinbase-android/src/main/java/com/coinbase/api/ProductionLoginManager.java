@@ -443,4 +443,11 @@ public class ProductionLoginManager implements LoginManager {
   public boolean isSignedIn() {
     return isSignedIn(mContext);
   }
+
+  @Override
+  public String getReceiveAddress() {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+    int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+    return prefs.getString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), null);
+  }
 }

@@ -49,6 +49,7 @@ public class MockResponses {
 
   public static User mockUser() {
     User user = new User();
+    user.setId("MockUserId");
     user.setName("Test User");
     user.setEmail("user@example.com");
     user.setTimeZone("Pacific Time (US & Canada)");

@@ -199,8 +199,9 @@
     <string name="pos_result_failure_cancel">Order cancelled.</string>
     <string name="pos_result_ok">OK</string>
     <string name="waiting_for_payment">Waiting for payment...</string>
-    <string name="payment_received">Received %1$s BTC (%2$s %3$s).</string>
-    <string name="payment_received_short">Received %1$s BTC (%2$s %3$s), but you requested %4$s BTC.</string>
+    <string name="payment_received">Received %1$s.</string>
+    <string name="payment_received_native">Received %1$s (%2$s).</string>
+    <string name="payment_received_short">Received %1$s, but you requested %2$s.</string>
     <string name="pos_description">The Point of Sale tab is a simplified view of the Send / Receive tab, optimized for use by merchants.</string>
     <string name="account_android_pin">Android app passcode</string>
     <string name="account_android_pin_all">Require passcode to open the app</string>

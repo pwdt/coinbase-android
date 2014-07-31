@@ -17,12 +17,14 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import com.robotium.solo.Solo;
+import com.squareup.otto.Bus;
 
 import org.joda.money.Money;
 
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 
+import static com.coinbase.android.test.MockResponses.mockUser;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -31,6 +33,7 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
   private Solo solo;
   protected Coinbase mockCoinbase;
   protected LoginManager mockLoginManager;
+  protected Bus testBus;
 
   /**
    * Real test activity.
@@ -41,6 +44,13 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
     @Override
     public void configure(Binder binder) {
       binder.bind(LoginManager.class).toInstance(mockLoginManager);
+    }
+  }
+
+  public class TestBusModule implements Module {
+    @Override
+    public void configure(Binder binder) {
+      binder.bind(Bus.class).toInstance(testBus);
     }
   }
 
@@ -59,6 +69,7 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
 
     mockCoinbase = mock(Coinbase.class);
     mockLoginManager = mock(LoginManager.class);
+    testBus = new Bus();
 
     // TODO remove the methods that take contexts
     doReturn(true).when(mockLoginManager).isSignedIn((Context) any());
@@ -67,12 +78,13 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
     doReturn(mockCoinbase).when(mockLoginManager).getClient(anyInt());
     doReturn(1).when(mockLoginManager).getActiveAccount();
     doReturn(true).when(mockLoginManager).isSignedIn();
+    doReturn(mockUser().getId()).when(mockLoginManager).getActiveUserId();
 
     Application application = getActivity().getApplication();
 
     Module roboGuiceModule = RoboGuice.newDefaultRoboModule(application);
-    Module testModule = Modules.override(roboGuiceModule).with(new MockLoginManagerModule());
-           testModule = Modules.combine(testModule, new BusModule());
+    Module testModules = Modules.combine(new TestBusModule(), new MockLoginManagerModule());
+    Module testModule = Modules.override(roboGuiceModule).with(testModules);
     RoboGuice.setBaseApplicationInjector(application, RoboGuice.DEFAULT_STAGE, testModule);
 
     // Clear preferences
@@ -115,6 +127,7 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
     verify(mockCoinbase, atLeast(0)).getUser();
     verify(mockCoinbase, atLeast(0)).getSellQuote(any(Money.class));
     verify(mockCoinbase, atLeast(0)).getBuyQuote(any(Money.class));
+    verify(mockCoinbase, atLeast(0)).getTransactions();
   }
 
   protected Solo getSolo() {

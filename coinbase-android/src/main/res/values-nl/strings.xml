@@ -178,8 +178,9 @@
     <string name="pos_result_failure_creation">Kon order niet creeëren.</string>
     <string name="pos_result_failure_creation_exception">Kon order (%1$s) niet creeëren.</string>
     <string name="waiting_for_payment">Wachten op betaling...</string>
-    <string name="payment_received">%1$s BTC (%2$s %3$s) ontvangen.</string>
-    <string name="payment_received_short">%1$s BTC (%2$s %3$s) ontvangen, maar je verzocht %4$s BTC.</string>
+    <string name="payment_received">%1$s ontvangen.</string>
+    <string name="payment_received_native">%1$s (%2$s) ontvangen.</string>
+    <string name="payment_received_short">%1$s ontvangen, maar je verzocht %2$s.</string>
     <string name="pos_description">De Point of Sale tab is een simpel overzicht van de Verstuur / Ontvang tab, geoptimaliseerd voor handelaars.</string>
     <string name="account_android_pin">Android app toegagscode</string>
     <string name="account_android_pin_all">Verplicht toegangscode om de app te openen</string>

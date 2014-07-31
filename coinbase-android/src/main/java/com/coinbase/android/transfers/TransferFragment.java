@@ -28,10 +28,13 @@ import com.coinbase.android.ApiTask;
 import com.coinbase.android.CoinbaseFragment;
 import com.coinbase.android.Constants;
 import com.coinbase.android.FontManager;
+import com.coinbase.android.GenerateReceiveAddressTask;
+import com.coinbase.android.PlatformUtils;
 import com.coinbase.android.R;
 import com.coinbase.android.Utils;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.util.BitcoinUri;
+import com.coinbase.api.LoginManager;
 import com.coinbase.api.entity.Transaction;
 import com.google.inject.Inject;
 
@@ -59,18 +62,15 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     private String mRequestName;
 
     private TransferType(int friendlyName, String requestName) {
-
       mFriendlyName = friendlyName;
       mRequestName = requestName;
     }
 
     public int getName() {
-
       return mFriendlyName;
     }
 
     public String getRequestName() {
-
       return mRequestName;
     }
   }
@@ -133,6 +133,9 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
 
   @Inject
   protected PINManager mPinManager;
+
+  @Inject
+  protected LoginManager mLoginManager;
 
   @Override
   public void onAttach(Activity activity) {
@@ -240,13 +243,17 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
       }
     });
 
-    mSubmitNfc.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        mLastPressedButton = TransferButton.NFC;
-        submitNfc();
-      }
-    });
+    if (PlatformUtils.hasIceCreamSandwich()) {
+      mSubmitNfc.setEnabled(true);
+
+      mSubmitNfc.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          mLastPressedButton = TransferButton.NFC;
+          submitNfc();
+        }
+      });
+    }
 
     mClearButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -322,15 +329,18 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     }
     mLastPressedButton = null;
 
-
-    /* TODO
-    DisplayQrFragment f = new DisplayQrFragment(generateRequestUri());
+    WaitForPaymentFragment f = WaitForPaymentFragment.newInstance(
+            WaitForPaymentFragment.Type.QR,
+            mLoginManager.getReceiveAddress(),
+            getEnteredAmountBtc(),
+            getEnteredAmount().toMoney(RoundingMode.HALF_EVEN),
+            null,
+            getEnteredNotes()
+    );
     f.show(getFragmentManager(), "qrrequest");
-    */
 
     // After using a receive address, generate a new one for next time.
-    // TODO regenerate address here
-    // mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+    new GenerateReceiveAddressTask(getActivity()).execute();
   }
 
   private void submitNfc() {
@@ -339,16 +349,18 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     }
     mLastPressedButton = null;
 
-    String requestUri = generateRequestUri().toString();
-
-    /* TODO
-    DisplayNfcFragment f = new DisplayNfcFragment(requestUri);
+    WaitForPaymentFragment f = WaitForPaymentFragment.newInstance(
+            WaitForPaymentFragment.Type.NFC,
+            mLoginManager.getReceiveAddress(),
+            getEnteredAmountBtc(),
+            getEnteredAmount().toMoney(RoundingMode.HALF_EVEN),
+            null,
+            getEnteredNotes()
+    );
     f.show(getFragmentManager(), "nfcrequest");
-    */
 
     // After using a receive address, generate a new one for next time.
-    // TODO regenerate address here
-    // mParent.getAccountSettingsFragment().regenerateReceiveAddress();
+    new GenerateReceiveAddressTask(getActivity()).execute();
   }
 
   public void clearForm() {
@@ -444,7 +456,7 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
     CurrencyUnit BTC = CurrencyUnit.getInstance("BTC");
 
     if (BTC != amount.getCurrencyUnit()) {
-      String key = String.format("%s_to_btc", amount.getCurrencyUnit().getCurrencyCode());
+      String key = String.format("%s_to_btc", amount.getCurrencyUnit().getCurrencyCode().toLowerCase());
       if (mNativeExchangeRates == null) {
         Toast.makeText(mParent, R.string.exchange_rate_error, Toast.LENGTH_SHORT).show();
         return null;
