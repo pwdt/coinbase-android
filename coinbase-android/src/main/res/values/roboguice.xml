@@ -2,5 +2,6 @@
 <resources>
     <string-array name="roboguice_modules">
         <item>com.coinbase.api.LoginManagerModule</item>
+        <item>com.coinbase.android.event.BusModule</item>
     </string-array>
 </resources>

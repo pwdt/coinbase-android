@@ -11,28 +11,22 @@ import com.coinbase.android.Constants;
 import com.coinbase.android.MainActivity;
 import com.coinbase.android.Utils;
 import com.coinbase.android.event.UserDataUpdatedEvent;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.squareup.otto.Bus;
 
-
+@Singleton
 public class PINManager {
 
   public static final long PIN_REPROMPT_TIME = 2 * 1000; // Five seconds
 
-  private static PINManager INSTANCE = null;
-
-  public static PINManager getInstance() {
-
-    if(INSTANCE == null) {
-      INSTANCE = new PINManager();
-    }
-
-    return INSTANCE;
-  }
-
-  private PINManager() { }
+  public PINManager () {}
 
   boolean bad = false;
 
   private static boolean isQuitPINLock = false;
+
+  @Inject protected Bus mBus;
 
   /**
    * Should the user be allowed to access protected content?
@@ -121,7 +115,7 @@ public class PINManager {
     Editor e = prefs.edit();
     e.putString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), pin);
     e.commit();
-    Utils.bus().post(new UserDataUpdatedEvent());
+    mBus.post(new UserDataUpdatedEvent());
   }
 
   /**

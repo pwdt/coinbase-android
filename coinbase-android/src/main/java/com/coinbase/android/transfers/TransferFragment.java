@@ -33,6 +33,7 @@ import com.coinbase.android.Utils;
 import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.util.BitcoinUri;
 import com.coinbase.api.entity.Transaction;
+import com.google.inject.Inject;
 
 import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
@@ -129,6 +130,9 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
   @InjectView(R.id.transfer_money_button_qrcode) Button mSubmitQr;
   @InjectView(R.id.transfer_money_button_nfc)    Button mSubmitNfc;
   @InjectView(R.id.transfer_money_button_clear)  Button mClearButton;
+
+  @Inject
+  protected PINManager mPinManager;
 
   @Override
   public void onAttach(Activity activity) {
@@ -272,7 +276,7 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
       return;
     }
 
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       return;
     }
     mLastPressedButton = null;
@@ -303,7 +307,7 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
 
     Money roundedAmount = amount.toMoney(RoundingMode.HALF_EVEN);
 
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       return;
     }
     mLastPressedButton = null;
@@ -313,7 +317,7 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
   }
 
   private void submitQr() {
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       return;
     }
     mLastPressedButton = null;
@@ -330,7 +334,7 @@ public class TransferFragment extends RoboFragment implements CoinbaseFragment {
   }
 
   private void submitNfc() {
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       return;
     }
     mLastPressedButton = null;

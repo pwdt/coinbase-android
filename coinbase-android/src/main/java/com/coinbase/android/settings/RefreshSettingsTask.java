@@ -13,6 +13,7 @@ import com.coinbase.api.LoginManager;
 import com.coinbase.api.entity.User;
 import com.coinbase.api.exception.CoinbaseException;
 import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 
 import org.acra.ACRA;
 
@@ -21,6 +22,9 @@ import java.io.IOException;
 import roboguice.util.RoboAsyncTask;
 
 class RefreshSettingsTask extends ApiTask<User> {
+
+  @Inject
+  protected Bus mBus;
 
   public RefreshSettingsTask(Context context) {
     super(context);
@@ -52,7 +56,7 @@ class RefreshSettingsTask extends ApiTask<User> {
 
   @Override
   protected void onFinally() {
-    Utils.bus().post(new UserDataUpdatedEvent());
+    mBus.post(new UserDataUpdatedEvent());
   }
 
 }

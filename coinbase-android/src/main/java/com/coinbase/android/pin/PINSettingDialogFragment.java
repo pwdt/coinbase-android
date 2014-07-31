@@ -18,13 +18,15 @@ import com.coinbase.android.Utils;
 import com.coinbase.android.event.UserDataUpdatedEvent;
 import com.coinbase.api.LoginManager;
 import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 
 import roboguice.fragment.RoboDialogFragment;
 
 public class PINSettingDialogFragment extends RoboDialogFragment {
 
-  @Inject
-  LoginManager mLoginManager;
+  @Inject protected LoginManager mLoginManager;
+  @Inject protected Bus mBus;
+
   private int mSelectedOption = 0;
 
   @Override
@@ -84,7 +86,7 @@ public class PINSettingDialogFragment extends RoboDialogFragment {
 
         e.commit();
 
-        Utils.bus().post(new UserDataUpdatedEvent());
+        mBus.post(new UserDataUpdatedEvent());
 
         if(mSelectedOption != itemsList.indexOf(R.string.account_android_pin_none)) {
           startSetPinPrompt();
@@ -105,7 +107,6 @@ public class PINSettingDialogFragment extends RoboDialogFragment {
   }
 
   private void startSetPinPrompt() {
-
     Intent intent = new Intent(getActivity(), PINPromptActivity.class);
     intent.setAction(PINPromptActivity.ACTION_SET);
     startActivity(intent);

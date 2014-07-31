@@ -11,6 +11,8 @@ import com.coinbase.android.R;
 import com.coinbase.android.Utils;
 import com.coinbase.android.event.UserDataUpdatedEvent;
 import com.coinbase.api.entity.User;
+import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 
 import roboguice.inject.InjectResource;
 
@@ -21,6 +23,7 @@ public class UpdateUserTask extends ApiTask<Void> {
   private String mPrefsKey, mPrefsValue;
 
   @InjectResource(R.string.account_save_progress) private String mProgressDialogMessage;
+  @Inject protected Bus mBus;
 
   public UpdateUserTask(Context context, User user, String prefsKey, String prefsValue) {
     super(context);
@@ -59,7 +62,7 @@ public class UpdateUserTask extends ApiTask<Void> {
 
   @Override
   protected void onFinally() {
-    Utils.bus().post(new UserDataUpdatedEvent());
+    mBus.post(new UserDataUpdatedEvent());
     if (mDialog != null) {
       mDialog.dismiss();
     }

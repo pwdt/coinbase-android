@@ -358,6 +358,9 @@ public class PointOfSaleFragment extends RoboFragment implements CoinbaseFragmen
   @Inject
   private RpcManager mRpcManager;
 
+  @Inject
+  protected PINManager mPinManager;
+
   @Override
   public void onSwitchedTo() {
 
@@ -437,8 +440,7 @@ public class PointOfSaleFragment extends RoboFragment implements CoinbaseFragmen
     mMenuButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-
-        if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+        if(!mPinManager.checkForEditAccess(getActivity())) {
           return;
         }
         mParent.openOptionsMenu();

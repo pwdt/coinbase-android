@@ -35,8 +35,6 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.squareup.otto.Bus;
-import com.squareup.otto.ThreadEnforcer;
 
 import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
@@ -549,10 +547,5 @@ public class Utils {
   public static String convertStreamToString(java.io.InputStream is) {
     java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
     return s.hasNext() ? s.next() : "";
-  }
-
-  private static final Bus BUS = new Bus(ThreadEnforcer.ANY);
-  public static Bus bus() {
-    return BUS;
   }
 }

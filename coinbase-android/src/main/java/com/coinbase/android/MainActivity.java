@@ -40,6 +40,8 @@ import com.coinbase.android.ui.SignOutFragment;
 import com.coinbase.android.ui.SlidingDrawerFragment;
 import com.coinbase.android.util.Section;
 import com.coinbase.zxing.client.android.Intents;
+import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 
 @RequiresAuthentication
 @RequiresPIN
@@ -92,6 +94,8 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
   boolean mInTransactionDetailsMode = false;
   boolean mPendingPinReturn = false;
   Utils.AndroidBug5497Workaround mBugWorkaround = new Utils.AndroidBug5497Workaround();
+
+  @Inject protected Bus mBus;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -281,7 +285,7 @@ public class MainActivity extends CoinbaseActivity implements AccountsFragment.P
       mTransactionsFragment.hideDetails(false);
     }
     updateBackButton();
-    Utils.bus().post(new SectionSelectedEvent(Section.fromIndex(index)));
+    mBus.post(new SectionSelectedEvent(Section.fromIndex(index)));
   }
 
   public Section getSelectedSection() {

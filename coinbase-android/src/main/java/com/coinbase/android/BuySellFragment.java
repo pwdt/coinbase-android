@@ -25,6 +25,7 @@ import com.coinbase.android.pin.PINManager;
 import com.coinbase.api.entity.Quote;
 import com.coinbase.api.entity.Transfer;
 import com.coinbase.api.exception.CoinbaseException;
+import com.google.inject.Inject;
 
 import org.joda.money.BigMoney;
 import org.joda.money.BigMoneyProvider;
@@ -257,6 +258,9 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
   @InjectView(R.id.buysell_amount)        private EditText mAmount;
   @InjectResource(R.string.title_buysell) private String mTitle;
 
+  @Inject
+  protected PINManager mPinManager;
+
   @Override
   public void onAttach(Activity activity) {
     super.onAttach(activity);
@@ -488,7 +492,7 @@ public class BuySellFragment extends RoboFragment implements CoinbaseFragment {
       return;
     }
 
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       return;
     }
 

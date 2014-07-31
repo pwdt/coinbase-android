@@ -28,6 +28,8 @@ import com.coinbase.android.R;
 import com.coinbase.android.Utils;
 import com.coinbase.android.event.SectionSelectedEvent;
 import com.coinbase.android.event.UserDataUpdatedEvent;
+import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import java.net.URL;
@@ -35,10 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import roboguice.fragment.RoboFragment;
+
 /**
  * Sliding drawer that appears at the side of the screen.
  */
-public class SlidingDrawerFragment extends Fragment {
+public class SlidingDrawerFragment extends RoboFragment {
 
   private class SectionsListItem {
     public String[] text;
@@ -157,6 +161,7 @@ public class SlidingDrawerFragment extends Fragment {
 
   View mProfileView;
   SectionsListAdapter mAdapter;
+  @Inject protected Bus mBus;
 
   private void createProfileView() {
     mProfileView = View.inflate(getActivity(), R.layout.activity_main_drawer_profile, null);
@@ -228,14 +233,14 @@ public class SlidingDrawerFragment extends Fragment {
   }
 
   @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    Utils.bus().register(this);
+  public void onResume() {
+    mBus.register(this);
+    super.onResume();
   }
 
   @Override
-  public void onDestroy() {
-    super.onDestroy();
-    Utils.bus().unregister(this);
+  public void onPause() {
+    mBus.unregister(this);
+    super.onPause();
   }
 }

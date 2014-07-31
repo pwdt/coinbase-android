@@ -28,6 +28,7 @@ import com.coinbase.android.LoginActivity;
 import com.coinbase.android.R;
 import com.coinbase.android.Utils;
 import com.coinbase.api.LoginManager;
+import com.google.inject.Inject;
 
 @RequiresAuthentication
 public class PINPromptActivity extends CoinbaseActivity implements AccountsFragment.ParentActivity {
@@ -39,13 +40,16 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
   private EditText mPinNumberField = null;
   private GridView mKeyboard = null;
 
+  @Inject
+  protected PINManager mPinManager;
+
   @Override
   protected void onCreate(Bundle arg0) {
     super.onCreate(arg0);
 
     mIsSetMode = ACTION_SET.equals(getIntent().getAction());
 
-    if(mIsSetMode && !PINManager.getInstance().shouldGrantAccess(this)) {
+    if(mIsSetMode && !mPinManager.shouldGrantAccess(this)) {
       finish();
       return;
     }
@@ -193,10 +197,10 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
   private void onPinEntered(String pin) {
 
     if(mIsSetMode) {
-      PINManager.getInstance().setPin(this, pin);
-      PINManager.getInstance().resetPinClock(this);
+      mPinManager.setPin(this, pin);
+      mPinManager.resetPinClock(this);
     } else {
-      PINManager.getInstance().resetPinClock(this);
+      mPinManager.resetPinClock(this);
     }
 
     setResult(RESULT_OK);
@@ -217,7 +221,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
       super.onBackPressed();
 
       if(!mIsSetMode) {
-          PINManager.getInstance().setQuitPINLock(true);
+          mPinManager.setQuitPINLock(true);
       }
   }
 

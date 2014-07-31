@@ -10,6 +10,7 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import com.coinbase.android.Constants;
 import com.coinbase.android.TestCaseEntryPointActivity;
+import com.coinbase.android.event.BusModule;
 import com.coinbase.api.Coinbase;
 import com.coinbase.api.LoginManager;
 import com.google.inject.Binder;
@@ -71,6 +72,7 @@ public abstract class MockApiTest extends ActivityInstrumentationTestCase2 {
 
     Module roboGuiceModule = RoboGuice.newDefaultRoboModule(application);
     Module testModule = Modules.override(roboGuiceModule).with(new MockLoginManagerModule());
+           testModule = Modules.combine(testModule, new BusModule());
     RoboGuice.setBaseApplicationInjector(application, RoboGuice.DEFAULT_STAGE, testModule);
 
     // Clear preferences

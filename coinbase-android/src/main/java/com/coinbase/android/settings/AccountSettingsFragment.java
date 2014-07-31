@@ -31,6 +31,7 @@ import com.coinbase.android.pin.PINManager;
 import com.coinbase.android.pin.PINSettingDialogFragment;
 import com.coinbase.api.LoginManager;
 import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.joda.money.CurrencyUnit;
@@ -357,6 +358,12 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
   @InjectResource(R.string.title_account)
   String mTitle;
 
+  @Inject
+  protected Bus mBus;
+
+  @Inject
+  protected PINManager mPinManager;
+
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
@@ -368,18 +375,6 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
   public void onAttach(Activity activity) {
     super.onAttach(activity);
     mParent = activity;
-    PreferenceListItem[] preferenceListItems = new PreferenceListItem[] {
-            new NameItem(),
-            new EmailItem(),
-            new TimezoneItem(),
-            new NativeCurrencyItem(),
-            new LimitsItem(),
-            new ReceiveAddressItem(),
-            new MerchantToolsItem(),
-            new PinItem()
-    };
-    setListAdapter(new PreferenceListAdapter(preferenceListItems));
-    refresh();
   }
 
   @Override
@@ -388,7 +383,7 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
   }
 
   private void editItem(int position) {
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       mPinItem = position;
       return;
     }
@@ -435,6 +430,26 @@ public class AccountSettingsFragment extends RoboListFragment implements Coinbas
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Utils.bus().register(this);
+
+    mBus.register(this);
+
+    PreferenceListItem[] preferenceListItems = new PreferenceListItem[] {
+            new NameItem(),
+            new EmailItem(),
+            new TimezoneItem(),
+            new NativeCurrencyItem(),
+            new LimitsItem(),
+            new ReceiveAddressItem(),
+            new MerchantToolsItem(),
+            new PinItem()
+    };
+    setListAdapter(new PreferenceListAdapter(preferenceListItems));
+    refresh();
+  }
+
+  @Override
+  public void onDestroy() {
+    mBus.unregister(this);
+    super.onDestroy();
   }
 }

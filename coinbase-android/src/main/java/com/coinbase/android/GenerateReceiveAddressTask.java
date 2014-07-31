@@ -5,15 +5,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.coinbase.android.event.ReceiveAddressUpdatedEvent;
-import com.coinbase.api.LoginManager;
 import com.google.inject.Inject;
+import com.squareup.otto.Bus;
 
-import roboguice.util.RoboAsyncTask;
-
-public class GenerateReceiveAddressTask extends RoboAsyncTask<String> {
-  @Inject
-  LoginManager mLoginManager;
-  String mResult;
+public class GenerateReceiveAddressTask extends ApiTask<String> {
+  @Inject protected Bus mBus;
 
   public GenerateReceiveAddressTask(Context context) {
     super(context);
@@ -21,16 +17,19 @@ public class GenerateReceiveAddressTask extends RoboAsyncTask<String> {
 
   @Override
   public String call() throws Exception {
-    mResult = mLoginManager.getClient().generateReceiveAddress().getAddress();
+    String newAddress = getClient().generateReceiveAddress().getAddress();
 
     int activeAccount = mLoginManager.getActiveAccount();
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     SharedPreferences.Editor e = prefs.edit();
-    e.putString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), mResult);
+    e.putString(String.format(Constants.KEY_ACCOUNT_RECEIVE_ADDRESS, activeAccount), newAddress);
     e.commit();
 
-    Utils.bus().post(new ReceiveAddressUpdatedEvent());
+    return newAddress;
+  }
 
-    return mResult;
+  @Override
+  public void onFinally() {
+    mBus.post(new ReceiveAddressUpdatedEvent());
   }
 }

@@ -36,9 +36,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import roboguice.fragment.RoboFragment;
 import roboguice.util.RoboAsyncTask;
 
-public class TransactionDetailsFragment extends Fragment {
+public class TransactionDetailsFragment extends RoboFragment {
 
   public static final String EXTRA_ID = "id";
 
@@ -50,6 +51,9 @@ public class TransactionDetailsFragment extends Fragment {
 
   private String mPinReturnTransactionId;
   private ActionType mPinReturnActionType;
+
+  @Inject
+  protected PINManager mPinManager;
 
   private class TakeActionTask extends RoboAsyncTask<String> {
 
@@ -442,7 +446,7 @@ public class TransactionDetailsFragment extends Fragment {
 
   private void takeAction(ActionType type, String transactionId) {
 
-    if(!PINManager.getInstance().checkForEditAccess(getActivity())) {
+    if(!mPinManager.checkForEditAccess(getActivity())) {
       mPinReturnTransactionId = transactionId;
       mPinReturnActionType = type;
       return;

@@ -25,6 +25,9 @@ public class CoinbaseActivity extends RoboSherlockFragmentActivity {
   @Inject
   protected LoginManager mLoginManager;
 
+  @Inject
+  protected PINManager mPinManager;
+
   @Override
   public void onResume() {
 
@@ -53,10 +56,10 @@ public class CoinbaseActivity extends RoboSherlockFragmentActivity {
 
     if(getClass().isAnnotationPresent(RequiresPIN.class)) {
       // Check PIN status
-      if(!PINManager.getInstance().shouldGrantAccess(this)) {
+      if(!mPinManager.shouldGrantAccess(this)) {
         // Check if user wants to quit PIN lock
-        if(PINManager.getInstance().isQuitPINLock()){
-          PINManager.getInstance().setQuitPINLock(false);
+        if(mPinManager.isQuitPINLock()){
+          mPinManager.setQuitPINLock(false);
           finish();
         } else {
           // PIN reprompt required.
