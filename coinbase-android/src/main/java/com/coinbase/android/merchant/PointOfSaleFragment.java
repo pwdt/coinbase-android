@@ -284,7 +284,9 @@ public class PointOfSaleFragment extends Fragment implements CoinbaseFragment {
 
           mOrder = response.optJSONObject("order");
           // If the order is "new", payment has yet to be received
-          if (!"new".equals(mOrder.optString("status"))) return CheckStatusState.DONE;
+          if (!"new".equals(mOrder.optString("status"))) {
+            return CheckStatusState.DONE;
+          }
         }
           // Successful check, but the order isn't in yet.
         return CheckStatusState.SUCCESS;
