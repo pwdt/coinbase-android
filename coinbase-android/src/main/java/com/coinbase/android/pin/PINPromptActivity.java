@@ -180,7 +180,7 @@ public class PINPromptActivity extends CoinbaseActivity implements AccountsFragm
       int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
       String pin = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), null);
 
-      if(mPinNumberField.getText().toString().equals(pin)) {
+      if(PINManager.getInstance().verifyPin(this.getApplicationContext(), mPinNumberField.getText().toString())) {
         // Correct PIN has been entered.
         onPinEntered(pin);
       } else {

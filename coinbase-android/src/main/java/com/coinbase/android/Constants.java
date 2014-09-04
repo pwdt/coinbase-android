@@ -40,6 +40,7 @@ public class Constants {
   public static final String KEY_ACCOUNT_ENABLE_TIPPING = "account_%1$d_enable_tipping";
 
   public static final String KEY_ACCOUNT_PIN = "account_%d_pin";
+  public static final String KEY_ACCOUNT_SALT = "account_%d_salt";
   public static final String KEY_ACCOUNT_LAST_PIN_ENTRY_TIME = "account_%d_last_pin_entry_time";
   public static final String KEY_ACCOUNT_PIN_VIEW_ALLOWED = "account_%d_pin_view_allowed";
 

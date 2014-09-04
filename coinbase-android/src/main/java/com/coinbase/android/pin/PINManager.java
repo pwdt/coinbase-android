@@ -8,14 +8,29 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 import com.coinbase.android.Constants;
+import com.coinbase.android.Log;
 import com.coinbase.android.MainActivity;
-
+import com.coinbase.android.crypto.ByteArrayUtils;
+import com.coinbase.android.crypto.CoinBaseCrypto;
+import javax.crypto.Cipher;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 
 public class PINManager {
 
   public static final long PIN_REPROMPT_TIME = 2 * 1000; // Five seconds
 
   private static PINManager INSTANCE = null;
+  private static SecureRandom rand = new SecureRandom();
+  private static final int BLOCK_SIZE;
+
+    static {
+        try {
+            BLOCK_SIZE = getCipher().getBlockSize();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
   public static PINManager getInstance() {
 
@@ -61,7 +76,7 @@ public class PINManager {
 
   /**
    * Should the user be allowed to edit protected content? If not, PIN prompt will be started.
-   * @param context
+   * @param activity
    * @return true if you should proceed with the edit
    */
   public boolean checkForEditAccess(Activity activity) {
@@ -109,6 +124,16 @@ public class PINManager {
     e.commit();
   }
 
+  private static Cipher getCipher() throws GeneralSecurityException {
+        return Cipher.getInstance("AES/CBC/PKCS5Padding");
+    }
+
+  private static byte[] generateSalt() {
+        byte[] result = new byte[BLOCK_SIZE];
+        rand.nextBytes(result);
+        return result;
+    }
+
   /**
    * Set the user's PIN.
    */
@@ -117,9 +142,29 @@ public class PINManager {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
     Editor e = prefs.edit();
-    e.putString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), pin);
+    byte[] salt = generateSalt();
+    byte[] encodedPin = CoinBaseCrypto.getKey(pin.toCharArray(), salt, 1200, 128);
+    e.putString(String.format(Constants.KEY_ACCOUNT_SALT, activeAccount), ByteArrayUtils.toHexString(salt));
+    e.putString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), ByteArrayUtils.toHexString(encodedPin));
     e.commit();
   }
+
+/**
+ * Verify user's PIN.
+ */
+ public boolean verifyPin(Context context,String enteredPin) {
+     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+     int activeAccount = prefs.getInt(Constants.KEY_ACTIVE_ACCOUNT, -1);
+     String pin = prefs.getString(String.format(Constants.KEY_ACCOUNT_PIN, activeAccount), null);
+     String salt = prefs.getString(String.format(Constants.KEY_ACCOUNT_SALT, activeAccount), null);
+     byte[] encodedPin = CoinBaseCrypto.getKey(enteredPin.toCharArray(), ByteArrayUtils.hexToBytes(salt), 1200, 128);
+     if(ByteArrayUtils.toHexString(encodedPin).equals(pin)){
+         return true;
+     }
+     return false;
+ }
+
+
 
   /**
    * Set quitting PIN Lock.
